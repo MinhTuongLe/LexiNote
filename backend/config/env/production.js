@@ -73,7 +73,9 @@ module.exports = {
   security: {
     cors: {
       allRoutes: true,
-      allowOrigins: process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : '*',
+      allowOrigins: process.env.ALLOWED_ORIGINS 
+        ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.replace(/\/$/, '')) 
+        : '*',
       allowCredentials: false,
       allowHeaders: 'content-type, authorization, x-requested-with'
     },

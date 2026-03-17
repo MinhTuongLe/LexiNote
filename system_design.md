@@ -28,7 +28,7 @@ To ensure stability, scalability, and cost-effectiveness (Free Tier), the follow
     - `NODE_ENV`: `production`
     - `DATABASE_URL`: Connection string from Supabase.
     - `JWT_SECRET`: Secure random string for token signing (JWT).
-    - `ALLOWED_ORIGINS`: Your Vercel domain (e.g., `https://lexinote.vercel.app`).
+    - `ALLOWED_ORIGINS`: Your Vercel domain (e.g., `https://lexinote.vercel.app`). **Important: Do not include a trailing slash!**
 - **Optimization**: Use an external pinger (like Cron-job.org) to keep the service awake.
 
 ### 3. Frontend Application
