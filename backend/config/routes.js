@@ -23,4 +23,9 @@ module.exports.routes = {
   'POST /api/reviews/update': 'ReviewController.updateSRS',
   'POST /api/reviews/reset': 'ReviewController.resetBulk',
 
+  // Auth API
+  'POST /api/auth/register': 'AuthController.register',
+  'POST /api/auth/login': 'AuthController.login',
+  'GET /api/auth/me': 'AuthController.me',
+
 };

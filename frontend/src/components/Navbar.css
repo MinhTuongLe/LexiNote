@@ -75,6 +75,24 @@
   cursor: pointer;
 }
 
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-name {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.user-avatar-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .user-avatar {
   width: 44px;
   height: 44px;
@@ -87,3 +105,24 @@
   font-size: 1.5rem;
   box-shadow: 2px 2px 0px var(--border);
 }
+
+.logout-btn {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.logout-btn:hover {
+  background: var(--accent);
+  color: var(--text);
+  transform: translateY(-2px);
+  box-shadow: 2px 2px 0px var(--border);
+}
+

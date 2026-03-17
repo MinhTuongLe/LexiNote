@@ -34,6 +34,11 @@ module.exports = {
       defaultsTo: 'noun'
     },
 
+    owner: {
+      model: 'user',
+      required: true
+    },
+
     // Associations
     relations: {
       collection: 'wordrelation',

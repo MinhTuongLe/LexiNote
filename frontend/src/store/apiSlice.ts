@@ -1,11 +1,38 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Word, CreateWordDTO, Review } from '../types';
 
+const baseQuery = fetchBaseQuery({ 
+  baseUrl: 'http://localhost:1337/api',
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as any).auth.token;
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
 export const apiSlice = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:1337/api' }),
+  baseQuery,
   tagTypes: ['Words', 'Reviews'],
   endpoints: (builder) => ({
+    // Auth
+    login: builder.mutation<any, any>({
+      query: (credentials) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    register: builder.mutation<any, any>({
+      query: (userData) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body: userData,
+      }),
+    }),
+
     // Words
     getWords: builder.query<Word[], void>({
       query: () => '/words',
@@ -68,6 +95,8 @@ export const apiSlice = createApi({
 });
 
 export const {
+  useLoginMutation,
+  useRegisterMutation,
   useGetWordsQuery,
   useCreateWordMutation,
   useUpdateWordMutation,

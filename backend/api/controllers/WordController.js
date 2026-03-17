@@ -27,7 +27,8 @@ module.exports = {
         word,
         meaningVi,
         example,
-        type: normalizedType
+        type: normalizedType,
+        owner: req.userId
       }).fetch();
 
       // 2. Create relations if any
@@ -60,6 +61,10 @@ module.exports = {
       const { id } = req.params;
       const { word, meaningVi, example, type } = req.body;
 
+      // Ensure ownership
+      const existingWord = await Word.findOne({ id, owner: req.userId });
+      if (!existingWord) return res.notFound();
+
       // Normalize type if provided
       let normalizedType = type;
       if (type) {
@@ -71,7 +76,7 @@ module.exports = {
         if (!validTypes.includes(normalizedType)) normalizedType = 'other';
       }
 
-      const updatedWord = await Word.updateOne({ id })
+      const updatedWord = await Word.updateOne({ id, owner: req.userId })
         .set({
           word,
           meaningVi,
@@ -79,7 +84,6 @@ module.exports = {
           type: normalizedType
         });
 
-      if (!updatedWord) return res.notFound();
       return res.json(updatedWord);
     } catch (err) {
       return res.serverError(err);
@@ -91,13 +95,13 @@ module.exports = {
    */
   find: async function (req, res) {
     try {
-      const { search, type, status } = req.query;
-      let query = {};
+      const { search, type } = req.query;
+      let query = { owner: req.userId };
 
       if (search) {
         query.or = [
-          { word: { contains: search } },
-          { meaningVi: { contains: search } }
+          { word: { contains: search }, owner: req.userId },
+          { meaningVi: { contains: search }, owner: req.userId }
         ];
       }
 
@@ -105,8 +109,6 @@ module.exports = {
         query.type = type;
       }
 
-      // Note: Logic for 'status' (learned, learning, new) might involve joining with Review
-      // For MVP, let's keep it simple
       const words = await Word.find(query).populate('relations').populate('reviews');
       return res.json(words);
     } catch (err) {
@@ -119,7 +121,7 @@ module.exports = {
    */
   findOne: async function (req, res) {
     try {
-      const word = await Word.findOne({ id: req.params.id })
+      const word = await Word.findOne({ id: req.params.id, owner: req.userId })
         .populate('relations')
         .populate('reviews');
       
@@ -135,7 +137,9 @@ module.exports = {
    */
   destroy: async function (req, res) {
     try {
-      // Sails cascade handles relationships if configured, but let's be safe
+      const word = await Word.findOne({ id: req.params.id, owner: req.userId });
+      if (!word) return res.notFound();
+
       await WordRelation.destroy({ word: req.params.id });
       await Review.destroy({ word: req.params.id });
       await Word.destroyOne({ id: req.params.id });
@@ -155,27 +159,25 @@ module.exports = {
       const createdWords = [];
 
       for (const data of words) {
-        // Simple duplicate check by word
-        const existing = await Word.findOne({ word: data.word });
+        // Simple duplicate check by word for THIS user
+        const existing = await Word.findOne({ word: data.word, owner: req.userId });
         if (existing) continue;
 
         const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
         let normalizedType = (data.type || 'other').toLowerCase().trim();
         
-        // If type is something like 'noun/verb', take the first part
         if (normalizedType.includes('/') || normalizedType.includes(',')) {
           normalizedType = normalizedType.split(/[/,]/)[0].trim();
         }
         
-        if (!validTypes.includes(normalizedType)) {
-          normalizedType = 'other';
-        }
+        if (!validTypes.includes(normalizedType)) normalizedType = 'other';
 
         const newWord = await Word.create({
           word: data.word,
           meaningVi: data.meaningVi,
           example: data.example || '',
           type: normalizedType,
+          owner: req.userId
         }).fetch();
 
         await Review.create({

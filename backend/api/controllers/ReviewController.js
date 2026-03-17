@@ -13,8 +13,14 @@ module.exports = {
   getDueWords: async function (req, res) {
     try {
       const now = Date.now();
+      
+      // Get all words owned by user
+      const userWords = await Word.find({ owner: req.userId }).select(['id']);
+      const wordIds = userWords.map(w => w.id);
+
       const reviews = await Review.find({
-        nextReview: { '<=': now }
+        nextReview: { '<=': now },
+        word: wordIds
       }).populate('word');
 
       return res.json(reviews);
@@ -25,34 +31,28 @@ module.exports = {
 
   /**
    * Update SRS state after a review session
-   * Action: user chose Easy, Medium, or Hard
    */
   updateSRS: async function (req, res) {
     try {
-      const { reviewId, quality } = req.body; // quality: 1 (Hard), 3 (Medium), 5 (Easy)
+      const { reviewId, quality } = req.body;
       
-      const review = await Review.findOne({ id: reviewId });
-      if (!review) return res.notFound();
+      const review = await Review.findOne({ id: reviewId }).populate('word');
+      if (!review || review.word.owner !== req.userId) {
+        return res.notFound({ message: 'Review session not found! 🕵️‍♂️' });
+      }
 
       let { interval, easeFactor, correctCount, wrongCount } = review;
 
       // SM-2 Basic Logic
       if (quality >= 3) {
-        // Correct response
-        if (correctCount === 0) {
-          interval = 1;
-        } else if (correctCount === 1) {
-          interval = 6;
-        } else {
-          interval = Math.round(interval * easeFactor);
-        }
-        correctCount++;
+        if (correctCount === 0) interval = 1;
+        else if (correctCount === 1) interval = 6;
+        else interval = Math.round(interval * easeFactor);
         
-        // Update Ease Factor: EF' = EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+        correctCount++;
         easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
         if (easeFactor < 1.3) easeFactor = 1.3;
       } else {
-        // Incorrect response
         correctCount = 0;
         interval = 1;
         wrongCount++;
@@ -83,14 +83,20 @@ module.exports = {
       const { wordIds } = req.body;
       if (!wordIds || !wordIds.length) return res.badRequest('No word IDs provided');
 
-      // Ensure wordIds are integers
       const numericWordIds = wordIds.map(id => parseInt(id, 10));
 
-      // Find review records for these words to update by their own primary IDs
-      const reviews = await Review.find({ word: numericWordIds });
+      // Ensure all words belong to the user
+      const words = await Word.find({ 
+        id: numericWordIds, 
+        owner: req.userId 
+      }).select(['id']);
       
-      if (reviews.length > 0) {
+      const verifiedWordIds = words.map(w => w.id);
+
+      if (verifiedWordIds.length > 0) {
+        const reviews = await Review.find({ word: verifiedWordIds });
         const reviewIds = reviews.map(r => r.id);
+        
         await Review.update({ id: reviewIds }).set({
           nextReview: Date.now(),
           lastReviewed: 0,
@@ -99,9 +105,11 @@ module.exports = {
           correctCount: 0,
           wrongCount: 0
         });
+        
+        return res.json({ success: true, count: verifiedWordIds.length });
       }
 
-      return res.json({ success: true, count: reviews.length });
+      return res.json({ success: true, count: 0 });
     } catch (err) {
       return res.serverError(err);
     }
