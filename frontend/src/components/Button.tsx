@@ -15,12 +15,15 @@ const Button: React.FC<ButtonProps> = ({
   className = '', 
   ...props 
 }) => {
+  // Omit conflicting framer-motion props from the spread
+  const { onDrag, onDragStart, onDragEnd, onPan, onPanStart, onPanEnd, ...rest } = props as any;
+
   return (
     <motion.button
       whileHover={{ scale: 1.05, translateY: -2 }}
       whileTap={{ scale: 0.95, translateY: 2 }}
       className={`btn btn-${variant} btn-${size} ${className}`}
-      {...props}
+      {...rest}
     >
       {children}
     </motion.button>

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import Button from './Button';
+import React from 'react';
 import './Modal.css';
 import { X } from 'lucide-react';
 
