@@ -49,8 +49,7 @@ module.exports.datastores = {
     *                                                                          *
     ***************************************************************************/
     adapter: 'sails-postgresql',
-    url: 'postgresql://postgres:postgres@localhost:5432/lexinote',
-
+    url: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/lexinote',
   },
 
 
