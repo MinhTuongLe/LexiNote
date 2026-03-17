@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Button from './Button';
+import CuteSelect from './CuteSelect';
 import type { CreateWordDTO } from '../types';
 import './WordForm.css';
 
@@ -13,12 +14,22 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel }) => {
     word: '',
     meaningVi: '',
     example: '',
-    type: 'noun',
-    synonyms: [],
-    antonyms: []
+    type: 'noun'
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const wordTypeOptions = [
+    { value: 'noun', label: 'Noun' },
+    { value: 'verb', label: 'Verb' },
+    { value: 'adj', label: 'Adjective' },
+    { value: 'adv', label: 'Adverb' },
+    { value: 'phrasal_verb', label: 'Phrasal Verb' },
+    { value: 'idiom', label: 'Idiom' },
+    { value: 'phrase', label: 'Phrase' },
+    { value: 'noun_phrase', label: 'Noun Phrase' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
@@ -31,40 +42,35 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel }) => {
   return (
     <form className="word-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label>Word *</label>
+        <label>Word</label>
         <input 
           type="text" 
           name="word" 
+          placeholder="Enter word..." 
           value={formData.word} 
           onChange={handleChange} 
           required 
-          placeholder="e.g. Ephemeral"
         />
       </div>
 
       <div className="form-group">
-        <label>Type</label>
-          <select name="type" value={formData.type} onChange={handleChange}>
-            <option value="noun">Noun</option>
-            <option value="verb">Verb</option>
-            <option value="adj">Adjective</option>
-            <option value="adv">Adverb</option>
-            <option value="phrasal_verb">Phrasal Verb</option>
-            <option value="idiom">Idiom</option>
-            <option value="phrase">Phrase</option>
-            <option value="noun_phrase">Noun Phrase</option>
-          </select>
-      </div>
-
-      <div className="form-group">
-        <label>Meaning (Vietnamese) *</label>
+        <label>Vietnamese Meaning</label>
         <input 
           type="text" 
           name="meaningVi" 
+          placeholder="Nghĩa tiếng Việt..." 
           value={formData.meaningVi} 
           onChange={handleChange} 
           required 
-          placeholder="Nghĩa tiếng Việt"
+        />
+      </div>
+
+      <div className="form-group">
+        <CuteSelect 
+          label="Type"
+          options={wordTypeOptions}
+          value={formData.type}
+          onChange={(val) => setFormData({ ...formData, type: val as any })}
         />
       </div>
 
@@ -72,15 +78,15 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel }) => {
         <label>Example Sentence</label>
         <textarea 
           name="example" 
+          placeholder="How is it used?" 
           value={formData.example} 
           onChange={handleChange} 
-          placeholder="How is it used in a sentence?"
         />
       </div>
 
       <div className="form-actions">
-        <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
-        <Button type="submit" variant="primary">Save Word</Button>
+        <Button variant="outline" type="button" onClick={onCancel}>Cancel</Button>
+        <Button variant="primary" type="submit">Save Word ✨</Button>
       </div>
     </form>
   );

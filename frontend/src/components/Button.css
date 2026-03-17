@@ -9,6 +9,8 @@
   transition: box-shadow 0.2s ease;
   box-shadow: var(--shadow);
   color: var(--text);
+  margin-bottom: 4px;
+  margin-right: 4px;
 }
 
 .btn:active {

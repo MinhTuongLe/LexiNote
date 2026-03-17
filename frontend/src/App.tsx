@@ -14,6 +14,7 @@ import {
   useCreateWordMutation, 
   useImportWordsMutation 
 } from './store/apiSlice';
+import { useCuteDialog } from './context/DialogContext';
 import type { CreateWordDTO } from './types';
 import './App.css';
 
@@ -22,6 +23,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isStudyMode, setIsStudyMode] = useState(false);
+  const { showAlert } = useCuteDialog();
 
   // RTK Query hooks
   const { data: words = [], isLoading: wordsLoading } = useGetWordsQuery();
@@ -38,18 +40,19 @@ function App() {
     try {
       await createWord(data).unwrap();
       setIsModalOpen(false);
+      showAlert('Awesome! ✨', 'Word added successfully!', 'success');
     } catch (err) {
-      alert('Error creating word! 😿');
+      showAlert('Oops! 😿', 'Error creating word!', 'error');
     }
   };
 
   const handleImportBulk = async (wordsToImport: any[]) => {
     try {
       const result = await importWords(wordsToImport).unwrap();
-      alert(`Successfully imported ${result.imported} words! 🎉`);
+      showAlert('Great job! 🎉', `Successfully imported ${result.imported} words!`, 'success');
       setIsImportModalOpen(false);
     } catch (err) {
-      alert('Error importing words! 😿');
+      showAlert('Oops! 😿', 'Error importing words!', 'error');
     }
   };
 

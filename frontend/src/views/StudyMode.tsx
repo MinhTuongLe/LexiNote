@@ -3,6 +3,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { RotateCw, Check, AlertTriangle, Zap, X } from 'lucide-react';
 import { useUpdateSRSMutation } from '../store/apiSlice';
+import { useCuteDialog } from '../context/DialogContext';
 import type { Review } from '../types';
 import './StudyMode.css';
 
@@ -19,6 +20,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ dueReviews, onComplete }) => {
 
   // RTK Query Mutation
   const [updateSRS] = useUpdateSRSMutation();
+  const { showAlert } = useCuteDialog();
 
   if (isFinished) {
     return (
@@ -80,7 +82,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ dueReviews, onComplete }) => {
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to update progress! 😿');
+      showAlert('Oops! 😿', 'Failed to update progress!', 'error');
     }
   };
 

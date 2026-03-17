@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Search, Filter, Trash2, RotateCcw, CheckSquare, Square } from 'lucide-react';
+import { Search, Trash2, RotateCcw, CheckSquare, Square } from 'lucide-react';
 import { 
   useGetWordsQuery, 
   useDeleteWordMutation, 
   useResetProgressMutation 
 } from '../store/apiSlice';
+import { useCuteDialog } from '../context/DialogContext';
+import CuteSelect from '../components/CuteSelect';
 import './Library.css';
 
 const Library: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const { showAlert, showConfirm } = useCuteDialog();
 
   // RTK Query
   const { data: words = [], isLoading } = useGetWordsQuery();
@@ -20,29 +23,33 @@ const Library: React.FC = () => {
   const [resetProgress] = useResetProgressMutation();
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('Delete this word? 🥺')) {
+    showConfirm('Delete Word? 🥺', 'Are you sure you want to delete this word from your library?', async () => {
       try {
         await deleteWord(id).unwrap();
         setSelectedIds(prev => prev.filter(sid => sid !== id));
       } catch (err) {
         console.error(err);
       }
-    }
+    });
   };
 
   const handleReset = async (ids?: number[]) => {
     const targets = ids || selectedIds;
     if (targets.length === 0) return;
 
-    if (window.confirm(`Reset progress for ${targets.length} word(s)? 🔄`)) {
-      try {
-        await resetProgress(targets).unwrap();
-        alert('Progress reset successfully! ✨');
-        setSelectedIds([]);
-      } catch (err) {
-        alert('Failed to reset progress! 😿');
+    showConfirm(
+      'Reset Progress? 🔄', 
+      `Are you sure you want to reset progress for ${targets.length} word(s)?`,
+      async () => {
+        try {
+          await resetProgress(targets).unwrap();
+          showAlert('YAY! ✨', 'Progress reset successfully!', 'success');
+          setSelectedIds([]);
+        } catch (err) {
+          showAlert('Oops! 😿', 'Failed to reset progress!', 'error');
+        }
       }
-    }
+    );
   };
 
   const toggleSelect = (id: number) => {
@@ -51,10 +58,25 @@ const Library: React.FC = () => {
     );
   };
 
-  const filteredWords = words.filter(w => 
-    w.word.toLowerCase().includes(search.toLowerCase()) ||
-    w.meaningVi.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredWords = words.filter(w => {
+    const matchesSearch = w.word.toLowerCase().includes(search.toLowerCase()) ||
+                         w.meaningVi.toLowerCase().includes(search.toLowerCase());
+    const matchesType = filterType === 'all' || w.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
+  const wordTypeOptions = [
+    { value: 'all', label: 'All Types' },
+    { value: 'noun', label: 'Noun' },
+    { value: 'verb', label: 'Verb' },
+    { value: 'adj', label: 'Adjective' },
+    { value: 'adv', label: 'Adverb' },
+    { value: 'phrasal_verb', label: 'Phrasal Verb' },
+    { value: 'idiom', label: 'Idiom' },
+    { value: 'phrase', label: 'Phrase' },
+    { value: 'noun_phrase', label: 'Noun Phrase' },
+    { value: 'other', label: 'Other' }
+  ];
 
   const selectAll = () => {
     if (selectedIds.length === filteredWords.length && filteredWords.length > 0) {
@@ -77,9 +99,12 @@ const Library: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          <Button variant="outline">
-            <Filter size={20} /> Filter
-          </Button>
+          <CuteSelect 
+            options={wordTypeOptions}
+            value={filterType}
+            onChange={(val) => setFilterType(val)}
+            className="library-type-select"
+          />
         </div>
 
         <div className="selection-actions">
