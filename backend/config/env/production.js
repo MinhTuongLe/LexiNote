@@ -33,7 +33,12 @@ module.exports = {
     default: {
       adapter: 'sails-postgresql',
       url: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // Essential for Supabase/Neon on Render
+      ssl: { rejectUnauthorized: false }, // Necessary for most Cloud PostgreSQL like Supabase
+      pool: {
+        min: 2,
+        max: 10,
+        idleTimeoutMillis: 30000,
+      }
     },
   },
 

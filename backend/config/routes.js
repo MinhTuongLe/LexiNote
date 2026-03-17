@@ -10,6 +10,10 @@
 
 module.exports.routes = {
 
+  // Health Check
+  'GET /': { action: 'health-check', statusCode: 200 },
+
+
   // Word API
   'POST /api/words': 'WordController.create',
   'GET /api/words': 'WordController.find',
