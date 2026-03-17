@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { Word, CreateWordDTO, Review } from '../types';
 
 const baseQuery = fetchBaseQuery({ 
-  baseUrl: 'http://localhost:1337/api',
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:1337/api',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as any).auth.token;
     if (token) {
