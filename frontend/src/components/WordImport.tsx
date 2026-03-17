@@ -14,21 +14,40 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<any[]>([]);
   const [error, setError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFile = e.target.files?.[0];
-    if (selectedFile) {
-      const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls');
-      const isCSV = selectedFile.name.endsWith('.csv');
-      
-      if (isExcel || isCSV) {
-        setFile(selectedFile);
-        setError('');
-        parseFile(selectedFile, isExcel);
-      } else {
-        setError('Please select a valid CSV or Excel file! 📄');
-      }
+  const processFile = (selectedFile: File) => {
+    const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls');
+    const isCSV = selectedFile.name.endsWith('.csv');
+    
+    if (isExcel || isCSV) {
+      setFile(selectedFile);
+      setError('');
+      parseFile(selectedFile, isExcel);
+    } else {
+      setError('Please select a valid CSV or Excel file! 📄');
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) processFile(selectedFile);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const selectedFile = e.dataTransfer.files?.[0];
+    if (selectedFile) processFile(selectedFile);
   };
 
   const parseFile = (file: File, isExcel: boolean) => {
@@ -96,7 +115,12 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
 
   return (
     <div className="word-import">
-      <div className="upload-zone">
+      <div 
+        className="upload-zone"
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
         <input 
           type="file" 
           accept=".csv, .xlsx, .xls" 
@@ -104,9 +128,9 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
           onChange={handleFileChange} 
           hidden 
         />
-        <label htmlFor="word-upload" className="upload-label">
+        <label htmlFor="word-upload" className={`upload-label ${isDragging ? 'dragging' : ''}`}>
           {file ? <FileText size={40} className="file-icon" /> : <Upload size={32} />}
-          <span>{file ? file.name : 'Click to upload CSV or Excel'}</span>
+          <span>{file ? file.name : 'Click or drag CSV/Excel here'}</span>
           <p>Format: word, meaning_vi, example, type</p>
         </label>
       </div>

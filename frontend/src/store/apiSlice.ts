@@ -19,6 +19,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
+    updateWord: builder.mutation<Word, { id: number; data: Partial<CreateWordDTO> }>({
+      query: ({ id, data }) => ({
+        url: `/words/${id}`,
+        method: 'PATCH',
+        body: data,
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
     deleteWord: builder.mutation<void, number>({
       query: (id) => ({
         url: `/words/${id}`,
@@ -62,6 +70,7 @@ export const apiSlice = createApi({
 export const {
   useGetWordsQuery,
   useCreateWordMutation,
+  useUpdateWordMutation,
   useDeleteWordMutation,
   useImportWordsMutation,
   useGetDueReviewsQuery,

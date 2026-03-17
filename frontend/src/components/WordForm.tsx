@@ -7,10 +7,11 @@ import './WordForm.css';
 interface WordFormProps {
   onSubmit: (data: CreateWordDTO) => void;
   onCancel: () => void;
+  initialData?: CreateWordDTO;
 }
 
-const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel }) => {
-  const [formData, setFormData] = useState<CreateWordDTO>({
+const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) => {
+  const [formData, setFormData] = useState<CreateWordDTO>(initialData || {
     word: '',
     meaningVi: '',
     example: '',
@@ -86,7 +87,9 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel }) => {
 
       <div className="form-actions">
         <Button variant="outline" type="button" onClick={onCancel}>Cancel</Button>
-        <Button variant="primary" type="submit">Save Word ✨</Button>
+        <Button variant="primary" type="submit">
+          {initialData ? 'Update Word ✨' : 'Save Word ✨'}
+        </Button>
       </div>
     </form>
   );

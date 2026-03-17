@@ -14,6 +14,7 @@ module.exports.routes = {
   'POST /api/words': 'WordController.create',
   'GET /api/words': 'WordController.find',
   'GET /api/words/:id': 'WordController.findOne',
+  'PATCH /api/words/:id': 'WordController.update',
   'DELETE /api/words/:id': 'WordController.destroy',
   'POST /api/words/import': 'WordController.importBulk',
 

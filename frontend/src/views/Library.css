@@ -32,11 +32,18 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: var(--background);
-  border: 2px solid var(--border);
+  background: white;
+  border: 3px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0 16px;
   height: 48px;
+  transition: all 0.2s;
+}
+
+.search-bar:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px var(--border);
+  border-color: var(--primary);
 }
 
 .search-bar input {
@@ -46,6 +53,13 @@
   font-family: inherit;
   font-weight: 500;
   outline: none;
+  padding: 0;
+  height: 100%;
+}
+
+.search-bar input:focus {
+  transform: none;
+  box-shadow: none;
 }
 
 .selection-actions {

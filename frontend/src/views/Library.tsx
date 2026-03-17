@@ -1,25 +1,32 @@
 import React, { useState } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Search, Trash2, RotateCcw, CheckSquare, Square } from 'lucide-react';
+import Modal from '../components/Modal';
+import WordForm from '../components/WordForm';
+import { Search, Trash2, RotateCcw, CheckSquare, Square, Pencil, Download } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { 
   useGetWordsQuery, 
   useDeleteWordMutation, 
+  useUpdateWordMutation,
   useResetProgressMutation 
 } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
 import CuteSelect from '../components/CuteSelect';
+import type { Word } from '../types';
 import './Library.css';
 
 const Library: React.FC = () => {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
 
   // RTK Query
   const { data: words = [], isLoading } = useGetWordsQuery();
   const [deleteWord] = useDeleteWordMutation();
+  const [updateWord] = useUpdateWordMutation();
   const [resetProgress] = useResetProgressMutation();
 
   const handleDelete = async (id: number) => {
@@ -31,6 +38,31 @@ const Library: React.FC = () => {
         console.error(err);
       }
     });
+  };
+
+  const handleUpdate = async (data: any) => {
+    if (!editingWord) return;
+    try {
+      await updateWord({ id: editingWord.id, data }).unwrap();
+      showAlert('Success! ✨', 'Word updated successfully!', 'success');
+      setEditingWord(null);
+    } catch (err) {
+      showAlert('Oops! 😿', 'Failed to update word!', 'error');
+    }
+  };
+
+  const exportToExcel = () => {
+    const dataToExport = filteredWords.map(w => ({
+      Word: w.word,
+      Meaning: w.meaningVi,
+      Example: w.example || '',
+      Type: w.type
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
+    XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
   const handleReset = async (ids?: number[]) => {
@@ -111,6 +143,14 @@ const Library: React.FC = () => {
           <Button 
             variant="outline" 
             size="sm" 
+            onClick={exportToExcel}
+          >
+            <Download size={18} /> Export Library
+          </Button>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
             onClick={selectAll}
             className="select-all-btn"
           >
@@ -157,6 +197,9 @@ const Library: React.FC = () => {
                     </div>
                   </div>
                   <div className="word-card-actions">
+                    <button onClick={(e) => { e.stopPropagation(); setEditingWord(word); }} className="icon-btn edit" title="Edit this word">
+                      <Pencil size={18} />
+                    </button>
                     <button onClick={(e) => { e.stopPropagation(); handleReset([word.id]); }} className="icon-btn reset" title="Reset this word">
                       <RotateCcw size={18} />
                     </button>
@@ -180,6 +223,20 @@ const Library: React.FC = () => {
           ))}
         </div>
       )}
+
+      <Modal 
+        isOpen={!!editingWord} 
+        onClose={() => setEditingWord(null)} 
+        title="Edit Word ✨"
+      >
+        {editingWord && (
+          <WordForm 
+            initialData={editingWord as any}
+            onSubmit={handleUpdate}
+            onCancel={() => setEditingWord(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 };

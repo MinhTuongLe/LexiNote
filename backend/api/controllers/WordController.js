@@ -13,13 +13,21 @@ module.exports = {
   create: async function (req, res) {
     try {
       const { word, meaningVi, example, type, synonyms, antonyms } = req.body;
+      
+      // Normalize type
+      const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+      let normalizedType = (type || 'other').toLowerCase().trim();
+      if (normalizedType.includes('/') || normalizedType.includes(',')) {
+        normalizedType = normalizedType.split(/[/,]/)[0].trim();
+      }
+      if (!validTypes.includes(normalizedType)) normalizedType = 'other';
 
       // 1. Create the word
       const newWord = await Word.create({
         word,
         meaningVi,
         example,
-        type
+        type: normalizedType
       }).fetch();
 
       // 2. Create relations if any
@@ -39,6 +47,40 @@ module.exports = {
       });
 
       return res.status(201).json(newWord);
+    } catch (err) {
+      return res.serverError(err);
+    }
+  },
+  
+  /**
+   * Update an existing word
+   */
+  update: async function (req, res) {
+    try {
+      const { id } = req.params;
+      const { word, meaningVi, example, type } = req.body;
+
+      // Normalize type if provided
+      let normalizedType = type;
+      if (type) {
+        const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+        normalizedType = type.toLowerCase().trim();
+        if (normalizedType.includes('/') || normalizedType.includes(',')) {
+          normalizedType = normalizedType.split(/[/,]/)[0].trim();
+        }
+        if (!validTypes.includes(normalizedType)) normalizedType = 'other';
+      }
+
+      const updatedWord = await Word.updateOne({ id })
+        .set({
+          word,
+          meaningVi,
+          example,
+          type: normalizedType
+        });
+
+      if (!updatedWord) return res.notFound();
+      return res.json(updatedWord);
     } catch (err) {
       return res.serverError(err);
     }
@@ -117,11 +159,23 @@ module.exports = {
         const existing = await Word.findOne({ word: data.word });
         if (existing) continue;
 
+        const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+        let normalizedType = (data.type || 'other').toLowerCase().trim();
+        
+        // If type is something like 'noun/verb', take the first part
+        if (normalizedType.includes('/') || normalizedType.includes(',')) {
+          normalizedType = normalizedType.split(/[/,]/)[0].trim();
+        }
+        
+        if (!validTypes.includes(normalizedType)) {
+          normalizedType = 'other';
+        }
+
         const newWord = await Word.create({
           word: data.word,
           meaningVi: data.meaningVi,
           example: data.example || '',
-          type: data.type || 'noun',
+          type: normalizedType,
         }).fetch();
 
         await Review.create({
