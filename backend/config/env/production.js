@@ -33,7 +33,8 @@ module.exports = {
     default: {
       adapter: 'sails-postgresql',
       url: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }, // Necessary for most Cloud PostgreSQL like Supabase
+      ssl: { rejectUnauthorized: false },
+      schema: 'public',
       pool: {
         min: 2,
         max: 10,

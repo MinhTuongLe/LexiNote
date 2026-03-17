@@ -11,7 +11,7 @@
 module.exports.routes = {
 
   // Health Check
-  'GET /': { action: 'health-check', statusCode: 200 },
+  'GET /': 'MetaController.health',
 
 
   // Word API
