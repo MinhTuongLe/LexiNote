@@ -38,7 +38,7 @@ module.exports = {
   },
 
   models: {
-    migrate: 'alter', // Change to 'safe' after tables are created
+    migrate: 'safe',
   },
 
 
