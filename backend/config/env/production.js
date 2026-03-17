@@ -88,6 +88,12 @@ module.exports = {
     },
   },
 
+  sockets: {
+    onlyAllowOrigins: process.env.ALLOWED_ORIGINS 
+      ? process.env.ALLOWED_ORIGINS.split(',').map(origin => origin.replace(/\/$/, '')) 
+      : '*',
+  },
+
   http: {
     cache: 365.25 * 24 * 60 * 60 * 1000, // One year
     trustProxy: true, // Required for Render/PaaS to handle HTTPS correctly
