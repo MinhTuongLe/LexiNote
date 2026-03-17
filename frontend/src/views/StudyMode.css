@@ -1,0 +1,255 @@
+.study-container {
+  width: 100%;
+  max-width: 550px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 0 10px;
+}
+
+.study-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 12px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.progress-bar span {
+  position: absolute;
+  right: 10px;
+  top: -24px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.exit-study-btn {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--border);
+  transition: all 0.2s;
+}
+
+.exit-study-btn:hover {
+  background: var(--secondary);
+  transform: scale(1.1);
+}
+
+.flashcard-container {
+  perspective: 1000px;
+  height: 420px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.flashcard-container.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.flashcard-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.back-face {
+  transform: rotateY(180deg);
+}
+
+.card-hint {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ddd;
+}
+
+.flashcard-word {
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+  color: var(--text);
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+@media (max-width: 500px) {
+  .flashcard-word {
+    font-size: 2.5rem;
+  }
+}
+
+.tap-hint {
+  margin-top: 40px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+.back-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.back-vi {
+  font-size: 2.2rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.back-example {
+  background: var(--background);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-style: italic;
+  border-left: 4px solid var(--accent);
+  text-align: left;
+}
+
+.rating-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-top: 24px;
+}
+
+.rate-btn {
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  background: white;
+  transition: all 0.2s;
+  box-shadow: 2px 2px 0px var(--border);
+}
+
+.rate-btn:active {
+  box-shadow: 0px 0px 0px var(--border);
+  transform: translate(2px, 2px);
+}
+
+.rate-btn span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rate-btn.hard:hover { background: #ffeaa7; }
+.rate-btn.medium:hover { background: #fab1a0; }
+.rate-btn.easy:hover { background: #55efc4; }
+
+.study-controls {
+  display: flex;
+  justify-content: center;
+}
+
+.study-complete {
+  text-align: center;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.results-list {
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 10px;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--border);
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 2px 2px 0px var(--border);
+}
+
+.res-word {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.res-rating {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  color: #333;
+}

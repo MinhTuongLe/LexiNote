@@ -1,0 +1,192 @@
+.library-view {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.library-header {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.library-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--background);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  height: 48px;
+}
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-weight: 500;
+  outline: none;
+}
+
+.selection-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 2px dashed var(--background);
+}
+
+.bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.selection-count {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.word-card-wrapper {
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.word-card-wrapper.selected {
+  transform: translateY(-4px);
+}
+
+.select-overlay {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  cursor: pointer;
+  color: var(--border);
+  transition: all 0.2s;
+}
+
+.word-card-wrapper.selected .select-overlay {
+  color: var(--primary);
+}
+
+.check-icon {
+  background: white;
+  border-radius: 4px;
+}
+
+.word-card-full {
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.word-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.word-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.word-main h3 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.type-badge {
+  background: var(--secondary);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.word-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.icon-btn:hover {
+  transform: scale(1.1);
+}
+
+.icon-btn.delete:hover { border-color: #ff7675; color: #ff7675; }
+.icon-btn.reset:hover { border-color: var(--primary); color: var(--primary); }
+
+.vi-meaning {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.example-box {
+  margin-top: auto;
+  background: var(--background);
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 4px solid var(--border);
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}

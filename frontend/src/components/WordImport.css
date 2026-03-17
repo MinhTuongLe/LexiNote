@@ -1,0 +1,74 @@
+.csv-import {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.upload-zone {
+  border: 3px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 40px;
+  text-align: center;
+  background: var(--background);
+  transition: all 0.2s;
+}
+
+.upload-zone:hover {
+  background: var(--secondary);
+  border-color: var(--primary);
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.upload-label span {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.upload-label p {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff7675;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.preview-section {
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 16px;
+}
+
+.preview-list {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-item {
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  background: var(--background);
+  border-radius: 4px;
+}
+
+.more {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-style: italic;
+  margin-top: 4px;
+}

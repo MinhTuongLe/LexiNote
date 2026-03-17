@@ -1,0 +1,49 @@
+.btn {
+  border: 3px solid var(--border);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: box-shadow 0.2s ease;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.btn:active {
+  box-shadow: var(--shadow-active);
+}
+
+.btn-primary {
+  background-color: var(--primary);
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+}
+
+.btn-outline {
+  background-color: white;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-md {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+.btn-lg {
+  padding: 14px 28px;
+  font-size: 1.25rem;
+  border-radius: var(--radius-lg);
+}
