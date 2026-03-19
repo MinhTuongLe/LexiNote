@@ -63,7 +63,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     else if (
       result.error.status === 'FETCH_ERROR' || 
       result.error.status === 'TIMEOUT_ERROR' || 
-      result.error.status === 'PARSING_ERROR' ||
       (typeof result.error.status === 'number' && result.error.status >= 500)
     ) {
       // Force logout and throw global system error event
@@ -169,6 +168,7 @@ export const apiSlice = createApi({
       query: (id) => ({
         url: `/words/${id}`,
         method: 'DELETE',
+        responseHandler: 'text',
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),

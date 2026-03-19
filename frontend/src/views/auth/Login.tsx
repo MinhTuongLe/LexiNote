@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../store/authSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
+import { Check } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
 import './Auth.css';
 
@@ -15,14 +16,42 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
+
+  React.useEffect(() => {
+    // Attempt to load saved credentials
+    try {
+      const saved = localStorage.getItem('lexinote_creds');
+      if (saved) {
+        const decoded = atob(saved);
+        const { em, pw } = JSON.parse(decoded);
+        if (em && pw) {
+          setEmail(em);
+          setPassword(pw);
+          setRememberMe(true);
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await login({ email, password }).unwrap();
+      
+      // Save credentials if requested
+      if (rememberMe) {
+        const payload = btoa(JSON.stringify({ em: email, pw: password }));
+        localStorage.setItem('lexinote_creds', payload);
+      } else {
+        localStorage.removeItem('lexinote_creds');
+      }
+
       dispatch(setCredentials(result));
       showAlert('Welcome back! ✨', `Hello, ${result.user.fullName}!`, 'success');
     } catch (err: any) {
@@ -62,8 +91,17 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
             />
           </div>
 
-          <div className="forgot-password-link">
-            <span onClick={onForgot}>Forgot password?</span>
+          <div className="auth-options">
+            <div 
+              className="remember-me-label" 
+              onClick={() => setRememberMe(!rememberMe)}
+            >
+              <div className={`custom-checkbox ${rememberMe ? 'checked' : ''}`}>
+                {rememberMe && <Check size={16} strokeWidth={4} />}
+              </div>
+              <span>Remember me</span>
+            </div>
+            <span className="forgot-password-link" onClick={onForgot}>Forgot password?</span>
           </div>
           
           <Button 

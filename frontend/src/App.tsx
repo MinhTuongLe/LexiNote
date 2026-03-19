@@ -9,7 +9,8 @@ import Library from './views/Library';
 import StudyMode from './views/StudyMode';
 import ProfilePage from './views/profile/ProfilePage';
 import ForgotPassword from './views/auth/ForgotPassword';
-import { Plus, Play, Book, TrendingUp, Upload } from 'lucide-react';
+import MatchGame from './views/games/MatchGame';
+import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
 import { 
   useGetWordsQuery, 
   useGetDueReviewsQuery, 
@@ -66,6 +67,17 @@ function App() {
   const { data: dueReviews = [] } = useGetDueReviewsQuery(undefined, { skip: !isAuthenticated });
   const [createWord] = useCreateWordMutation();
   const [importWords, { isLoading: isImporting }] = useImportWordsMutation();
+
+  // Reset entirely UI state on Logout so the next person gets a clean slate 
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setActiveTab('study');
+      setIsStudyMode(false);
+      setIsModalOpen(false);
+      setIsImportModalOpen(false);
+      setAuthView('login');
+    }
+  }, [isAuthenticated]);
 
   // Show generic loading if checking session on hard reload
   if (isAuthenticated && !isInitialized && meLoading) {
@@ -134,6 +146,8 @@ function App() {
       <main className="main-content">
         {activeTab === 'profile' ? (
           <ProfilePage onBack={() => handleNavigate('study')} />
+        ) : activeTab === 'match-game' ? (
+          <MatchGame words={words} onBack={() => handleNavigate('study')} />
         ) : isStudyMode ? (
           <StudyMode 
             dueReviews={dueReviews} 
@@ -156,7 +170,7 @@ function App() {
               </div>
             </header>
 
-            <div className="stats-grid">
+            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
               <Card className="stat-card pink clickable" onClick={() => setIsStudyMode(true)}>
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
@@ -173,11 +187,11 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="stat-card green">
-                <div className="stat-icon"><TrendingUp size={32} /></div>
+              <Card className="stat-card blue clickable" onClick={() => handleNavigate('match-game')}>
+                <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
-                  <h3>Streak</h3>
-                  <p>15 Days 🔥</p>
+                  <h3>Minigame</h3>
+                  <p>Word Match ✨</p>
                 </div>
               </Card>
             </div>
