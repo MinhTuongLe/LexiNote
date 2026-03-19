@@ -97,7 +97,7 @@ module.exports = {
         return res.notFound({ message: 'User not found! 🏜️' });
       }
 
-      const isMatch = await User.comparePassword(password, user);
+      const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.badRequest({ message: 'Invalid credentials! ❌' });
       }
@@ -241,7 +241,7 @@ module.exports = {
       if (!user) return res.notFound();
 
       // Verify current password
-      const isMatch = await User.comparePassword(currentPassword, user);
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
         return res.badRequest({ message: 'Current password is incorrect! ❌' });
       }

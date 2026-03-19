@@ -39,83 +39,98 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
     }
   };
 
+  const NavLinks = () => (
+    <>
+      <a 
+        href="#" 
+        className={`nav-link ${activeTab === 'study' ? 'active' : ''}`}
+        onClick={(e) => { e.preventDefault(); onNavigate('study'); }}
+      >
+        <BookOpen size={24} className="nav-icon" />
+        <span>Study</span>
+      </a>
+      <a 
+        href="#" 
+        className={`nav-link ${activeTab === 'library' ? 'active' : ''}`}
+        onClick={(e) => { e.preventDefault(); onNavigate('library'); }}
+      >
+        <Plus size={24} className="nav-icon" />
+        <span>Library</span>
+      </a>
+      <a 
+        href="#" 
+        className={`nav-link ${activeTab === 'stats' ? 'active' : ''}`}
+        onClick={(e) => { e.preventDefault(); onNavigate('stats'); }}
+      >
+        <Trophy size={24} className="nav-icon" />
+        <span>Stats</span>
+      </a>
+    </>
+  );
+
   return (
-    <nav className="navbar">
-      <div className="navbar-content">
-        <div className="navbar-logo" onClick={() => onNavigate('study')} style={{ cursor: 'pointer' }}>
-          <img src="/logo.png" alt="LexiNote Logo" className="logo-img" />
-          <span>LexiNote</span>
-        </div>
-        
-        {isAuthenticated && (
-          <div className="navbar-links">
-            <a 
-              href="#" 
-              className={`nav-link ${activeTab === 'study' ? 'active' : ''}`}
-              onClick={(e) => { e.preventDefault(); onNavigate('study'); }}
-            >
-              <BookOpen size={20} />
-              Study
-            </a>
-            <a 
-              href="#" 
-              className={`nav-link ${activeTab === 'library' ? 'active' : ''}`}
-              onClick={(e) => { e.preventDefault(); onNavigate('library'); }}
-            >
-              <Plus size={20} />
-              Library
-            </a>
-            <a 
-              href="#" 
-              className={`nav-link ${activeTab === 'stats' ? 'active' : ''}`}
-              onClick={(e) => { e.preventDefault(); onNavigate('stats'); }}
-            >
-              <Trophy size={20} />
-              Stats
-            </a>
+    <>
+      <nav className="navbar">
+        <div className="navbar-content">
+          <div className="navbar-logo" onClick={() => onNavigate('study')} style={{ cursor: 'pointer' }}>
+            <img src="/logo.png" alt="LexiNote Logo" className="logo-img" />
+            <span>LexiNote</span>
           </div>
-        )}
-        
-        <div className="navbar-actions">
+          
           {isAuthenticated && (
-             <div className="user-profile" ref={dropdownRef}>
-              <div 
-                className="user-avatar-group clickable" 
-                onClick={() => setShowDropdown(!showDropdown)}
-              >
-                <span className="user-name">{user?.fullName}</span>
-                <div className="user-avatar">{user?.avatar || '🐰'}</div>
-              </div>
-              
-              {showDropdown && (
-                <div className="profile-dropdown">
-                  <div className="dropdown-header">
-                    <p className="dropdown-name">{user?.fullName}</p>
-                    <p className="dropdown-email">{user?.email}</p>
-                  </div>
-                  <div className="dropdown-divider"></div>
-                  <button 
-                    className="dropdown-item" 
-                    onClick={() => {
-                      onNavigate('profile');
-                      setShowDropdown(false);
-                    }}
-                  >
-                    <UserIcon size={16} /> My Profile
-                  </button>
-                  <button 
-                    className="dropdown-item danger" 
-                    onClick={handleLogout}
-                  >
-                    <LogOut size={16} /> Logout
-                  </button>
-                </div>
-              )}
+            <div className="navbar-links desktop-only">
+              <NavLinks />
             </div>
           )}
+          
+          <div className="navbar-actions">
+            {isAuthenticated && (
+               <div className="user-profile" ref={dropdownRef}>
+                <div 
+                  className="user-avatar-group clickable" 
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <span className="user-name">{user?.fullName}</span>
+                  <div className="user-avatar">{user?.avatar || '🐰'}</div>
+                </div>
+                
+                {showDropdown && (
+                  <div className="profile-dropdown">
+                    <div className="dropdown-header">
+                      <p className="dropdown-name">{user?.fullName}</p>
+                      <p className="dropdown-email">{user?.email}</p>
+                    </div>
+                    <div className="dropdown-divider"></div>
+                    <button 
+                      className="dropdown-item" 
+                      onClick={() => {
+                        onNavigate('profile');
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <UserIcon size={16} /> My Profile
+                    </button>
+                    <button 
+                      className="dropdown-item danger" 
+                      onClick={handleLogout}
+                    >
+                      <LogOut size={16} /> Logout
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Mobile Bottom Nav */}
+      {isAuthenticated && (
+        <div className="mobile-bottom-nav">
+          <NavLinks />
+        </div>
+      )}
+    </>
   );
 };
 

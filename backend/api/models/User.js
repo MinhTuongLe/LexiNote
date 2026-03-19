@@ -80,11 +80,5 @@ module.exports = {
     } catch (err) {
       return next(err);
     }
-  },
-
-  // Custom method to check password
-  comparePassword: async function (password, user) {
-    return await bcrypt.compare(password, user.password);
   }
-
 };

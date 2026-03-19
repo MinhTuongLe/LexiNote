@@ -8,7 +8,7 @@
 .main-content {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 40px 24px 100px; /* Extra bottom padding for mobile navbar */
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -16,10 +16,29 @@
   width: 100%;
 }
 
+@media (min-width: 768px) {
+  .main-content {
+    padding: 40px 24px;
+  }
+}
+
 .hero-section {
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.hero-section .section-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .hero-section .section-header {
+    flex-direction: row;
+    align-items: center;
+  }
 }
 
 .hero-text h1 {
