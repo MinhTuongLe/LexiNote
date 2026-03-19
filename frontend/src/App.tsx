@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Button from './components/Button';
 import Card from './components/Card';
@@ -7,29 +7,59 @@ import WordForm from './components/WordForm';
 import WordImport from './components/WordImport';
 import Library from './views/Library';
 import StudyMode from './views/StudyMode';
+import ProfilePage from './views/profile/ProfilePage';
+import ForgotPassword from './views/auth/ForgotPassword';
 import { Plus, Play, Book, TrendingUp, Upload } from 'lucide-react';
 import { 
   useGetWordsQuery, 
   useGetDueReviewsQuery, 
   useCreateWordMutation, 
-  useImportWordsMutation 
+  useImportWordsMutation,
+  useGetMeQuery
 } from './store/apiSlice';
 import { useCuteDialog } from './context/DialogContext';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateUser, setInitialized } from './store/authSlice';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import type { CreateWordDTO } from './types';
 import './App.css';
+
+type AuthViewType = 'login' | 'register' | 'forgot';
 
 function App() {
   const [activeTab, setActiveTab] = useState('study');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isStudyMode, setIsStudyMode] = useState(false);
-  const [authView, setAuthView] = useState<'login' | 'register'>('login');
+  const [authView, setAuthView] = useState<AuthViewType>('login');
   
-  const { isAuthenticated } = useSelector((state: any) => state.auth);
+  const { isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
+
+  // Try to load user profile if authenticated but not fully initialized
+  const { data: meData, error: meError, isLoading: meLoading } = useGetMeQuery(undefined, { 
+    skip: !isAuthenticated || isInitialized 
+  });
+
+  useEffect(() => {
+    if (meData) {
+      dispatch(updateUser(meData.user));
+      dispatch(setInitialized());
+    } else if (meError) {
+      dispatch(setInitialized());
+    }
+  }, [meData, meError, dispatch]);
+
+  // Global error handler for system-wide failures
+  useEffect(() => {
+    const handleSystemError = (e: any) => {
+      showAlert('Lỗi Hệ Thống! 😿', e.detail || 'Có lỗi xảy ra, bạn đã được đăng xuất để bảo mật.', 'error');
+    };
+    window.addEventListener('system-error', handleSystemError);
+    return () => window.removeEventListener('system-error', handleSystemError);
+  }, [showAlert]);
 
   // RTK Query hooks - Top level (required by React)
   const { data: words = [], isLoading: wordsLoading } = useGetWordsQuery(undefined, { skip: !isAuthenticated });
@@ -37,15 +67,31 @@ function App() {
   const [createWord] = useCreateWordMutation();
   const [importWords, { isLoading: isImporting }] = useImportWordsMutation();
 
+  // Show generic loading if checking session on hard reload
+  if (isAuthenticated && !isInitialized && meLoading) {
+    return (
+      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <h2>Loading LexiNote... ✨</h2>
+      </div>
+    );
+  }
+
   if (!isAuthenticated) {
     return (
       <div className="app-container">
         <Navbar activeTab="auth" onNavigate={() => {}} />
         <main className="main-content auth-layout">
-          {authView === 'login' ? (
-            <Login onSwitch={() => setAuthView('register')} />
-          ) : (
+          {authView === 'login' && (
+            <Login 
+              onSwitch={() => setAuthView('register')} 
+              onForgot={() => setAuthView('forgot')} 
+            />
+          )}
+          {authView === 'register' && (
             <Register onSwitch={() => setAuthView('login')} />
+          )}
+          {authView === 'forgot' && (
+            <ForgotPassword onBack={() => setAuthView('login')} />
           )}
         </main>
       </div>
@@ -86,7 +132,9 @@ function App() {
       <Navbar activeTab={activeTab} onNavigate={handleNavigate} />
       
       <main className="main-content">
-        {isStudyMode ? (
+        {activeTab === 'profile' ? (
+          <ProfilePage onBack={() => handleNavigate('study')} />
+        ) : isStudyMode ? (
           <StudyMode 
             dueReviews={dueReviews} 
             onComplete={() => setIsStudyMode(false)} 

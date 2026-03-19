@@ -1,7 +1,8 @@
-import React from 'react';
-import { BookOpen, Trophy, Plus, LogOut } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { BookOpen, Trophy, Plus, LogOut, User as UserIcon } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
+import { useLogoutServerMutation } from '../store/apiSlice';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -12,9 +13,30 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
   const { user, isAuthenticated } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
+  const [logoutServer] = useLogoutServerMutation();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = () => {
-    dispatch(logout());
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logoutServer().unwrap();
+    } catch (err) {
+      console.warn('Failed to logout on server, still logging out locally', err);
+    } finally {
+      dispatch(logout());
+      setShowDropdown(false);
+    }
   };
 
   return (
@@ -56,14 +78,39 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
         
         <div className="navbar-actions">
           {isAuthenticated && (
-            <div className="user-profile">
-              <span className="user-name">{user?.fullName}</span>
-              <div className="user-avatar-group">
+             <div className="user-profile" ref={dropdownRef}>
+              <div 
+                className="user-avatar-group clickable" 
+                onClick={() => setShowDropdown(!showDropdown)}
+              >
+                <span className="user-name">{user?.fullName}</span>
                 <div className="user-avatar">{user?.avatar || '🐰'}</div>
-                <button className="logout-btn" onClick={handleLogout} title="Logout">
-                  <LogOut size={16} />
-                </button>
               </div>
+              
+              {showDropdown && (
+                <div className="profile-dropdown">
+                  <div className="dropdown-header">
+                    <p className="dropdown-name">{user?.fullName}</p>
+                    <p className="dropdown-email">{user?.email}</p>
+                  </div>
+                  <div className="dropdown-divider"></div>
+                  <button 
+                    className="dropdown-item" 
+                    onClick={() => {
+                      onNavigate('profile');
+                      setShowDropdown(false);
+                    }}
+                  >
+                    <UserIcon size={16} /> My Profile
+                  </button>
+                  <button 
+                    className="dropdown-item danger" 
+                    onClick={handleLogout}
+                  >
+                    <LogOut size={16} /> Logout
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

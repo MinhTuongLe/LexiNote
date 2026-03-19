@@ -22,7 +22,13 @@ module.exports.policies = {
   'AuthController': {
     'register': true,
     'login': true,
-    'me': 'isLoggedIn'
+    'refresh': true,
+    'forgotPassword': true,
+    'resetPassword': true,
+    'me': 'isLoggedIn',
+    'updateProfile': 'isLoggedIn',
+    'changePassword': 'isLoggedIn',
+    'logoutServer': 'isLoggedIn',
   },
 
 };

@@ -31,5 +31,11 @@ module.exports.routes = {
   'POST /api/auth/register': 'AuthController.register',
   'POST /api/auth/login': 'AuthController.login',
   'GET /api/auth/me': 'AuthController.me',
+  'POST /api/auth/refresh': 'AuthController.refresh',
+  'PATCH /api/auth/profile': 'AuthController.updateProfile',
+  'POST /api/auth/change-password': 'AuthController.changePassword',
+  'POST /api/auth/forgot-password': 'AuthController.forgotPassword',
+  'POST /api/auth/reset-password': 'AuthController.resetPassword',
+  'POST /api/auth/logout': 'AuthController.logoutServer',
 
 };

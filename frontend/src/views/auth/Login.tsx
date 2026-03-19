@@ -9,9 +9,10 @@ import './Auth.css';
 
 interface LoginProps {
   onSwitch: () => void;
+  onForgot: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onSwitch }) => {
+const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [login, { isLoading }] = useLoginMutation();
@@ -59,6 +60,10 @@ const Login: React.FC<LoginProps> = ({ onSwitch }) => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+          </div>
+
+          <div className="forgot-password-link">
+            <span onClick={onForgot}>Forgot password?</span>
           </div>
           
           <Button 

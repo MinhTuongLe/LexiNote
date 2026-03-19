@@ -32,6 +32,25 @@ module.exports = {
       defaultsTo: '🐰'
     },
 
+    // Refresh token (hashed) for token rotation
+    refreshToken: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'refresh_token'
+    },
+
+    // Password reset fields
+    resetPasswordToken: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'reset_password_token'
+    },
+    resetPasswordExpires: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'reset_password_expires'
+    },
+
     // Associations
     words: {
       collection: 'word',
@@ -41,6 +60,18 @@ module.exports = {
 
   // Lifecycle callback: hash password before creating user
   beforeCreate: async function (values, next) {
+    if (!values.password) return next();
+    try {
+      const salt = await bcrypt.genSalt(10);
+      values.password = await bcrypt.hash(values.password, salt);
+      return next();
+    } catch (err) {
+      return next(err);
+    }
+  },
+
+  // Lifecycle callback: hash password before updating user (for password change)
+  beforeUpdate: async function (values, next) {
     if (!values.password) return next();
     try {
       const salt = await bcrypt.genSalt(10);
