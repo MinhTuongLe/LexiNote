@@ -8,17 +8,18 @@
 .main-content {
   max-width: 1000px;
   margin: 0 auto;
-  padding: 40px 24px 100px; /* Extra bottom padding for mobile navbar */
+  padding: 16px 16px 160px; /* Reduced top/side padding, kept bottom padding for avoid menu overlap */
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 40px;
+  gap: 24px; /* Reduced gap between sections */
   width: 100%;
 }
 
 @media (min-width: 768px) {
   .main-content {
-    padding: 40px 24px;
+    padding: 32px 24px;
+    gap: 40px;
   }
 }
 

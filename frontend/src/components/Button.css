@@ -1,16 +1,25 @@
 .btn {
   border: 3px solid var(--border);
   border-radius: var(--radius-md);
-  font-weight: 600;
+  font-weight: 700;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: box-shadow 0.2s ease;
+  transition: all 0.2s ease;
   box-shadow: var(--shadow);
   color: var(--text);
   margin-bottom: 4px;
   margin-right: 4px;
+  white-space: nowrap; /* Prevent wrapping */
+  flex-shrink: 1; /* Allow scaling down in flex containers */
+  min-width: fit-content;
+}
+
+@media (max-width: 600px) {
+  .btn {
+    font-size: 0.9em; /* Auto-scale text down for mobile */
+  }
 }
 
 .btn:active {

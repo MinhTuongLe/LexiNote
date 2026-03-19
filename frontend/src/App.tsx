@@ -10,6 +10,7 @@ import StudyMode from './views/StudyMode';
 import ProfilePage from './views/profile/ProfilePage';
 import ForgotPassword from './views/auth/ForgotPassword';
 import MatchGame from './views/games/MatchGame';
+import ScrollToTop from './components/ScrollToTop';
 import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
 import { 
   useGetWordsQuery, 
@@ -267,6 +268,8 @@ function App() {
           isLoading={isImporting}
         />
       </Modal>
+
+      <ScrollToTop />
     </div>
   );
 }

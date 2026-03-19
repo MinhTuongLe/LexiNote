@@ -6,10 +6,31 @@
   padding: 20px;
 }
 
+@media (max-width: 600px) {
+  .auth-container {
+    padding: 0;
+  }
+}
+
 .auth-card {
   width: 100%;
   max-width: 450px;
   padding: 40px !important;
+}
+
+@media (max-width: 600px) {
+  .auth-card {
+    padding: 20px 16px !important;
+  }
+  
+  .auth-icon-circle {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .auth-header h2 {
+    font-size: 1.5rem;
+  }
 }
 
 .auth-header {
