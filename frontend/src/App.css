@@ -48,22 +48,41 @@
   display: flex;
   align-items: center;
   gap: 20px;
+  color: white; /* All text in stat cards is now white for premium look */
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.stat-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 8px 8px 0px var(--border);
+}
+
+.stat-card:active {
+  transform: translateY(2px) scale(0.98);
 }
 
 .stat-icon {
   width: 56px;
   height: 56px;
-  border: 3px solid var(--border);
+  background: rgba(255, 255, 255, 0.2); /* Glassy background for icons */
+  border: 3px solid white;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 2px 2px 0px var(--border);
+  box-shadow: 2px 2px 0px white;
+  color: white;
+}
+
+.stat-info p {
+  color: rgba(255, 255, 255, 0.9); /* Slightly muted white for subtext */
+  font-weight: 500;
 }
 
 .pink { background-color: var(--primary); }
 .yellow { background-color: var(--secondary); }
 .green { background-color: var(--accent); }
+.purple { background-color: #B28DFF; } /* New Game color */
 
 .stat-info h3 {
   font-size: 1.5rem;

@@ -187,7 +187,7 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="stat-card blue clickable" onClick={() => handleNavigate('match-game')}>
+              <Card className="stat-card purple clickable" onClick={() => handleNavigate('match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
                   <h3>Minigame</h3>
