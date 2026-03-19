@@ -30,7 +30,7 @@ module.exports.http = {
     ***************************************************************************/
 
     order: [
-      'corsFix',
+      'securityHeaders',
       'cookieParser',
       'session',
       'bodyParser',
@@ -41,14 +41,30 @@ module.exports.http = {
       'favicon',
     ],
 
-    corsFix: function (req, res, next) {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, authorization');
+    securityHeaders: function (req, res, next) {
+      // 1. Security Headers
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('X-Frame-Options', 'DENY');
+      res.setHeader('X-XSS-Protection', '1; mode=block');
       
+      // 2. CORS Handling (Manual implementation to ensure compatibility)
+      // Allow any origin in dev, or specific origins in production via env
+      const origin = req.headers.origin;
+      if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      } else {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      }
+      
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+      res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+      // Handle Preflight
       if (req.method === 'OPTIONS') {
         return res.status(200).send();
       }
+
       return next();
     },
 

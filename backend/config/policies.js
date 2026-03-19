@@ -20,11 +20,11 @@ module.exports.policies = {
   '*': 'isLoggedIn',
 
   'AuthController': {
-    'register': true,
-    'login': true,
+    'register': ['rateLimit'],
+    'login': ['rateLimit'],
     'refresh': true,
-    'forgotPassword': true,
-    'resetPassword': true,
+    'forgotPassword': ['rateLimit'],
+    'resetPassword': ['rateLimit'],
     'me': 'isLoggedIn',
     'updateProfile': 'isLoggedIn',
     'changePassword': 'isLoggedIn',
