@@ -2,7 +2,7 @@
   min-height: 100vh;
   background-color: var(--background);
   position: relative;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 .main-content {

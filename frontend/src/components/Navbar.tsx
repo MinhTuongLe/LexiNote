@@ -15,7 +15,16 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
   const dispatch = useDispatch();
   const [logoutServer] = useLogoutServerMutation();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -70,7 +79,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
 
   return (
     <>
-      <nav className="navbar">
+      <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-content">
           <div className="navbar-logo" onClick={() => onNavigate('study')} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="LexiNote Logo" className="logo-img" />

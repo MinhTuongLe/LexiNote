@@ -6,7 +6,8 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft } from 'lucide-react';
+import CuteSelect from '../../components/CuteSelect';
+import { User, Mail, Lock, Pencil, Check, ArrowLeft, Moon, Volume2, Trash2, ShieldAlert } from 'lucide-react';
 import './ProfilePage.css';
 
 const AVATAR_OPTIONS = ['🐰', '🐱', '🐶', '🦊', '🐼', '🐨', '🐸', '🦄', '🐻', '🐧', '🦁', '🐯', '🐮', '🐷', '🐵', '🦋', '🌸', '🌟', '⭐', '🔥', '💎', '🎯', '🎨', '🎭'];
@@ -32,6 +33,23 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
+
+  // Settings state mockups
+  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [language, setLanguage] = useState('en');
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [flashcardFront, setFlashcardFront] = useState('en');
+  const [rememberLogin, setRememberLogin] = useState(true);
+
+  const langOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'vi', label: 'Tiếng Việt' }
+  ];
+
+  const flashcardOptions = [
+    { value: 'en', label: 'English Word' },
+    { value: 'vi', label: 'Vietnamese Meaning' }
+  ];
 
   useEffect(() => {
     if (user) {
@@ -149,6 +167,103 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
             </Button>
           </div>
         )}
+      </Card>
+
+      {/* General Settings Section */}
+      <Card className="settings-main-card">
+        <h3 className="settings-main-title">General Settings</h3>
+
+        <div className="settings-list">
+          {/* App Preferences */}
+          <div className="settings-group">
+            <div className="settings-header">
+              <Moon className="settings-icon" size={20} />
+              <h4>App Preferences</h4>
+            </div>
+            <div className="settings-content">
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Dark Theme</span>
+                  <p>Toggle dark mode for night time study.</p>
+                </div>
+                <label className="cute-switch">
+                  <input type="checkbox" checked={isDarkTheme} onChange={(e) => setIsDarkTheme(e.target.checked)} />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Language</span>
+                  <p>App interface language.</p>
+                </div>
+                <CuteSelect options={langOptions} value={language} onChange={setLanguage} className="settings-cute-select" />
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-divider"></div>
+
+          {/* Study Options */}
+          <div className="settings-group">
+            <div className="settings-header">
+              <Volume2 className="settings-icon" size={20} />
+              <h4>Study Options</h4>
+            </div>
+            <div className="settings-content">
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Minigame Sounds</span>
+                  <p>Play 'ting ting' effects in games.</p>
+                </div>
+                <label className="cute-switch">
+                  <input type="checkbox" checked={soundEnabled} onChange={(e) => setSoundEnabled(e.target.checked)} />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Flashcard Start</span>
+                  <p>Which side to show first.</p>
+                </div>
+                <CuteSelect options={flashcardOptions} value={flashcardFront} onChange={setFlashcardFront} className="settings-cute-select" />
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-divider"></div>
+
+          {/* Account Data */}
+          <div className="settings-group account-danger-group">
+            <div className="settings-header">
+              <ShieldAlert className="settings-icon" size={20} color="#ff7675" />
+              <h4 style={{ color: '#ff7675' }}>Account & Data</h4>
+            </div>
+            <div className="settings-content">
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Remember Login</span>
+                  <p>Keep me logged in on this device.</p>
+                </div>
+                <label className="cute-switch">
+                  <input type="checkbox" checked={rememberLogin} onChange={(e) => setRememberLogin(e.target.checked)} />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-item delete-data-item">
+                <div className="setting-label">
+                  <span style={{ color: '#d63031', fontWeight: 'bold' }}>Delete All Data</span>
+                  <p>Permanently remove your account and all words.</p>
+                </div>
+                <Button variant="outline" onClick={() => showAlert('Notice', 'Feature coming soon!', 'alert')} style={{ borderColor: '#ff7675', color: '#ff7675' }}>
+                  <Trash2 size={16} /> Delete
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </Card>
 
       {/* Change Password Modal */}
