@@ -5,10 +5,25 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-bunny-key';
+
+// Helper: generate mail transporter
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT || 587,
+    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+}
 
 // Token durations
 const ACCESS_TOKEN_EXPIRY = '15m';
@@ -23,6 +38,36 @@ function generateRefreshToken(userId) {
   return jwt.sign({ id: userId, type: 'refresh' }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
 }
 
+// Helper: send verification email
+async function sendVerificationEmail(user, token) {
+  const mailOptions = {
+    from: `"LexiNote App 🐰" <${process.env.SMTP_USER || 'noreply@lexinote.app'}>`,
+    to: user.email,
+    subject: '✨ Verify your LexiNote Account!',
+    html: `
+      <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
+        <h2 style="color: #ff7675; text-align: center;">Welcome to LexiNote! 🐰</h2>
+        <p style="font-size: 16px; color: #444;">Click the link below or use the code to verify your email address:</p>
+        <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+          <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${token}</span>
+        </div>
+        <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
+        <hr style="border: 1px dashed #eee; margin: 20px 0;" />
+        <p style="font-size: 12px; color: #999; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
+      </div>
+    `,
+  };
+
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    const transporter = createTransporter();
+    await transporter.sendMail(mailOptions);
+    sails.log.info(`📧 Verification email sent successfully to ${user.email}`);
+  } else {
+    sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
+    sails.log.info(`====== VERIFICATION EMAIL TO: ${user.email} ======\nSubject: ${mailOptions.subject}\nCode: ${token}\n================================`);
+  }
+}
+
 // Helper: sanitize user object for response
 function sanitizeUser(user) {
   return {
@@ -30,6 +75,7 @@ function sanitizeUser(user) {
     email: user.email,
     fullName: user.fullName,
     avatar: user.avatar,
+    isEmailVerified: user.isEmailVerified,
   };
 }
 
@@ -57,23 +103,26 @@ module.exports = {
         return res.badRequest({ message: 'Email already registered! 😿' });
       }
 
+      // Generate verification token
+      const verificationToken = crypto.randomInt(100000, 999999).toString();
+      const verificationExpires = Date.now() + 5 * 60 * 1000; // 5 mins
+
       const newUser = await User.create({
         email: email.toLowerCase().trim(),
         password,
-        fullName: fullName.trim()
+        fullName: fullName.trim(),
+        emailVerificationToken: await bcrypt.hash(verificationToken, 10),
+        emailVerificationExpires: verificationExpires,
+        isEmailVerified: false
       }).fetch();
 
-      const accessToken = generateAccessToken(newUser.id);
-      const refreshToken = generateRefreshToken(newUser.id);
-
-      // Store hashed refresh token
-      const hashedRefresh = await bcrypt.hash(refreshToken, 10);
-      await User.updateOne({ id: newUser.id }).set({ refreshToken: hashedRefresh });
+      // Send verification email
+      await sendVerificationEmail(newUser, verificationToken);
 
       return res.status(201).json({
-        user: sanitizeUser(newUser),
-        token: accessToken,
-        refreshToken
+        message: 'Account created! Please check your email for verification code. 📬',
+        email: newUser.email,
+        _devVerificationToken: process.env.NODE_ENV !== 'production' ? verificationToken : undefined
       });
     } catch (err) {
       return res.serverError(err);
@@ -100,6 +149,15 @@ module.exports = {
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         return res.badRequest({ message: 'Invalid credentials! ❌' });
+      }
+
+      // Check if email is verified
+      if (!user.isEmailVerified) {
+        return res.status(403).json({ 
+          message: 'Please verify your email to login! 📧',
+          code: 'EMAIL_NOT_VERIFIED',
+          email: user.email
+        });
       }
 
       const accessToken = generateAccessToken(user.id);
@@ -277,7 +335,7 @@ module.exports = {
 
       // Generate reset token (6-digit code for simplicity)
       const resetToken = crypto.randomInt(100000, 999999).toString();
-      const resetExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+      const resetExpires = Date.now() + 5 * 60 * 1000; // 5 minutes
 
       // Hash the reset token before storing
       const hashedToken = await bcrypt.hash(resetToken, 10);
@@ -287,14 +345,40 @@ module.exports = {
         resetPasswordExpires: resetExpires
       });
 
-      // In production, this would send an email
-      // For now, we'll return the token directly (development only)
-      sails.log.info(`🔑 Password reset code for ${email}: ${resetToken}`);
+      // Send the email with the reset code
+      try {
+        const mailOptions = {
+          from: `"LexiNote App 🐰" <${process.env.SMTP_USER || 'noreply@lexinote.app'}>`,
+          to: user.email,
+          subject: '🔒 LexiNote - Password Reset Code',
+          html: `
+            <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
+              <h2 style="color: #ff7675; text-align: center;">Hello from LexiNote! 🐰</h2>
+              <p style="font-size: 16px; color: #444;">We received a request to reset your password. Use the following 6-digit code to complete the process:</p>
+              <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+                <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${resetToken}</span>
+              </div>
+              <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
+              <hr style="border: 1px dashed #eee; margin: 20px 0;" />
+              <p style="font-size: 12px; color: #999; text-align: center;">If you didn't request a password reset, you can safely ignore this email.</p>
+            </div>
+          `,
+        };
+
+        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+          const transporter = createTransporter();
+          await transporter.sendMail(mailOptions);
+          sails.log.info(`📧 Password reset email sent successfully to ${email}`);
+        } else {
+          sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
+          sails.log.info(`====== EMAIL TO: ${email} ======\nSubject: ${mailOptions.subject}\nCode: ${resetToken}\n================================`);
+        }
+      } catch (mailErr) {
+        sails.log.error('❌ Failed to send reset email:', mailErr);
+      }
 
       return res.json({
-        message: 'If an account with that email exists, a reset code has been generated! 📬',
-        // DEV ONLY: return token for testing (remove in production)
-        _devResetToken: process.env.NODE_ENV !== 'production' ? resetToken : undefined
+        message: 'If an account with that email exists, a reset code has been sent! 📬'
       });
     } catch (err) {
       return res.serverError(err);
@@ -345,6 +429,103 @@ module.exports = {
       });
 
       return res.json({ message: 'Password reset successfully! You can now login. 🎉' });
+    } catch (err) {
+      return res.serverError(err);
+    }
+  },
+
+  /**
+   * POST /api/auth/verify-email
+   * Verify account using the token
+   */
+  verifyEmail: async function (req, res) {
+    try {
+      const { email, token } = req.body;
+
+      if (!email || !token) {
+        return res.badRequest({ message: 'Email and verification code are required! 🔑' });
+      }
+
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      if (!user) {
+        return res.notFound({ message: 'User not found! 🏜️' });
+      }
+
+      if (user.isEmailVerified) {
+        return res.badRequest({ message: 'Email is already verified! ✨' });
+      }
+
+      // Check expiry
+      if (user.emailVerificationExpires < Date.now()) {
+        return res.badRequest({ message: 'Verification code has expired! Please request a new one. ⏰' });
+      }
+
+      // Verify token
+      const isValid = await bcrypt.compare(token, user.emailVerificationToken);
+      if (!isValid) {
+        return res.badRequest({ message: 'Invalid verification code! ❌' });
+      }
+
+      // Update user
+      await User.updateOne({ id: user.id }).set({
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null
+      });
+
+      // Generate tokens so they can log in immediately after verification
+      const accessToken = generateAccessToken(user.id);
+      const refreshToken = generateRefreshToken(user.id);
+      const hashedRefresh = await bcrypt.hash(refreshToken, 10);
+      await User.updateOne({ id: user.id }).set({ refreshToken: hashedRefresh });
+
+      return res.json({
+        message: 'Account verified successfully! 🎉',
+        user: sanitizeUser({ ...user, isEmailVerified: true }),
+        token: accessToken,
+        refreshToken
+      });
+    } catch (err) {
+      return res.serverError(err);
+    }
+  },
+
+  /**
+   * POST /api/auth/resend-verification
+   * Resend verification email
+   */
+  resendVerification: async function (req, res) {
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.badRequest({ message: 'Email is required! 📧' });
+      }
+
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      if (!user) {
+        return res.notFound({ message: 'User not found! 🏜️' });
+      }
+
+      if (user.isEmailVerified) {
+        return res.badRequest({ message: 'Email is already verified! ✨' });
+      }
+
+      // Generate new token
+      const verificationToken = crypto.randomInt(100000, 999999).toString();
+      const verificationExpires = Date.now() + 5 * 60 * 1000; // 5 mins
+
+      await User.updateOne({ id: user.id }).set({
+        emailVerificationToken: await bcrypt.hash(verificationToken, 10),
+        emailVerificationExpires: verificationExpires
+      });
+
+      await sendVerificationEmail(user, verificationToken);
+
+      return res.json({
+        message: 'Verification code resent! Please check your email. 📬',
+        _devVerificationToken: process.env.NODE_ENV !== 'production' ? verificationToken : undefined
+      });
     } catch (err) {
       return res.serverError(err);
     }

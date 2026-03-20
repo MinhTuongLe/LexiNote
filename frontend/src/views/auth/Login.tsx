@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLoginMutation } from '../../store/apiSlice';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../store/authSlice';
@@ -14,6 +15,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
@@ -55,6 +57,11 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
       dispatch(setCredentials(result));
       showAlert('Welcome back! ✨', `Hello, ${result.user.fullName}!`, 'success');
     } catch (err: any) {
+      if (err.data?.code === 'EMAIL_NOT_VERIFIED') {
+        showAlert('Chưa xác thực! 📧', 'Tài khoản của bạn chưa được xác thực email.', 'alert');
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        return;
+      }
       showAlert('Login Failed! 😿', err.data?.message || 'Check your credentials.', 'error');
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
@@ -18,21 +18,28 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [countdown, setCountdown] = useState(0);
 
   const [forgotPassword, { isLoading: isSending }] = useForgotPasswordMutation();
   const [resetPassword, { isLoading: isResetting }] = useResetPasswordMutation();
   const { showAlert } = useCuteDialog();
 
-  const handleSendCode = async (e: React.FormEvent) => {
-    e.preventDefault();
+  useEffect(() => {
+    if (countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [countdown]);
+
+  const handleSendCode = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (countdown > 0) return;
+    
     try {
       const result = await forgotPassword({ email }).unwrap();
       showAlert('Code Sent! 📬', result.message, 'success');
-      // In dev mode, auto-fill the code if returned
-      if (result._devResetToken) {
-        setResetCode(result._devResetToken);
-      }
       setStep('code');
+      setCountdown(60);
     } catch (err: any) {
       showAlert('Error! 😿', err.data?.message || 'Something went wrong.', 'error');
     }
@@ -149,8 +156,18 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </Button>
             </form>
 
-            <div className="auth-footer">
-              <span onClick={() => setStep('email')}><ArrowLeft size={14} /> Try a different email</span>
+            <div className="auth-footer" style={{ flexDirection: 'column', gap: '12px' }}>
+              <Button 
+                variant="outline" 
+                onClick={() => handleSendCode()} 
+                disabled={countdown > 0 || isSending}
+                style={{ width: '100%', pointerEvents: countdown > 0 ? 'none' : 'auto' }}
+              >
+                {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend Code'}
+              </Button>
+              <span onClick={() => { setStep('email'); setCountdown(0); }} style={{ cursor: 'pointer', marginTop: 24 }}>
+                <ArrowLeft size={14} /> Try a different email
+              </span>
             </div>
           </>
         )}

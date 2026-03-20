@@ -51,6 +51,23 @@ module.exports = {
       columnName: 'reset_password_expires'
     },
 
+    // Email verification fields
+    isEmailVerified: {
+      type: 'boolean',
+      defaultsTo: false,
+      columnName: 'is_email_verified'
+    },
+    emailVerificationToken: {
+      type: 'string',
+      allowNull: true,
+      columnName: 'email_verification_token'
+    },
+    emailVerificationExpires: {
+      type: 'number',
+      allowNull: true,
+      columnName: 'email_verification_expires'
+    },
+
     // Associations
     words: {
       collection: 'word',

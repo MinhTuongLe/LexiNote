@@ -89,7 +89,7 @@ export const apiSlice = createApi({
         body: credentials,
       }),
     }),
-    register: builder.mutation<{ user: User; token: string; refreshToken: string }, { email: string; password: string; fullName: string }>({
+    register: builder.mutation<{ message: string; email: string; _devVerificationToken?: string }, { email: string; password: string; fullName: string }>({
       query: (userData) => ({
         url: '/auth/register',
         method: 'POST',
@@ -132,6 +132,20 @@ export const apiSlice = createApi({
     resetPassword: builder.mutation<{ message: string }, { email: string; resetToken: string; newPassword: string }>({
       query: (data) => ({
         url: '/auth/reset-password',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    verifyEmail: builder.mutation<{ user: User; token: string; refreshToken: string; message: string }, { email: string; token: string }>({
+      query: (data) => ({
+        url: '/auth/verify-email',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    resendVerification: builder.mutation<{ message: string; _devVerificationToken?: string }, { email: string }>({
+      query: (data) => ({
+        url: '/auth/resend-verification',
         method: 'POST',
         body: data,
       }),
@@ -231,6 +245,8 @@ export const {
   useChangePasswordMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useVerifyEmailMutation,
+  useResendVerificationMutation,
   useLogoutServerMutation,
   useGetDashboardStatsQuery,
   useGetWordsQuery,

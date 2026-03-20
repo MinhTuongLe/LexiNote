@@ -40,6 +40,8 @@ module.exports.routes = {
   'POST /api/auth/change-password': 'AuthController.changePassword',
   'POST /api/auth/forgot-password': 'AuthController.forgotPassword',
   'POST /api/auth/reset-password': 'AuthController.resetPassword',
+  'POST /api/auth/verify-email': 'AuthController.verifyEmail',
+  'POST /api/auth/resend-verification': 'AuthController.resendVerification',
   'POST /api/auth/logout': 'AuthController.logoutServer',
 
 };

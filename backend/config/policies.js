@@ -22,9 +22,11 @@ module.exports.policies = {
   'AuthController': {
     'register': ['rateLimit'],
     'login': ['rateLimit'],
-    'refresh': true,
+    'refresh': true, // Refresh token is its own auth
     'forgotPassword': ['rateLimit'],
     'resetPassword': ['rateLimit'],
+    'verifyEmail': ['rateLimit'], // Allow public access to verify
+    'resendVerification': ['rateLimit'], // Allow public access to resend
     'me': 'isLoggedIn',
     'updateProfile': 'isLoggedIn',
     'changePassword': 'isLoggedIn',

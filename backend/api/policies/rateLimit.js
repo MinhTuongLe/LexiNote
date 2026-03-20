@@ -23,7 +23,12 @@ setInterval(() => {
 module.exports = async function (req, res, proceed) {
   try {
     // Configurable windows
-    const isReset = req.path && (req.path.includes('reset-password') || req.path.includes('forgot-password'));
+    const isReset = req.path && (
+      req.path.includes('reset-password') || 
+      req.path.includes('forgot-password') ||
+      req.path.includes('verify-email') ||
+      req.path.includes('resend-verification')
+    );
     // 15 minutes window
     const windowMs = 15 * 60 * 1000;
     // Stricter limits for password reset (5 attempts) vs general login (15 attempts)

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Button from './components/Button';
 import Card from './components/Card';
@@ -24,18 +25,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import { updateUser, setInitialized } from './store/authSlice';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
+import VerifyEmail from './views/auth/VerifyEmail';
 import type { CreateWordDTO } from './types';
 import './components/Skeleton.css';
 import './App.css';
 
-type AuthViewType = 'login' | 'register' | 'forgot';
-
 function App() {
-  const [activeTab, setActiveTab] = useState('study');
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [isStudyMode, setIsStudyMode] = useState(false);
-  const [authView, setAuthView] = useState<AuthViewType>('login');
   
   const { isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
@@ -71,14 +70,12 @@ function App() {
 
   // Reset entirely UI state on Logout so the next person gets a clean slate 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setActiveTab('study');
-      setIsStudyMode(false);
-      setIsModalOpen(false);
-      setIsImportModalOpen(false);
-      setAuthView('login');
+    if (!isAuthenticated && isInitialized) {
+      if (location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/forgot') {
+        navigate('/login');
+      }
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, isInitialized, navigate, location.pathname]);
 
   // Show generic loading if checking session on hard reload
   if (isAuthenticated && !isInitialized && meLoading) {
@@ -99,29 +96,19 @@ function App() {
   if (!isAuthenticated) {
     return (
       <div className="app-container">
-        <Navbar activeTab="auth" onNavigate={() => {}} />
+        <Navbar />
         <main className="main-content auth-layout">
-          {authView === 'login' && (
-            <Login 
-              onSwitch={() => setAuthView('register')} 
-              onForgot={() => setAuthView('forgot')} 
-            />
-          )}
-          {authView === 'register' && (
-            <Register onSwitch={() => setAuthView('login')} />
-          )}
-          {authView === 'forgot' && (
-            <ForgotPassword onBack={() => setAuthView('login')} />
-          )}
+          <Routes>
+            <Route path="/login" element={<Login onSwitch={() => navigate('/register')} onForgot={() => navigate('/forgot')} />} />
+            <Route path="/register" element={<Register onSwitch={() => navigate('/login')} />} />
+            <Route path="/forgot" element={<ForgotPassword onBack={() => navigate('/login')} />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
         </main>
       </div>
     );
   }
-
-  const handleNavigate = (tab: string) => {
-    setActiveTab(tab);
-    setIsStudyMode(false);
-  };
 
   const handleAddWord = async (data: CreateWordDTO) => {
     try {
@@ -149,19 +136,17 @@ function App() {
       <div className="decoration floating-2">🥕</div>
       <div className="decoration floating-3">✨</div>
 
-      <Navbar activeTab={activeTab} onNavigate={handleNavigate} />
+      <Navbar />
       
       <main className="main-content">
-        {activeTab === 'profile' ? (
-          <ProfilePage onBack={() => handleNavigate('study')} />
-        ) : activeTab === 'match-game' ? (
-          <MatchGame onBack={() => handleNavigate('study')} />
-        ) : isStudyMode ? (
-          <StudyMode 
-            onComplete={() => setIsStudyMode(false)} 
-          />
-        ) : activeTab === 'study' ? (
-          <div className="hero-section">
+        <Routes>
+          <Route path="/profile" element={<ProfilePage onBack={() => navigate('/dashboard')} />} />
+          <Route path="/match-game" element={<MatchGame onBack={() => navigate('/dashboard')} />} />
+          
+          <Route path="/study" element={<StudyMode onComplete={() => navigate('/dashboard')} />} />
+          
+          <Route path="/dashboard" element={
+            <div className="hero-section">
             <header className="section-header animate-pop">
               <div className="hero-text">
                 <h1>Welcome to <span className="highlight">LexiNote! 🐰</span></h1>
@@ -178,7 +163,7 @@ function App() {
             </header>
 
             <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-              <Card className="stat-card pink clickable" onClick={() => setIsStudyMode(true)}>
+              <Card className="stat-card pink clickable" onClick={() => navigate('/study')}>
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
                   <h3>Start Study</h3>
@@ -186,7 +171,7 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="stat-card yellow clickable" onClick={() => handleNavigate('library')}>
+              <Card className="stat-card yellow clickable" onClick={() => navigate('/library')}>
                 <div className="stat-icon"><Book size={32} /></div>
                 <div className="stat-info">
                   <h3>Library</h3>
@@ -194,7 +179,7 @@ function App() {
                 </div>
               </Card>
 
-              <Card className="stat-card purple clickable" onClick={() => handleNavigate('match-game')}>
+              <Card className="stat-card purple clickable" onClick={() => navigate('/match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
                   <h3>Minigame</h3>
@@ -206,7 +191,7 @@ function App() {
             <section className="recent-section">
               <div className="section-header">
                 <h2>Recently Added</h2>
-                <Button variant="outline" onClick={() => handleNavigate('library')}>View All</Button>
+                <Button variant="outline" onClick={() => navigate('/library')}>View All</Button>
               </div>
               <div className="word-list">
                 {statsLoading ? (
@@ -239,19 +224,24 @@ function App() {
               </div>
             </section>
           </div>
-        ) : activeTab === 'library' ? (
-          <Library />
-        ) : (
-          <div className="coming-soon">
-            <Card>
-              <div style={{ textAlign: 'center', padding: '40px' }}>
-                <TrendingUp size={48} style={{ color: 'var(--primary)', marginBottom: '16px' }} />
-                <h2>Coming Soon! 📈</h2>
-                <p>We're working on statistics and progress tracking.</p>
-              </div>
-            </Card>
-          </div>
-        )}
+          } />
+
+          <Route path="/library" element={<Library />} />
+          
+          <Route path="/stats" element={
+            <div className="coming-soon">
+              <Card>
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                  <TrendingUp size={48} style={{ color: 'var(--primary)', marginBottom: '16px' }} />
+                  <h2>Coming Soon! 📈</h2>
+                  <p>We're working on statistics and progress tracking.</p>
+                </div>
+              </Card>
+            </div>
+          } />
+          
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
       </main>
 
       <Modal 

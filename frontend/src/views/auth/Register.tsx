@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../store/apiSlice';
-import { useDispatch } from 'react-redux';
-import { setCredentials } from '../../store/authSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { useCuteDialog } from '../../context/DialogContext';
@@ -12,19 +11,19 @@ interface RegisterProps {
 }
 
 const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [register, { isLoading }] = useRegisterMutation();
-  const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await register({ email, password, fullName }).unwrap();
-      dispatch(setCredentials(result));
-      showAlert('Account Created! 🎉', `Welcome to LexiNote, ${fullName}!`, 'success');
+      showAlert('Account Created! 🎉', result.message || `Welcome to LexiNote, ${fullName}!`, 'success');
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
       showAlert('Registration Failed! 😿', err.data?.message || 'Try a different email.', 'error');
     }

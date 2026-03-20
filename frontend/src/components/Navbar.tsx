@@ -1,16 +1,15 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { BookOpen, Trophy, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { useLogoutServerMutation } from '../store/apiSlice';
 import './Navbar.css';
 
-interface NavbarProps {
-  activeTab: string;
-  onNavigate: (tab: string) => void;
-}
+interface NavbarProps {}
 
-const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
+const Navbar: React.FC<NavbarProps> = () => {
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const [logoutServer] = useLogoutServerMutation();
@@ -50,30 +49,18 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
 
   const NavLinks = () => (
     <>
-      <a 
-        href="#" 
-        className={`nav-link ${activeTab === 'study' ? 'active' : ''}`}
-        onClick={(e) => { e.preventDefault(); onNavigate('study'); }}
-      >
+      <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <BookOpen size={24} className="nav-icon" />
         <span>Study</span>
-      </a>
-      <a 
-        href="#" 
-        className={`nav-link ${activeTab === 'library' ? 'active' : ''}`}
-        onClick={(e) => { e.preventDefault(); onNavigate('library'); }}
-      >
+      </NavLink>
+      <NavLink to="/library" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Plus size={24} className="nav-icon" />
         <span>Library</span>
-      </a>
-      <a 
-        href="#" 
-        className={`nav-link ${activeTab === 'stats' ? 'active' : ''}`}
-        onClick={(e) => { e.preventDefault(); onNavigate('stats'); }}
-      >
+      </NavLink>
+      <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Trophy size={24} className="nav-icon" />
         <span>Stats</span>
-      </a>
+      </NavLink>
     </>
   );
 
@@ -81,7 +68,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
     <>
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-content">
-          <div className="navbar-logo" onClick={() => onNavigate('study')} style={{ cursor: 'pointer' }}>
+          <div className="navbar-logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
             <img src="/logo.png" alt="LexiNote Logo" className="logo-img" />
             <span>LexiNote</span>
           </div>
@@ -113,7 +100,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTab, onNavigate }) => {
                     <button 
                       className="dropdown-item" 
                       onClick={() => {
-                        onNavigate('profile');
+                        navigate('/profile');
                         setShowDropdown(false);
                       }}
                     >
