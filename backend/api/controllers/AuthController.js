@@ -59,9 +59,15 @@ async function sendVerificationEmail(user, token) {
   };
 
   if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // We don't want to block the whole request if SMTP hangs or fails
     const transporter = createTransporter();
-    await transporter.sendMail(mailOptions);
-    sails.log.info(`📧 Verification email sent successfully to ${user.email}`);
+    transporter.sendMail(mailOptions)
+      .then(() => {
+        sails.log.info(`📧 Verification email sent successfully to ${user.email}`);
+      })
+      .catch(err => {
+        sails.log.error(`❌ Failed to send verification email to ${user.email}:`, err);
+      });
   } else {
     sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
     sails.log.info(`====== VERIFICATION EMAIL TO: ${user.email} ======\nSubject: ${mailOptions.subject}\nCode: ${token}\n================================`);
@@ -116,8 +122,8 @@ module.exports = {
         isEmailVerified: false
       }).fetch();
 
-      // Send verification email
-      await sendVerificationEmail(newUser, verificationToken);
+      // Send verification email (fire and forget to avoid hanging)
+      sendVerificationEmail(newUser, verificationToken);
 
       return res.status(201).json({
         message: 'Account created! Please check your email for verification code. 📬',
@@ -367,14 +373,16 @@ module.exports = {
 
         if (process.env.SMTP_USER && process.env.SMTP_PASS) {
           const transporter = createTransporter();
-          await transporter.sendMail(mailOptions);
-          sails.log.info(`📧 Password reset email sent successfully to ${email}`);
+          transporter.sendMail(mailOptions).catch(err => {
+            sails.log.error('❌ Failed to send reset email:', err);
+          });
+          sails.log.info(`📧 Password reset email attempt triggered for ${email}`);
         } else {
           sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
           sails.log.info(`====== EMAIL TO: ${email} ======\nSubject: ${mailOptions.subject}\nCode: ${resetToken}\n================================`);
         }
       } catch (mailErr) {
-        sails.log.error('❌ Failed to send reset email:', mailErr);
+        sails.log.error('❌ Email setup error:', mailErr);
       }
 
       return res.json({
@@ -520,7 +528,8 @@ module.exports = {
         emailVerificationExpires: verificationExpires
       });
 
-      await sendVerificationEmail(user, verificationToken);
+      // Send verification email (fire and forget)
+      sendVerificationEmail(user, verificationToken);
 
       return res.json({
         message: 'Verification code resent! Please check your email. 📬',
