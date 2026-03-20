@@ -13,6 +13,9 @@ module.exports.routes = {
   // Health Check
   'GET /': 'MetaController.health',
 
+  // Dashboard Stats
+  'GET /api/dashboard': 'WordController.getDashboardStats',
+
 
   // Word API
   'POST /api/words': 'WordController.create',
@@ -20,6 +23,7 @@ module.exports.routes = {
   'GET /api/words/:id': 'WordController.findOne',
   'PATCH /api/words/:id': 'WordController.update',
   'DELETE /api/words/:id': 'WordController.destroy',
+  'POST /api/words/delete-bulk': 'WordController.destroyBulk',
   'POST /api/words/import': 'WordController.importBulk',
 
   // Review (SRS) API

@@ -2,17 +2,17 @@ import React, { useState } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { RotateCw, Check, AlertTriangle, Zap, X } from 'lucide-react';
-import { useUpdateSRSMutation } from '../store/apiSlice';
+import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
-import type { Review } from '../types';
 import './StudyMode.css';
 
 interface StudyModeProps {
-  dueReviews: Review[];
   onComplete: () => void;
 }
 
-const StudyMode: React.FC<StudyModeProps> = ({ dueReviews, onComplete }) => {
+const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
+  const { data: dueReviews = [], isLoading } = useGetDueReviewsQuery();
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [results, setResults] = useState<{ word: string, rating: string, color: string }[]>([]);
@@ -40,6 +40,14 @@ const StudyMode: React.FC<StudyModeProps> = ({ dueReviews, onComplete }) => {
         </div>
 
         <Button size="lg" onClick={onComplete}>Back to Dashboard</Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="study-complete cute-card">
+        <h2>Loading words... 🐰✨</h2>
       </div>
     );
   }

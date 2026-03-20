@@ -11,10 +11,10 @@ import ProfilePage from './views/profile/ProfilePage';
 import ForgotPassword from './views/auth/ForgotPassword';
 import MatchGame from './views/games/MatchGame';
 import ScrollToTop from './components/ScrollToTop';
+import SkeletonWordCard from './components/SkeletonWordCard';
 import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
 import { 
-  useGetWordsQuery, 
-  useGetDueReviewsQuery, 
+  useGetDashboardStatsQuery,
   useCreateWordMutation, 
   useImportWordsMutation,
   useGetMeQuery
@@ -25,6 +25,7 @@ import { updateUser, setInitialized } from './store/authSlice';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import type { CreateWordDTO } from './types';
+import './components/Skeleton.css';
 import './App.css';
 
 type AuthViewType = 'login' | 'register' | 'forgot';
@@ -64,8 +65,7 @@ function App() {
   }, [showAlert]);
 
   // RTK Query hooks - Top level (required by React)
-  const { data: words = [], isLoading: wordsLoading } = useGetWordsQuery(undefined, { skip: !isAuthenticated });
-  const { data: dueReviews = [] } = useGetDueReviewsQuery(undefined, { skip: !isAuthenticated });
+  const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
   const [createWord] = useCreateWordMutation();
   const [importWords, { isLoading: isImporting }] = useImportWordsMutation();
 
@@ -83,8 +83,15 @@ function App() {
   // Show generic loading if checking session on hard reload
   if (isAuthenticated && !isInitialized && meLoading) {
     return (
-      <div className="app-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <h2>Loading LexiNote... ✨</h2>
+      <div className="app-container loading-container">
+        <div className="cute-loader">
+          <span>🐰</span>
+          <span>🥕</span>
+          <span>✨</span>
+        </div>
+        <h2 className="loading-text">
+          Loading LexiNote<span className="loading-dots"></span>
+        </h2>
       </div>
     );
   }
@@ -148,10 +155,9 @@ function App() {
         {activeTab === 'profile' ? (
           <ProfilePage onBack={() => handleNavigate('study')} />
         ) : activeTab === 'match-game' ? (
-          <MatchGame words={words} onBack={() => handleNavigate('study')} />
+          <MatchGame onBack={() => handleNavigate('study')} />
         ) : isStudyMode ? (
           <StudyMode 
-            dueReviews={dueReviews} 
             onComplete={() => setIsStudyMode(false)} 
           />
         ) : activeTab === 'study' ? (
@@ -176,7 +182,7 @@ function App() {
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
                   <h3>Start Study</h3>
-                  <p>{dueReviews.length} words due</p>
+                  <p>{stats?.dueReviewsCount || 0} words due</p>
                 </div>
               </Card>
 
@@ -184,7 +190,7 @@ function App() {
                 <div className="stat-icon"><Book size={32} /></div>
                 <div className="stat-info">
                   <h3>Library</h3>
-                  <p>{words.length} words</p>
+                  <p>{stats?.totalWords || 0} words</p>
                 </div>
               </Card>
 
@@ -203,14 +209,16 @@ function App() {
                 <Button variant="outline" onClick={() => handleNavigate('library')}>View All</Button>
               </div>
               <div className="word-list">
-                {wordsLoading ? (
-                  <p>Loading your words... ✨</p>
-                ) : words.length === 0 ? (
+                {statsLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => (
+                    <SkeletonWordCard key={i} hasFooter={true} />
+                  ))
+                ) : !stats?.recentWords?.length ? (
                   <Card className="empty-card">
                     <p>Your library is empty. Add your first word! 🚀</p>
                   </Card>
                 ) : (
-                  words.slice(0, 3).map((word) => (
+                  stats.recentWords.map((word: any) => (
                     <Card key={word.id} className="word-item">
                       <div className="word-header">
                         <h3>{word.word}</h3>

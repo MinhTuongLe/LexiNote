@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react';
+import { useGetWordsQuery } from '../../store/apiSlice';
 import type { Word } from '../../types';
 import './MatchGame.css';
 
 interface MatchGameProps {
-  words: Word[];
   onBack: () => void;
 }
 
@@ -17,7 +17,10 @@ type GameItem = {
   type: 'en' | 'vi';
 };
 
-const MatchGame: React.FC<MatchGameProps> = ({ words, onBack }) => {
+const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
+  const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 'all' });
+  const words = wordsData?.data || [];
+
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [matchedIds, setMatchedIds] = useState<Set<number>>(new Set());
@@ -91,6 +94,16 @@ const MatchGame: React.FC<MatchGameProps> = ({ words, onBack }) => {
       }
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="match-game empty">
+        <div style={{ textAlign: 'center', marginTop: '100px' }}>
+          <h2>Loading words... 🐰✨</h2>
+        </div>
+      </div>
+    );
+  }
 
   if (words.length < 5) {
     return (

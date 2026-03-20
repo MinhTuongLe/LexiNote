@@ -229,3 +229,62 @@
   .hero-text h1 { font-size: 2rem; }
   .stats-grid { grid-template-columns: 1fr; }
 }
+
+/* Loading UI */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  gap: 20px;
+}
+
+.cute-loader {
+  display: flex;
+  gap: 12px;
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.cute-loader span {
+  display: inline-block;
+  animation: bounce 0.6s infinite alternate cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.cute-loader span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.cute-loader span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.loading-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s steps(4, end) infinite;
+  display: inline-block;
+  width: 24px;
+  text-align: left;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px) scale(1.1); }
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}

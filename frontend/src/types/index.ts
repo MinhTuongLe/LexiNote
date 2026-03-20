@@ -35,3 +35,19 @@ export interface CreateWordDTO {
   synonyms?: string[];
   antonyms?: string[];
 }
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export interface DashboardStats {
+  totalWords: number;
+  dueReviewsCount: number;
+  recentWords: Word[];
+}

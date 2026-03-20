@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats } from '../types';
 import { logout, updateTokens } from './authSlice';
 import type { User } from './authSlice';
 
@@ -143,9 +143,18 @@ export const apiSlice = createApi({
       }),
     }),
 
+    // Dashboard
+    getDashboardStats: builder.query<DashboardStats, void>({
+      query: () => '/dashboard',
+      providesTags: ['Words', 'Reviews'],
+    }),
+
     // Words
-    getWords: builder.query<Word[], void>({
-      query: () => '/words',
+    getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string } | void>({
+      query: (params) => ({
+        url: '/words',
+        params: params || {},
+      }),
       providesTags: ['Words'],
     }),
     createWord: builder.mutation<Word, CreateWordDTO>({
@@ -169,6 +178,14 @@ export const apiSlice = createApi({
         url: `/words/${id}`,
         method: 'DELETE',
         responseHandler: 'text',
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
+    deleteBulkWords: builder.mutation<{ success: boolean; count: number }, { wordIds: number[] }>({
+      query: (data) => ({
+        url: '/words/delete-bulk',
+        method: 'POST',
+        body: data,
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
@@ -215,10 +232,12 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useLogoutServerMutation,
+  useGetDashboardStatsQuery,
   useGetWordsQuery,
   useCreateWordMutation,
   useUpdateWordMutation,
   useDeleteWordMutation,
+  useDeleteBulkWordsMutation,
   useImportWordsMutation,
   useGetDueReviewsQuery,
   useUpdateSRSMutation,

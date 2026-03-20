@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -8,12 +8,15 @@ import * as XLSX from 'xlsx';
 import { 
   useGetWordsQuery, 
   useDeleteWordMutation, 
+  useDeleteBulkWordsMutation,
   useUpdateWordMutation,
   useResetProgressMutation 
 } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
 import CuteSelect from '../components/CuteSelect';
+import SkeletonWordCard from '../components/SkeletonWordCard';
 import type { Word } from '../types';
+import '../components/Skeleton.css';
 import './Library.css';
 
 const Library: React.FC = () => {
@@ -23,9 +26,16 @@ const Library: React.FC = () => {
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
 
+  const [page, setPage] = useState(1);
+  const [loadedWords, setLoadedWords] = useState<Word[]>([]);
+  const limit = 20;
+
   // RTK Query
-  const { data: words = [], isLoading } = useGetWordsQuery();
+  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType });
+  const meta = wordsData?.meta;
+
   const [deleteWord] = useDeleteWordMutation();
+  const [deleteBulkWords] = useDeleteBulkWordsMutation();
   const [updateWord] = useUpdateWordMutation();
   const [resetProgress] = useResetProgressMutation();
 
@@ -40,6 +50,24 @@ const Library: React.FC = () => {
     });
   };
 
+  const handleDeleteBulk = async () => {
+    if (selectedIds.length === 0) return;
+
+    showConfirm(
+      'Delete Words? 🥺', 
+      `Are you sure you want to delete ${selectedIds.length} word(s)? This action cannot be undone.`,
+      async () => {
+        try {
+          await deleteBulkWords({ wordIds: selectedIds }).unwrap();
+          showAlert('Poof! 💨', 'Words deleted successfully!', 'success');
+          setSelectedIds([]);
+        } catch (err) {
+          showAlert('Oops! 😿', 'Failed to delete words!', 'error');
+        }
+      }
+    );
+  };
+
   const handleUpdate = async (data: any) => {
     if (!editingWord) return;
     try {
@@ -52,7 +80,7 @@ const Library: React.FC = () => {
   };
 
   const exportToExcel = () => {
-    const dataToExport = filteredWords.map(w => ({
+    const dataToExport = loadedWords.map(w => ({
       Word: w.word,
       Meaning: w.meaningVi,
       Example: w.example || '',
@@ -90,12 +118,23 @@ const Library: React.FC = () => {
     );
   };
 
-  const filteredWords = words.filter(w => {
-    const matchesSearch = w.word.toLowerCase().includes(search.toLowerCase()) ||
-                         w.meaningVi.toLowerCase().includes(search.toLowerCase());
-    const matchesType = filterType === 'all' || w.type === filterType;
-    return matchesSearch && matchesType;
-  });
+  useEffect(() => {
+    if (wordsData?.data) {
+      if (page === 1) {
+        setLoadedWords(wordsData.data);
+      } else {
+        // Prevent duplicate appending if component re-renders
+        setLoadedWords(prev => {
+          const newWords = wordsData.data.filter(w => !prev.some(p => p.id === w.id));
+          return [...prev, ...newWords];
+        });
+      }
+    }
+  }, [wordsData, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, filterType]);
 
   const wordTypeOptions = [
     { value: 'all', label: 'All Types' },
@@ -111,10 +150,10 @@ const Library: React.FC = () => {
   ];
 
   const selectAll = () => {
-    if (selectedIds.length === filteredWords.length && filteredWords.length > 0) {
+    if (selectedIds.length === loadedWords.length && loadedWords.length > 0) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredWords.map(w => w.id));
+      setSelectedIds(loadedWords.map(w => w.id));
     }
   };
 
@@ -154,28 +193,42 @@ const Library: React.FC = () => {
             onClick={selectAll}
             className="select-all-btn"
           >
-            {selectedIds.length === filteredWords.length && filteredWords.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}
-            {selectedIds.length === filteredWords.length && filteredWords.length > 0 ? 'Deselect All' : 'Select All'}
+            {selectedIds.length === loadedWords.length && loadedWords.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}
+            {selectedIds.length === loadedWords.length && loadedWords.length > 0 ? 'Deselect All' : 'Select All'}
           </Button>
           
           {selectedIds.length > 0 && (
-            <div className="bulk-actions animate-fade-in">
+            <div className="bulk-actions animate-fade-in" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               <span className="selection-count">{selectedIds.length} selected</span>
               <Button 
                 variant="secondary" 
                 size="sm" 
                 onClick={() => handleReset()}
               >
-                <RotateCcw size={16} /> Reset Progress
+                <RotateCcw size={16} /> Reset
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => handleDeleteBulk()}
+                style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
+              >
+                <Trash2 size={16} /> Delete
               </Button>
             </div>
           )}
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="loading-state">✨ Loading your words... ✨</div>
-      ) : filteredWords.length === 0 ? (
+      {isLoading && page === 1 ? (
+        <div className="library-grid">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="word-card-wrapper">
+              <SkeletonWordCard className="word-card-full" hasExampleBox={i % 2 === 0} />
+            </div>
+          ))}
+        </div>
+      ) : loadedWords.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🏜️</div>
           <h3>No words found!</h3>
@@ -183,12 +236,12 @@ const Library: React.FC = () => {
         </div>
       ) : (
         <div className="library-grid">
-          {filteredWords.map((word, i) => (
+          {loadedWords.map((word) => (
             <div key={word.id} className={`word-card-wrapper ${selectedIds.includes(word.id) ? 'selected' : ''}`}>
-              <div className="select-overlay" onClick={() => toggleSelect(word.id)}>
-                {selectedIds.includes(word.id) ? <CheckSquare size={24} className="check-icon" /> : <Square size={24} className="check-icon" />}
-              </div>
-              <Card className="word-card-full" delay={i * 0.05}>
+              <Card className="word-card-full">
+                <div className="select-overlay" onClick={(e) => { e.stopPropagation(); toggleSelect(word.id); }}>
+                  {selectedIds.includes(word.id) ? <CheckSquare size={24} className="check-icon" /> : <Square size={24} className="check-icon" />}
+                </div>
                 <div className="word-card-header">
                   <div>
                     <div className="word-main">
@@ -221,6 +274,27 @@ const Library: React.FC = () => {
               </Card>
             </div>
           ))}
+          
+          {isFetching && page > 1 && Array.from({ length: 4 }).map((_, i) => (
+            <div key={`skel-${i}`} className="word-card-wrapper">
+              <SkeletonWordCard className="word-card-full" hasExampleBox={i % 2 === 0} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Load More Control */}
+      {meta && page < meta.totalPages && (
+        <div className="pagination-controls" style={{ display: 'flex', justifyContent: 'center', marginTop: '32px' }}>
+          <Button 
+            variant="outline" 
+            onClick={() => setPage(p => p + 1)} 
+            disabled={isFetching}
+            className="load-more-btn"
+            style={{ width: '200px' }}
+          >
+            {isFetching ? 'Loading... ✨' : 'Load More 🐰'}
+          </Button>
         </div>
       )}
 
