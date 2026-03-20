@@ -10,7 +10,10 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
+
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-bunny-key';
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Helper: generate mail transporter
 function createTransporter() {
@@ -60,37 +63,51 @@ function generateRefreshToken(userId) {
 
 // Helper: send verification email
 async function sendVerificationEmail(user, token) {
-  const mailOptions = {
-    from: `"LexiNote App 🐰" <${process.env.SMTP_USER || 'noreply@lexinote.app'}>`,
-    to: user.email,
-    subject: '✨ Verify your LexiNote Account!',
-    html: `
-      <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
-        <h2 style="color: #ff7675; text-align: center;">Welcome to LexiNote! 🐰</h2>
-        <p style="font-size: 16px; color: #444;">Click the link below or use the code to verify your email address:</p>
-        <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-          <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${token}</span>
-        </div>
-        <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
-        <hr style="border: 1px dashed #eee; margin: 20px 0;" />
-        <p style="font-size: 12px; color: #999; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
+  const subject = '✨ Verify your LexiNote Account!';
+  const html = `
+    <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
+      <h2 style="color: #ff7675; text-align: center;">Welcome to LexiNote! 🐰</h2>
+      <p style="font-size: 16px; color: #444;">Click the link below or use the code to verify your email address:</p>
+      <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+        <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${token}</span>
       </div>
-    `,
-  };
+      <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
+      <hr style="border: 1px dashed #eee; margin: 20px 0;" />
+      <p style="font-size: 12px; color: #999; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
+    </div>
+  `;
 
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    // We don't want to block the whole request if SMTP hangs or fails
+  if (resend) {
+    // API Approach (For Render/Production)
+    resend.emails.send({
+      from: 'LexiNote <onboarding@resend.dev>', // Default for Resend test accounts
+      to: user.email,
+      subject: subject,
+      html: html,
+    }).then(() => {
+      sails.log.info(`🚀 Verification email sent via Resend API to ${user.email}`);
+    }).catch(err => {
+      sails.log.error(`❌ Resend API Error for ${user.email}:`, err);
+    });
+  } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    // SMTP Approach (For Local or manual SMTP)
     const transporter = createTransporter();
+    const mailOptions = {
+      from: `"LexiNote App 🐰" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: subject,
+      html: html,
+    };
     transporter.sendMail(mailOptions)
       .then(() => {
-        sails.log.info(`📧 Verification email sent successfully to ${user.email}`);
+        sails.log.info(`📧 Verification email sent via SMTP to ${user.email}`);
       })
       .catch(err => {
-        sails.log.error(`❌ Failed to send verification email to ${user.email}:`, err);
+        sails.log.error(`❌ SMTP Error for ${user.email}:`, err);
       });
   } else {
-    sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
-    sails.log.info(`====== VERIFICATION EMAIL TO: ${user.email} ======\nSubject: ${mailOptions.subject}\nCode: ${token}\n================================`);
+    sails.log.warn('⚠️ No email service configured. Simulating email drop:');
+    sails.log.info(`====== VERIFICATION EMAIL TO: ${user.email} ======\nSubject: ${subject}\nCode: ${token}\n================================`);
   }
 }
 
@@ -373,33 +390,46 @@ module.exports = {
 
       // Send the email with the reset code
       try {
-        const mailOptions = {
-          from: `"LexiNote App 🐰" <${process.env.SMTP_USER || 'noreply@lexinote.app'}>`,
-          to: user.email,
-          subject: '🔒 LexiNote - Password Reset Code',
-          html: `
-            <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
-              <h2 style="color: #ff7675; text-align: center;">Hello from LexiNote! 🐰</h2>
-              <p style="font-size: 16px; color: #444;">We received a request to reset your password. Use the following 6-digit code to complete the process:</p>
-              <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${resetToken}</span>
-              </div>
-              <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
-              <hr style="border: 1px dashed #eee; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #999; text-align: center;">If you didn't request a password reset, you can safely ignore this email.</p>
+        const subject = '🔒 LexiNote - Password Reset Code';
+        const html = `
+          <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
+            <h2 style="color: #ff7675; text-align: center;">Hello from LexiNote! 🐰</h2>
+            <p style="font-size: 16px; color: #444;">We received a request to reset your password. Use the following 6-digit code to complete the process:</p>
+            <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
+              <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${resetToken}</span>
             </div>
-          `,
-        };
+            <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
+            <hr style="border: 1px dashed #eee; margin: 20px 0;" />
+            <p style="font-size: 12px; color: #999; text-align: center;">If you didn't request a password reset, you can safely ignore this email.</p>
+          </div>
+        `;
 
-        if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+        if (resend) {
+          resend.emails.send({
+            from: 'LexiNote <onboarding@resend.dev>',
+            to: user.email,
+            subject: subject,
+            html: html,
+          }).then(() => {
+            sails.log.info(`🚀 Reset email sent via Resend API to ${user.email}`);
+          }).catch(err => {
+            sails.log.error(`❌ Resend API Error for ${user.email}:`, err);
+          });
+        } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
           const transporter = createTransporter();
+          const mailOptions = {
+            from: `"LexiNote App 🐰" <${process.env.SMTP_USER}>`,
+            to: user.email,
+            subject: subject,
+            html: html,
+          };
           transporter.sendMail(mailOptions).catch(err => {
             sails.log.error('❌ Failed to send reset email:', err);
           });
           sails.log.info(`📧 Password reset email attempt triggered for ${email}`);
         } else {
-          sails.log.warn('⚠️ SMTP_USER or SMTP_PASS not set. Simulating email drop instead:');
-          sails.log.info(`====== EMAIL TO: ${email} ======\nSubject: ${mailOptions.subject}\nCode: ${resetToken}\n================================`);
+          sails.log.warn('⚠️ No email service configured. Simulating email drop:');
+          sails.log.info(`====== EMAIL TO: ${email} ======\nSubject: ${subject}\nCode: ${resetToken}\n================================`);
         }
       } catch (mailErr) {
         sails.log.error('❌ Email setup error:', mailErr);
