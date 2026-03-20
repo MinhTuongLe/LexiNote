@@ -14,10 +14,24 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-bunny-key';
 
 // Helper: generate mail transporter
 function createTransporter() {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  
+  // For Gmail, use 'service' to let nodemailer handle the port/secure details best for cloud environments
+  if (host.includes('gmail')) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+
+  // Fallback for other providers (manual config)
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+    host: host,
+    port: parseInt(process.env.SMTP_PORT) || 587,
+    secure: process.env.SMTP_SECURE === 'true', 
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
