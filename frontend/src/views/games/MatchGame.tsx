@@ -3,7 +3,6 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react';
 import { useGetWordsQuery } from '../../store/apiSlice';
-import type { Word } from '../../types';
 import './MatchGame.css';
 
 interface MatchGameProps {
