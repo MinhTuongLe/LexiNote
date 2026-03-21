@@ -57,7 +57,7 @@ module.exports = {
       // Check if user exists
       const existing = await User.findOne({ email: email.toLowerCase().trim() });
       if (existing) {
-        return res.badRequest({ message: 'Email already registered! 😿' });
+        return res.badRequest({ message: 'E-mail already registered! 😿' });
       }
 
       // Create user — marked as unverified, awaiting master code
@@ -88,7 +88,7 @@ module.exports = {
       const { email, password } = req.body;
 
       if (!email || !password) {
-        return res.badRequest({ message: 'Email and password required! 🛡️' });
+        return res.badRequest({ message: 'E-mail and password required! 🛡️' });
       }
 
       const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -272,7 +272,7 @@ module.exports = {
       const { email } = req.body;
 
       if (!email) {
-        return res.badRequest({ message: 'Email is required! 📧' });
+        return res.badRequest({ message: 'E-mail is required! 📧' });
       }
 
       const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -322,7 +322,7 @@ module.exports = {
       const { email, resetToken, newPassword } = req.body;
 
       if (!email || !resetToken || !newPassword) {
-        return res.badRequest({ message: 'Email, reset code, and new password are required! 🔑' });
+        return res.badRequest({ message: 'E-mail, reset code, and new password are required! 🔑' });
       }
 
       if (newPassword.length < 6) {
@@ -371,7 +371,7 @@ module.exports = {
       const { email, token } = req.body;
 
       if (!email || !token) {
-        return res.badRequest({ message: 'Email and verification code are required! 🔑' });
+        return res.badRequest({ message: 'E-mail and verification code are required! 🔑' });
       }
 
       const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -380,7 +380,7 @@ module.exports = {
       }
 
       if (user.isEmailVerified) {
-        return res.badRequest({ message: 'Email is already verified! ✨' });
+        return res.badRequest({ message: 'E-mail is already verified! ✨' });
       }
 
       // Check expiry — skip if master code mode is active
@@ -434,7 +434,7 @@ module.exports = {
       const { email } = req.body;
 
       if (!email) {
-        return res.badRequest({ message: 'Email is required! 📧' });
+        return res.badRequest({ message: 'E-mail is required! 📧' });
       }
 
       const user = await User.findOne({ email: email.toLowerCase().trim() });
@@ -443,7 +443,7 @@ module.exports = {
       }
 
       if (user.isEmailVerified) {
-        return res.badRequest({ message: 'Email is already verified! ✨' });
+        return res.badRequest({ message: 'E-mail is already verified! ✨' });
       }
 
       // No email sending — just confirm to user to use MASTER_VERIFY_CODE

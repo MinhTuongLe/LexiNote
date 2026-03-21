@@ -1,0 +1,21 @@
+{
+  "hello": "Xin chào",
+  "logout": "Đăng xuất",
+  "login": "Đăng nhập",
+  "register": "Đăng ký",
+  "cancel": "Hủy",
+  "save": "Lưu",
+  "confirm": "Xác nhận",
+  "delete": "Xóa",
+  "edit": "Sửa",
+  "search": "Tìm kiếm...",
+  "loading": "Đang tải...",
+  "error": "Lỗi!",
+  "success": "Thành công!",
+  "back": "Quay lại",
+  "ok": "Xong ✨",
+  "cancel_cute": "Hủy 🥺",
+  "system_error": "Có lỗi xảy ra, bạn đã được đăng xuất để bảo mật.",
+  "logout_confirm_title": "Đăng xuất? 🐰",
+  "logout_confirm_msg": "Hẹn gặp lại bạn sớm nhé!"
+}

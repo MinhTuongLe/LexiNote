@@ -1,0 +1,17 @@
+{
+  "session_complete": "Hoàn thành buổi học! 🎉",
+  "review_summary": "Bạn đã ôn tập xong {{count}} từ hôm nay.",
+  "back_to_dashboard": "Về trang chính",
+  "loading_words": "Đang tải bài học... 🐰✨",
+  "no_words_due": "Hết từ cần ôn tập! ✨",
+  "empty_study_desc": "Thư viện trống hoặc bạn đã hoàn thành hết mục tiêu hôm nay.",
+  "hard": "Khó",
+  "medium": "Vừa",
+  "easy": "Dễ",
+  "front": "Mặt trước",
+  "back": "Mặt sau",
+  "tap_to_flip": "Nhấn để lật 💫",
+  "exit_study": "Thoát chế độ học",
+  "flip_card": "Lật thẻ",
+  "update_progress_error": "Lỗi cập nhật tiến độ học tập! 😿"
+}

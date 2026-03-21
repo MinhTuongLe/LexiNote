@@ -1,0 +1,22 @@
+{
+  "welcome": "Welcome to LexiNote! 🐰",
+  "ready_to_learn": "Ready to learn some new words today?",
+  "add_word": "Add Word",
+  "import": "Import",
+  "start_study": "Start Study",
+  "words_due": "{{count}} words due",
+  "words_due_zero": "No words due",
+  "library": "Library",
+  "words_count": "{{count}} words",
+  "words_count_zero": "No words",
+  "minigame": "Minigame",
+  "word_match": "Word Match ✨",
+  "recently_added": "Recently Added",
+  "view_all": "View All",
+  "empty_library": "Your library is empty. Add your first word! 🚀",
+  "progress": "Progress: {{percent}}%",
+  "add_success": "New word added to your library! ✨",
+  "add_error": "Failed to add word. 😿",
+  "import_success": "Imported {{count}} words! 🎉",
+  "import_error": "Failed to import words. 😿"
+}

@@ -1,0 +1,11 @@
+{
+  "match_game_title": "Word Match ✨",
+  "loading_game": "Loading game... 🐰✨",
+  "not_enough_words": "Not enough words 😿",
+  "not_enough_words_desc": "Please add at least 5 words to your library to play the matching game.",
+  "game_win_title": "You did it! 🎉",
+  "game_win_desc": "All words matched perfectly.",
+  "play_again": "Play Again",
+  "column_en": "English 🇺🇸",
+  "column_vi": "Vietnamese 🇻🇳"
+}

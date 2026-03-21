@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Check, Eye, EyeOff } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
+import { useTranslation } from 'react-i18next';
 import './Auth.css';
 
 interface LoginProps {
@@ -23,6 +24,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     // Attempt to load saved credentials
@@ -56,14 +58,14 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
       }
 
       dispatch(setCredentials(result));
-      showAlert('Welcome back! ✨', `Hello, ${result.user.fullName}!`, 'success');
+      showAlert(t('auth.login_success_title'), t('auth.login_success_msg', { name: result.user.fullName }), 'success');
     } catch (err: any) {
       if (err.data?.code === 'EMAIL_NOT_VERIFIED') {
-        showAlert('Chưa xác thực! 📧', 'Tài khoản của bạn chưa được xác thực email.', 'alert');
+        showAlert(t('auth.not_verified_title'), t('auth.not_verified_msg'), 'alert');
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
-      showAlert('Login Failed! 😿', err.data?.message || 'Check your credentials.', 'error');
+      showAlert(t('auth.login_failed_title'), err.data?.message || t('auth.login_failed_msg'), 'error');
     }
   };
 
@@ -72,13 +74,13 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
       <Card className="auth-card">
         <div className="auth-header">
           <img src="/logo.png" alt="LexiNote" className="auth-logo" />
-          <h2>Login to LexiNote</h2>
-          <p>Ready to learn some new words? 🐰</p>
+          <h2>{t('auth.login_title')}</h2>
+          <p>{t('auth.login_subtitle')}</p>
         </div>
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Email Address</label>
+            <label>{t('auth.email')}</label>
             <input 
               type="email" 
               placeholder="bunny@example.com" 
@@ -89,7 +91,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
           </div>
           
           <div className="form-group">
-            <label>Password</label>
+            <label>{t('auth.password')}</label>
             <div className="password-input-wrapper">
               <input 
                 type={showPassword ? 'text' : 'password'}
@@ -112,9 +114,9 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
               <div className={`custom-checkbox ${rememberMe ? 'checked' : ''}`}>
                 {rememberMe && <Check size={16} strokeWidth={4} />}
               </div>
-              <span>Remember me</span>
+              <span>{t('auth.remember_me')}</span>
             </div>
-            <span className="forgot-password-link" onClick={onForgot}>Forgot password?</span>
+            <span className="forgot-password-link" onClick={onForgot}>{t('auth.forgot_password')}</span>
           </div>
           
           <Button 
@@ -123,12 +125,12 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
             disabled={isLoading}
             className="auth-submit"
           >
-            {isLoading ? 'Logging in...' : 'Login ✨'}
+            {isLoading ? t('common.loading') : t('common.login')} ✨
           </Button>
         </form>
         
         <div className="auth-footer">
-          Don't have an account? <span onClick={onSwitch}>Register here!</span>
+          {t('auth.no_account')} <span onClick={onSwitch}>{t('auth.register_now')}!</span>
         </div>
       </Card>
     </div>

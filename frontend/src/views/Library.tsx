@@ -16,6 +16,7 @@ import { useCuteDialog } from '../context/DialogContext';
 import CuteSelect from '../components/CuteSelect';
 import SkeletonWordCard from '../components/SkeletonWordCard';
 import type { Word } from '../types';
+import { useTranslation } from 'react-i18next';
 import '../components/Skeleton.css';
 import './Library.css';
 
@@ -25,6 +26,7 @@ const Library: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
+  const { t } = useTranslation();
 
   const [page, setPage] = useState(1);
   const [loadedWords, setLoadedWords] = useState<Word[]>([]);
@@ -40,7 +42,7 @@ const Library: React.FC = () => {
   const [resetProgress] = useResetProgressMutation();
 
   const handleDelete = async (id: number) => {
-    showConfirm('Delete Word? 🥺', 'Are you sure you want to delete this word from your library?', async () => {
+    showConfirm(t('library.delete_confirm_title'), t('library.delete_confirm_msg'), async () => {
       try {
         await deleteWord(id).unwrap();
         setSelectedIds(prev => prev.filter(sid => sid !== id));
@@ -54,15 +56,15 @@ const Library: React.FC = () => {
     if (selectedIds.length === 0) return;
 
     showConfirm(
-      'Delete Words? 🥺', 
-      `Are you sure you want to delete ${selectedIds.length} word(s)? This action cannot be undone.`,
+      t('library.delete_bulk_confirm_title'), 
+      t('library.delete_bulk_confirm_msg', { count: selectedIds.length }),
       async () => {
         try {
           await deleteBulkWords({ wordIds: selectedIds }).unwrap();
-          showAlert('Poof! 💨', 'Words deleted successfully!', 'success');
+          showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
           setSelectedIds([]);
         } catch (err) {
-          showAlert('Oops! 😿', 'Failed to delete words!', 'error');
+          showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
     );
@@ -72,10 +74,10 @@ const Library: React.FC = () => {
     if (!editingWord) return;
     try {
       await updateWord({ id: editingWord.id, data }).unwrap();
-      showAlert('Success! ✨', 'Word updated successfully!', 'success');
+      showAlert(t('library.update_success_title'), t('library.update_success_msg'), 'success');
       setEditingWord(null);
     } catch (err) {
-      showAlert('Oops! 😿', 'Failed to update word!', 'error');
+      showAlert(t('common.error'), t('common.error'), 'error');
     }
   };
 
@@ -98,15 +100,15 @@ const Library: React.FC = () => {
     if (targets.length === 0) return;
 
     showConfirm(
-      'Reset Progress? 🔄', 
-      `Are you sure you want to reset progress for ${targets.length} word(s)?`,
+      t('library.reset_confirm_title'), 
+      t('library.reset_confirm_msg', { count: targets.length }),
       async () => {
         try {
           await resetProgress(targets).unwrap();
-          showAlert('YAY! ✨', 'Progress reset successfully!', 'success');
+          showAlert(t('library.reset_success_title'), t('library.reset_success_msg'), 'success');
           setSelectedIds([]);
         } catch (err) {
-          showAlert('Oops! 😿', 'Failed to reset progress!', 'error');
+          showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
     );
@@ -137,7 +139,7 @@ const Library: React.FC = () => {
   }, [search, filterType]);
 
   const wordTypeOptions = [
-    { value: 'all', label: 'All Types' },
+    { value: 'all', label: t('library.type_filter') },
     { value: 'noun', label: 'Noun' },
     { value: 'verb', label: 'Verb' },
     { value: 'adj', label: 'Adjective' },
@@ -165,7 +167,7 @@ const Library: React.FC = () => {
             <Search size={20} />
             <input 
               type="text" 
-              placeholder="Search your library..." 
+              placeholder={t('common.search')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
@@ -175,6 +177,7 @@ const Library: React.FC = () => {
             value={filterType}
             onChange={(val) => setFilterType(val)}
             className="library-type-select"
+            align='right'
           />
         </div>
 
@@ -184,7 +187,7 @@ const Library: React.FC = () => {
             size="sm" 
             onClick={exportToExcel}
           >
-            <Download size={18} /> Export Library
+            <Download size={18} /> {t('library.export')}
           </Button>
           
           <Button 
@@ -194,18 +197,18 @@ const Library: React.FC = () => {
             className="select-all-btn"
           >
             {selectedIds.length === loadedWords.length && loadedWords.length > 0 ? <CheckSquare size={18} /> : <Square size={18} />}
-            {selectedIds.length === loadedWords.length && loadedWords.length > 0 ? 'Deselect All' : 'Select All'}
+            {selectedIds.length === loadedWords.length && loadedWords.length > 0 ? t('library.deselect_all') : t('library.select_all')}
           </Button>
           
           {selectedIds.length > 0 && (
             <div className="bulk-actions animate-fade-in" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <span className="selection-count">{selectedIds.length} selected</span>
+              <span className="selection-count">{t('library.selected_count', { count: selectedIds.length })}</span>
               <Button 
                 variant="secondary" 
                 size="sm" 
                 onClick={() => handleReset()}
               >
-                <RotateCcw size={16} /> Reset
+                <RotateCcw size={16} /> {t('profile.reset_data')}
               </Button>
               <Button 
                 variant="outline" 
@@ -213,7 +216,7 @@ const Library: React.FC = () => {
                 onClick={() => handleDeleteBulk()}
                 style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
               >
-                <Trash2 size={16} /> Delete
+                <Trash2 size={16} /> {t('common.delete')}
               </Button>
             </div>
           )}
@@ -231,8 +234,8 @@ const Library: React.FC = () => {
       ) : loadedWords.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🏜️</div>
-          <h3>No words found!</h3>
-          <p>Add some new words to your library to get started.</p>
+          <h3>{t('library.no_results')}</h3>
+          <p>{t('library.empty_library')}</p>
         </div>
       ) : (
         <div className="library-grid">
@@ -266,7 +269,7 @@ const Library: React.FC = () => {
                   <p className="vi-meaning">{word.meaningVi}</p>
                   {word.example && (
                     <div className="example-box">
-                      <strong>Example:</strong>
+                      <strong>{t('words.example_label')}:</strong>
                       <p>"{word.example}"</p>
                     </div>
                   )}
@@ -293,7 +296,7 @@ const Library: React.FC = () => {
             className="load-more-btn"
             style={{ width: '200px' }}
           >
-            {isFetching ? 'Loading... ✨' : 'Load More 🐰'}
+            {isFetching ? t('library.loading_more') : t('library.load_more')}
           </Button>
         </div>
       )}
@@ -301,7 +304,7 @@ const Library: React.FC = () => {
       <Modal 
         isOpen={!!editingWord} 
         onClose={() => setEditingWord(null)} 
-        title="Edit Word ✨"
+        title={`${t('common.edit')} ✨`}
       >
         {editingWord && (
           <WordForm 

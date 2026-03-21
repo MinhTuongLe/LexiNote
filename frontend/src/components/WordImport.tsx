@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import { Upload, AlertCircle, FileText, ClipboardPaste } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -11,6 +12,7 @@ interface WordImportProps {
 }
 
 const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }) => {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'upload' | 'paste'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
@@ -159,13 +161,13 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
           className={`import-tab ${activeTab === 'upload' ? 'active' : ''}`}
           onClick={() => { setActiveTab('upload'); setPreview([]); setError(''); }}
         >
-          <Upload size={18} /> Upload File
+          <Upload size={18} /> {t('words.tab_upload')}
         </button>
         <button 
           className={`import-tab ${activeTab === 'paste' ? 'active' : ''}`}
           onClick={() => { setActiveTab('paste'); setPreview([]); setError(''); }}
         >
-          <ClipboardPaste size={18} /> Paste Data
+          <ClipboardPaste size={18} /> {t('words.tab_paste')}
         </button>
       </div>
 
@@ -185,14 +187,14 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
           />
           <label htmlFor="word-upload" className={`upload-label ${isDragging ? 'dragging' : ''}`}>
             {file ? <FileText size={40} className="file-icon" /> : <Upload size={32} />}
-            <span>{file ? file.name : 'Click or drag CSV/Excel here'}</span>
+            <span>{file ? file.name : t('words.upload_click_drag')}</span>
             <p>Format: word, meaning_vi, type, example</p>
           </label>
         </div>
       ) : (
         <div className="paste-zone">
           <textarea 
-            placeholder="Paste from Excel here...&#10;&#10;Expects columns: word | meaning_vi | type | example"
+            placeholder={t('words.paste_placeholder')}
             value={pasteText}
             onChange={(e) => setPasteText(e.target.value)}
             className="paste-textarea"
@@ -204,7 +206,7 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
 
       {preview.length > 0 && (
         <div className="preview-section">
-          <h4>Preview ({preview.length} words found)</h4>
+          <h4>{t('words.preview_count', { count: preview.length })}</h4>
           <div className="preview-list">
             {preview.slice(0, 5).map((p, i) => (
               <div key={i} className="preview-item">
@@ -212,19 +214,19 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
                 {p.type && <span className="preview-type">({p.type})</span>}
               </div>
             ))}
-            {preview.length > 5 && <div className="more">... and {preview.length - 5} more</div>}
+            {preview.length > 5 && <div className="more">{t('words.more_words', { count: preview.length - 5 })}</div>}
           </div>
         </div>
       )}
 
       <div className="form-actions">
-        <Button variant="outline" onClick={onCancel}>Cancel</Button>
+        <Button variant="outline" onClick={onCancel}>{t('common.cancel')}</Button>
         <Button 
           variant="primary" 
           onClick={() => onImport(preview)} 
           disabled={preview.length === 0 || isLoading}
         >
-          {isLoading ? 'Importing...' : 'Import All ✨'}
+          {isLoading ? t('common.loading') : t('words.import_all')}
         </Button>
       </div>
     </div>

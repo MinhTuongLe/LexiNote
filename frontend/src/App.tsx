@@ -22,6 +22,7 @@ import {
 } from './store/apiSlice';
 import { useCuteDialog } from './context/DialogContext';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized } from './store/authSlice';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
@@ -39,6 +40,7 @@ function App() {
   const { isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
+  const { t } = useTranslation();
 
   // Try to load user profile if authenticated but not fully initialized
   const { data: meData, error: meError, isLoading: meLoading } = useGetMeQuery(undefined, { 
@@ -57,11 +59,11 @@ function App() {
   // Global error handler for system-wide failures
   useEffect(() => {
     const handleSystemError = (e: any) => {
-      showAlert('Lỗi Hệ Thống! 😿', e.detail || 'Có lỗi xảy ra, bạn đã được đăng xuất để bảo mật.', 'error');
+      showAlert(t('common.error'), e.detail || t('common.system_error'), 'error');
     };
     window.addEventListener('system-error', handleSystemError);
     return () => window.removeEventListener('system-error', handleSystemError);
-  }, [showAlert]);
+  }, [showAlert, t]);
 
   // RTK Query hooks - Top level (required by React)
   const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
@@ -87,7 +89,7 @@ function App() {
           <span>✨</span>
         </div>
         <h2 className="loading-text">
-          Loading LexiNote<span className="loading-dots"></span>
+          {t('common.loading')}
         </h2>
       </div>
     );
@@ -113,20 +115,20 @@ function App() {
   const handleAddWord = async (data: CreateWordDTO) => {
     try {
       await createWord(data).unwrap();
-      showAlert('Success! ✨', 'New word added to your library!', 'success');
+      showAlert(t('common.success'), t('dashboard.add_success'), 'success');
       setIsModalOpen(false);
     } catch (err) {
-      showAlert('Error! 😿', 'Failed to add word.', 'error');
+      showAlert(t('common.error'), t('dashboard.add_error'), 'error');
     }
   };
 
   const handleImport = async (words: any[]) => {
     try {
       await importWords(words).unwrap();
-      showAlert('Success! 🎉', `Imported ${words.length} words!`, 'success');
+      showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
       setIsImportModalOpen(false);
     } catch (err) {
-      showAlert('Error! 😿', 'Failed to import words.', 'error');
+      showAlert(t('common.error'), t('dashboard.import_error'), 'error');
     }
   };
 
@@ -149,15 +151,15 @@ function App() {
             <div className="hero-section">
             <header className="section-header animate-pop">
               <div className="hero-text">
-                <h1>Welcome to <span className="highlight">LexiNote! 🐰</span></h1>
-                <p>Ready to learn some new words today?</p>
+                <h1>{t('dashboard.welcome')}</h1>
+                <p>{t('dashboard.ready_to_learn')}</p>
               </div>
               <div className="hero-actions">
                 <Button variant="primary" onClick={() => setIsModalOpen(true)}>
-                  <Plus size={20} /> Add Word
+                  <Plus size={20} /> {t('dashboard.add_word')}
                 </Button>
                 <Button variant="outline" onClick={() => setIsImportModalOpen(true)}>
-                  <Upload size={20} /> Import
+                  <Upload size={20} /> {t('dashboard.import')}
                 </Button>
               </div>
             </header>
@@ -166,32 +168,32 @@ function App() {
               <Card className="stat-card pink clickable" onClick={() => navigate('/study')}>
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
-                  <h3>Start Study</h3>
-                  <p>{stats?.dueReviewsCount || 0} words due</p>
+                  <h3>{t('dashboard.start_study')}</h3>
+                  <p>{stats?.dueReviewsCount ? t('dashboard.words_due', { count: stats.dueReviewsCount }) : t('dashboard.words_due_zero')}</p>
                 </div>
               </Card>
 
               <Card className="stat-card yellow clickable" onClick={() => navigate('/library')}>
                 <div className="stat-icon"><Book size={32} /></div>
                 <div className="stat-info">
-                  <h3>Library</h3>
-                  <p>{stats?.totalWords || 0} words</p>
+                  <h3>{t('dashboard.library')}</h3>
+                  <p>{stats?.totalWords ? t('dashboard.words_count', { count: stats.totalWords }) : t('dashboard.words_count_zero')}</p>
                 </div>
               </Card>
 
               <Card className="stat-card purple clickable" onClick={() => navigate('/match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
-                  <h3>Minigame</h3>
-                  <p>Word Match ✨</p>
+                  <h3>{t('dashboard.minigame')}</h3>
+                  <p>{t('dashboard.word_match')}</p>
                 </div>
               </Card>
             </div>
 
             <section className="recent-section">
               <div className="section-header">
-                <h2>Recently Added</h2>
-                <Button variant="outline" onClick={() => navigate('/library')}>View All</Button>
+                <h2>{t('dashboard.recently_added')}</h2>
+                <Button variant="outline" onClick={() => navigate('/library')}>{t('dashboard.view_all')}</Button>
               </div>
               <div className="word-list">
                 {statsLoading ? (
@@ -200,7 +202,7 @@ function App() {
                   ))
                 ) : !stats?.recentWords?.length ? (
                   <Card className="empty-card">
-                    <p>Your library is empty. Add your first word! 🚀</p>
+                    <p>{t('dashboard.empty_library')}</p>
                   </Card>
                 ) : (
                   stats.recentWords.map((word: any) => (
@@ -211,7 +213,7 @@ function App() {
                       </div>
                       <p className="meaning">{word.meaningVi}</p>
                       <div className="card-footer">
-                        <span className="level">Progress: 60%</span>
+                        <span className="level">{t('dashboard.progress', { percent: 60 })}</span>
                         <div className="dots">
                           <span className="dot active"></span>
                           <span className="dot active"></span>
@@ -233,8 +235,8 @@ function App() {
               <Card>
                 <div style={{ textAlign: 'center', padding: '40px' }}>
                   <TrendingUp size={48} style={{ color: 'var(--primary)', marginBottom: '16px' }} />
-                  <h2>Coming Soon! 📈</h2>
-                  <p>We're working on statistics and progress tracking.</p>
+                  <h2>{t('stats.coming_soon')}</h2>
+                  <p>{t('stats.subtitle')}</p>
                 </div>
               </Card>
             </div>
@@ -247,7 +249,7 @@ function App() {
       <Modal 
         isOpen={isModalOpen} 
         onClose={() => setIsModalOpen(false)} 
-        title="Add New Word ✨"
+        title={t('dashboard.add_word')}
       >
         <WordForm 
           onSubmit={handleAddWord} 
@@ -258,7 +260,7 @@ function App() {
       <Modal 
         isOpen={isImportModalOpen} 
         onClose={() => setIsImportModalOpen(false)} 
-        title="Import Words 📄"
+        title={t('dashboard.import')}
       >
         <WordImport 
           onImport={handleImport} 

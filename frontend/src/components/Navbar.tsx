@@ -4,6 +4,8 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { useLogoutServerMutation } from '../store/apiSlice';
+import { useTranslation } from 'react-i18next';
+import { useCuteDialog } from '../context/DialogContext';
 import './Navbar.css';
 
 interface NavbarProps {}
@@ -12,6 +14,8 @@ const Navbar: React.FC<NavbarProps> = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
+  const { showConfirm } = useCuteDialog();
   const [logoutServer] = useLogoutServerMutation();
   const [showDropdown, setShowDropdown] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,30 +40,36 @@ const Navbar: React.FC<NavbarProps> = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await logoutServer().unwrap();
-    } catch (err) {
-      console.warn('Failed to logout on server, still logging out locally', err);
-    } finally {
-      dispatch(logout());
-      setShowDropdown(false);
-    }
+  const handleLogout = () => {
+    showConfirm(
+      t('common.logout_confirm_title'),
+      t('common.logout_confirm_msg'),
+      async () => {
+        try {
+          await logoutServer().unwrap();
+        } catch (err) {
+          console.warn('Failed to logout on server, still logging out locally', err);
+        } finally {
+          dispatch(logout());
+          setShowDropdown(false);
+        }
+      }
+    );
   };
 
   const NavLinks = () => (
     <>
       <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <BookOpen size={24} className="nav-icon" />
-        <span>Study</span>
+        <span>{t('nav.dashboard')}</span>
       </NavLink>
       <NavLink to="/library" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Plus size={24} className="nav-icon" />
-        <span>Library</span>
+        <span>{t('nav.library')}</span>
       </NavLink>
       <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Trophy size={24} className="nav-icon" />
-        <span>Stats</span>
+        <span>{t('nav.stats')}</span>
       </NavLink>
     </>
   );
@@ -104,13 +114,13 @@ const Navbar: React.FC<NavbarProps> = () => {
                         setShowDropdown(false);
                       }}
                     >
-                      <UserIcon size={16} /> My Profile
+                      <UserIcon size={16} /> {t('nav.profile')}
                     </button>
                     <button 
                       className="dropdown-item danger" 
                       onClick={handleLogout}
                     >
-                      <LogOut size={16} /> Logout
+                      <LogOut size={16} /> {t('common.logout')}
                     </button>
                   </div>
                 )}

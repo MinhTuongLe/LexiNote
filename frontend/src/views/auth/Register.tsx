@@ -5,6 +5,7 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Eye, EyeOff } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
+import { useTranslation } from 'react-i18next';
 import './Auth.css';
 
 interface RegisterProps {
@@ -19,15 +20,16 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [register, { isLoading }] = useRegisterMutation();
   const { showAlert } = useCuteDialog();
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await register({ email, password, fullName }).unwrap();
-      showAlert('Account Created! 🎉', result.message || `Welcome to LexiNote, ${fullName}!`, 'success');
+      showAlert(t('common.success'), result.message || `Welcome to LexiNote, ${fullName}!`, 'success');
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (err: any) {
-      showAlert('Registration Failed! 😿', err.data?.message || 'Try a different email.', 'error');
+      showAlert(t('common.error'), err.data?.message || 'Try a different email.', 'error');
     }
   };
 
@@ -36,13 +38,13 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
       <Card className="auth-card">
         <div className="auth-header">
           <img src="/logo.png" alt="LexiNote" className="auth-logo" />
-          <h2>Join LexiNote</h2>
-          <p>Start your vocabulary journey! 🚀</p>
+          <h2>{t('auth.register_title')}</h2>
+          <p>{t('auth.register_subtitle')}</p>
         </div>
         
         <form onSubmit={handleSubmit} className="auth-form">
           <div className="form-group">
-            <label>Full Name</label>
+            <label>{t('auth.fullname')}</label>
             <input 
               type="text" 
               placeholder="Your Name" 
@@ -53,7 +55,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
           </div>
 
           <div className="form-group">
-            <label>Email Address</label>
+            <label>{t('auth.email')}</label>
             <input 
               type="email" 
               placeholder="bunny@example.com" 
@@ -64,7 +66,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
           </div>
           
           <div className="form-group">
-            <label>Password</label>
+            <label>{t('auth.password')}</label>
             <div className="password-input-wrapper">
               <input 
                 type={showPassword ? 'text' : 'password'}
@@ -85,12 +87,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
             disabled={isLoading}
             className="auth-submit"
           >
-            {isLoading ? 'Creating account...' : 'Registers ✨'}
+            {isLoading ? t('common.loading') : t('common.register')} ✨
           </Button>
         </form>
         
         <div className="auth-footer">
-          Already have an account? <span onClick={onSwitch}>Login here!</span>
+          {t('auth.already_has_account')} <span onClick={onSwitch}>{t('common.login')}!</span>
         </div>
       </Card>
     </div>

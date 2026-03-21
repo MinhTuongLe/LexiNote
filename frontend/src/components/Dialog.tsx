@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from './Modal';
 import Button from './Button';
+import { useTranslation } from 'react-i18next';
 import './Dialog.css';
 
 interface DialogProps {
@@ -21,9 +22,14 @@ const Dialog: React.FC<DialogProps> = ({
   title,
   message,
   type = 'alert',
-  confirmText = 'OK ✨',
-  cancelText = 'Cancel 🥺'
+  confirmText,
+  cancelText
 }) => {
+  const { t } = useTranslation();
+  
+  const actualConfirmText = confirmText || t('common.ok');
+  const actualCancelText = cancelText || t('common.cancel_cute');
+
   const getIcon = () => {
     switch (type) {
       case 'success': return '🎉';
@@ -43,7 +49,7 @@ const Dialog: React.FC<DialogProps> = ({
         <div className="dialog-actions">
           {type === 'confirm' && (
             <Button variant="outline" onClick={onClose}>
-              {cancelText}
+              {actualCancelText}
             </Button>
           )}
           <Button 
@@ -53,7 +59,7 @@ const Dialog: React.FC<DialogProps> = ({
               onClose();
             }}
           >
-            {confirmText}
+            {actualConfirmText}
           </Button>
         </div>
       </div>

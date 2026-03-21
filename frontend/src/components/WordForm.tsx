@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import CuteSelect from './CuteSelect';
 import type { CreateWordDTO } from '../types';
@@ -11,6 +12,7 @@ interface WordFormProps {
 }
 
 const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) => {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateWordDTO>(initialData || {
     word: '',
     meaningVi: '',
@@ -43,7 +45,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
   return (
     <form className="word-form" onSubmit={handleSubmit}>
       <div className="form-group">
-        <label>Word</label>
+        <label>{t('words.word')}</label>
         <input 
           type="text" 
           name="word" 
@@ -55,7 +57,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
       </div>
 
       <div className="form-group">
-        <label>Vietnamese Meaning</label>
+        <label>{t('words.meaning_vi')}</label>
         <input 
           type="text" 
           name="meaningVi" 
@@ -68,7 +70,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
 
       <div className="form-group">
         <CuteSelect 
-          label="Type"
+          label={t('words.type')}
           options={wordTypeOptions}
           value={formData.type}
           onChange={(val) => setFormData({ ...formData, type: val as any })}
@@ -76,7 +78,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
       </div>
 
       <div className="form-group">
-        <label>Example Sentence</label>
+        <label>{t('words.example')}</label>
         <textarea 
           name="example" 
           placeholder="How is it used?" 
@@ -86,9 +88,9 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
       </div>
 
       <div className="form-actions">
-        <Button variant="outline" type="button" onClick={onCancel}>Cancel</Button>
+        <Button variant="outline" type="button" onClick={onCancel}>{t('common.cancel')}</Button>
         <Button variant="primary" type="submit">
-          {initialData ? 'Update Word ✨' : 'Save Word ✨'}
+          {initialData ? `${t('common.edit')} ✨` : `${t('common.save')} ✨`}
         </Button>
       </div>
     </form>

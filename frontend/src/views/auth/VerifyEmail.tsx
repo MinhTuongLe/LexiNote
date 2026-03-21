@@ -4,6 +4,8 @@ import { useVerifyEmailMutation, useResendVerificationMutation } from '../../sto
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../store/authSlice';
 import { useCuteDialog } from '../../context/DialogContext';
+import { useTranslation } from 'react-i18next';
+import { Trans } from 'react-i18next';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
@@ -14,6 +16,7 @@ const VerifyEmail: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
+  const { t } = useTranslation();
 
   // Get email from query params
   const queryParams = new URLSearchParams(location.search);
@@ -39,7 +42,7 @@ const VerifyEmail: React.FC = () => {
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!token || token.length < 6) {
-      showAlert('Mã lỗi! 🔑', 'Vui lòng nhập đầy đủ mã xác thực 6 chữ số.', 'error');
+      showAlert(t('common.error'), t('auth.verify_code_label'), 'error');
       return;
     }
 
@@ -47,9 +50,9 @@ const VerifyEmail: React.FC = () => {
       const result = await verifyEmail({ email, token }).unwrap();
       dispatch(setCredentials(result));
       setIsVerified(true);
-      showAlert('Thành công! 🎉', 'Tài khoản của bạn đã được xác thực!', 'success');
+      showAlert(t('common.success'), t('auth.verify_success_desc'), 'success');
     } catch (err: any) {
-      showAlert('Lỗi xác thực! 😿', err.data?.message || 'Mã không đúng hoặc đã hết hạn.', 'error');
+      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
     }
   };
 
@@ -58,9 +61,9 @@ const VerifyEmail: React.FC = () => {
     try {
       await resendVerification({ email }).unwrap();
       setCountdown(60);
-      showAlert('Đã gửi lại! 📬', 'Mã xác thực mới đã được gửi vào hòm thư của bạn.', 'success');
+      showAlert(t('common.success'), t('common.success'), 'success');
     } catch (err: any) {
-      showAlert('Lỗi! 😿', err.data?.message || 'Không thể gửi lại mã lúc này.', 'error');
+      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
     }
   };
 
@@ -72,11 +75,11 @@ const VerifyEmail: React.FC = () => {
             <div className="auth-icon-circle success">
               <CheckCircle size={32} />
             </div>
-            <h2>Xác thực thành công! 🎉</h2>
-            <p>Chào mừng bạn gia nhập LexiNote. Hãy bắt đầu học tập thôi nào!</p>
+            <h2>{t('auth.verify_success_title')}</h2>
+            <p>{t('auth.verify_success_desc')}</p>
           </div>
           <Button variant="primary" onClick={() => navigate('/dashboard')} className="auth-submit">
-            Đi tới Dashboard ✨
+            {t('auth.go_to_dashboard')}
           </Button>
         </Card>
       </div>
@@ -90,16 +93,16 @@ const VerifyEmail: React.FC = () => {
           <div className="auth-icon-circle">
             <Mail size={32} />
           </div>
-          <h2>Xác thực tài khoản</h2>
+          <h2>{t('auth.verify_email_title')}</h2>
           {masterCode 
-            ? <p>Nhập mã xác thực bên dưới để kích hoạt tài khoản <b>{email}</b> 🔑</p>
-            : <p>Chúng mình đã gửi mã xác thực tới <b>{email}</b> 📧</p>
+            ? <p><Trans i18nKey="auth.verify_email_master_desc" values={{ email }}>Nhập mã xác thực bên dưới để kích hoạt tài khoản <b>{email}</b> 🔑</Trans></p>
+            : <p><Trans i18nKey="auth.verify_email_desc" values={{ email }}>Chúng mình đã gửi mã xác thực tới <b>{email}</b> 📧</Trans></p>
           }
         </div>
 
         <form onSubmit={handleVerify} className="auth-form">
           <div className="form-group">
-            <label>Mã xác thực (6 chữ số)</label>
+            <label>{t('auth.verify_code_label')}</label>
             <input
               type="text"
               placeholder="123456"
@@ -112,7 +115,7 @@ const VerifyEmail: React.FC = () => {
           </div>
 
           <Button variant="primary" type="submit" disabled={isVerifying} className="auth-submit">
-            {isVerifying ? 'Đang xác thực...' : 'Xác thực ngay ✨'}
+            {isVerifying ? t('common.loading') : t('auth.verify_now')}
           </Button>
         </form>
 
@@ -124,11 +127,11 @@ const VerifyEmail: React.FC = () => {
               disabled={countdown > 0 || isResending}
               style={{ width: '100%' }}
             >
-              {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : 'Gửi lại mã xác thực'}
+              {countdown > 0 ? t('auth.resend_timer', { count: countdown }) : t('auth.resend_code')}
             </Button>
           )}
           <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', marginTop: 12 }}>
-            <ArrowLeft size={14} /> Quay lại Đăng nhập
+            <ArrowLeft size={14} /> {t('auth.back_to_login')}
           </span>
         </div>
       </Card>

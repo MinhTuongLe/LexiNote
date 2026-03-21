@@ -42,7 +42,7 @@ To ensure stability, scalability, and cost-effectiveness (Free Tier), the follow
 ## 🔐 Security & Authentication
 
 ### JWT Authentication
-- Users authenticate via Email/Password.
+- Users authenticate via E-mail/Password.
 - Backend issues a JSON Web Token (JWT) on success.
 - Frontend stores the JWT in `localStorage` and includes it in the `Authorization` header for all protected API calls.
 

@@ -4,6 +4,7 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import './Auth.css';
 
 type ForgotStep = 'email' | 'code' | 'done';
@@ -27,6 +28,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [forgotPassword, { isLoading: isSending }] = useForgotPasswordMutation();
   const [resetPassword, { isLoading: isResetting }] = useResetPasswordMutation();
   const { showAlert } = useCuteDialog();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (countdown > 0) {
@@ -80,16 +82,16 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               <div className="auth-icon-circle">
                 <Mail size={32} />
               </div>
-              <h2>Forgot Password?</h2>
+              <h2>{t('auth.forgot_password_title')}</h2>
               {masterCode
-                ? <p>Enter your email and use the master code to reset your password 🔑</p>
-                : <p>Enter your email and we'll send you a reset code 📧</p>
+                ? <p>{t('auth.forgot_password_master_desc')}</p>
+                : <p>{t('auth.forgot_password_email_desc')}</p>
               }
             </div>
 
             <form onSubmit={handleSendCode} className="auth-form">
               <div className="form-group">
-                <label>Email Address</label>
+                <label>{t('auth.email')}</label>
                 <input
                   type="email"
                   placeholder="bunny@example.com"
@@ -100,12 +102,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </div>
 
               <Button variant="primary" type="submit" disabled={isSending} className="auth-submit">
-                {isSending ? 'Sending...' : 'Send Reset Code ✨'}
+                {isSending ? t('common.loading') : t('auth.send_reset_code')}
               </Button>
             </form>
 
             <div className="auth-footer">
-              <span onClick={onBack}><ArrowLeft size={14} /> Back to Login</span>
+              <span onClick={onBack}><ArrowLeft size={14} /> {t('auth.back_to_login')}</span>
             </div>
           </>
         )}
@@ -116,13 +118,13 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               <div className="auth-icon-circle">
                 <KeyRound size={32} />
               </div>
-              <h2>Reset Password</h2>
-              <p>Enter the 6-digit code and your new password 🔑</p>
+              <h2>{t('auth.reset_password_title')}</h2>
+              <p>{t('auth.reset_password_desc')}</p>
             </div>
 
             <form onSubmit={handleResetPassword} className="auth-form">
               <div className="form-group">
-                <label>Reset Code</label>
+                <label>{t('auth.reset_code_label')}</label>
                 <input
                   type="text"
                   placeholder="123456"
@@ -135,7 +137,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </div>
 
               <div className="form-group">
-                <label>New Password</label>
+                <label>{t('auth.new_password_label')}</label>
                 <div className="password-input-wrapper">
                   <input
                     type={showNewPassword ? 'text' : 'password'}
@@ -152,7 +154,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </div>
 
               <div className="form-group">
-                <label>Confirm Password</label>
+                <label>{t('auth.confirm_password_label')}</label>
                 <div className="password-input-wrapper">
                   <input
                     type={showConfirmPassword ? 'text' : 'password'}
@@ -169,7 +171,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </div>
 
               <Button variant="primary" type="submit" disabled={isResetting} className="auth-submit">
-                {isResetting ? 'Resetting...' : 'Reset Password ✨'}
+                {isResetting ? t('common.loading') : t('auth.reset_password_title')} ✨
               </Button>
             </form>
 
@@ -181,11 +183,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                   disabled={countdown > 0 || isSending}
                   style={{ width: '100%', pointerEvents: countdown > 0 ? 'none' : 'auto' }}
                 >
-                  {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend Code'}
+                  {countdown > 0 ? t('auth.resend_timer', { count: countdown }) : t('auth.resend_code')}
                 </Button>
               )}
               <span onClick={() => { setStep('email'); setCountdown(0); }} style={{ cursor: 'pointer', marginTop: 24 }}>
-                <ArrowLeft size={14} /> Try a different email
+                <ArrowLeft size={14} /> {t('auth.try_another_email')}
               </span>
             </div>
           </>
@@ -197,12 +199,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               <div className="auth-icon-circle success">
                 <ShieldCheck size={32} />
               </div>
-              <h2>Password Reset! 🎉</h2>
-              <p>Your password has been changed successfully.</p>
+              <h2>{t('auth.password_reset_success')}</h2>
+              <p>{t('auth.password_reset_success_desc')}</p>
             </div>
 
             <Button variant="primary" onClick={onBack} className="auth-submit">
-              Back to Login ✨
+              {t('auth.back_to_login')} ✨
             </Button>
           </>
         )}

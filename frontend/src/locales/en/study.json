@@ -1,0 +1,17 @@
+{
+  "session_complete": "Session Complete! 🎉",
+  "review_summary": "You've reviewed {{count}} words today.",
+  "back_to_dashboard": "Back to Dashboard",
+  "loading_words": "Loading words... 🐰✨",
+  "no_words_due": "No words to review! ✨",
+  "empty_study_desc": "Your library is empty or you've finished all reviews today.",
+  "hard": "Hard",
+  "medium": "Medium",
+  "easy": "Easy",
+  "front": "Front",
+  "back": "Back",
+  "tap_to_flip": "Tap to flip 💫",
+  "exit_study": "Exit Study Mode",
+  "flip_card": "Flip Card",
+  "update_progress_error": "Failed to update study progress! 😿"
+}

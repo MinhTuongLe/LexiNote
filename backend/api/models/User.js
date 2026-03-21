@@ -51,7 +51,7 @@ module.exports = {
       columnName: 'reset_password_expires'
     },
 
-    // Email verification fields
+    // E-mail verification fields
     isEmailVerified: {
       type: 'boolean',
       defaultsTo: false,

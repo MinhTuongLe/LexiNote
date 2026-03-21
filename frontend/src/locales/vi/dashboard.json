@@ -1,0 +1,22 @@
+{
+  "welcome": "Chào mừng bạn tới LexiNote! 🐰",
+  "ready_to_learn": "Hôm nay bạn đã sẵn sàng học từ mới chưa?",
+  "add_word": "Thêm từ mới",
+  "import": "Nhập file",
+  "start_study": "Bắt đầu học",
+  "words_due": "Có {{count}} từ cần ôn tập",
+  "words_due_zero": "Không có từ cần ôn tập",
+  "library": "Thư viện",
+  "words_count": "Có {{count}} từ vựng",
+  "words_count_zero": "Chưa có từ vựng",
+  "minigame": "Trò chơi",
+  "word_match": "Nối từ ✨",
+  "recently_added": "Thêm gần đây",
+  "view_all": "Xem tất cả",
+  "empty_library": "Thư viện trống. Hãy thêm từ mới nào! 🚀",
+  "progress": "Tiến độ: {{percent}}%",
+  "add_success": "Đã thêm từ mới vào thư viện! ✨",
+  "add_error": "Lỗi khi thêm từ vựng. 😿",
+  "import_success": "Đã nhập {{count}} từ vựng! 🎉",
+  "import_error": "Lỗi khi nhập từ từ file. 😿"
+}

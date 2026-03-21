@@ -3,6 +3,7 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react';
 import { useGetWordsQuery } from '../../store/apiSlice';
+import { useTranslation } from 'react-i18next';
 import './MatchGame.css';
 
 interface MatchGameProps {
@@ -19,6 +20,7 @@ type GameItem = {
 const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 'all' });
   const words = wordsData?.data || [];
+  const { t } = useTranslation();
 
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -98,7 +100,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     return (
       <div className="match-game empty">
         <div style={{ textAlign: 'center', marginTop: '100px' }}>
-          <h2>Loading words... 🐰✨</h2>
+          <h2>{t('games.loading_game')}</h2>
         </div>
       </div>
     );
@@ -108,11 +110,11 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     return (
       <div className="match-game empty">
         <Button variant="outline" onClick={onBack} className="back-btn">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> {t('common.back')}
         </Button>
         <Card className="game-over-card">
-          <h2>Not enough words 😿</h2>
-          <p>Please add at least 5 words to your library to play the matching game.</p>
+          <h2>{t('games.not_enough_words')}</h2>
+          <p>{t('games.not_enough_words_desc')}</p>
         </Card>
       </div>
     );
@@ -143,11 +145,11 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     <div className="match-game">
       <div className="match-header">
         <Button variant="outline" onClick={onBack} className="back-btn">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} /> {t('common.back')}
         </Button>
         <div className="match-title">
           <Trophy size={20} className="trophy-icon" />
-          <h2>Word Match</h2>
+          <h2>{t('games.match_game_title')}</h2>
         </div>
         <div className="score">
           {matchedIds.size} / {items.length / 2}
@@ -156,23 +158,23 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
 
       {gameCompleted ? (
         <Card className="game-over-card animate-pop">
-          <h2>You did it! 🎉</h2>
-          <p>All words matched perfectly.</p>
+          <h2>{t('games.game_win_title')}</h2>
+          <p>{t('games.game_win_desc')}</p>
           <Button variant="primary" onClick={initGame} className="play-again-btn">
-            <RefreshCw size={18} /> Play Again
+            <RefreshCw size={18} /> {t('games.play_again')}
           </Button>
         </Card>
       ) : (
         <div className="match-columns">
           <div className="match-column">
-            <h3 className="column-title">English 🇺🇸</h3>
+            <h3 className="column-title">{t('games.column_en')}</h3>
             <div className="match-list">
               {items.filter(i => i.type === 'en').map(renderItem)}
             </div>
           </div>
 
           <div className="match-column">
-            <h3 className="column-title">Tiếng Việt 🇻🇳</h3>
+            <h3 className="column-title">{t('games.column_vi')}</h3>
             <div className="match-list">
               {items.filter(i => i.type === 'vi').map(renderItem)}
             </div>

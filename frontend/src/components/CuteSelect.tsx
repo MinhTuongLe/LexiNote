@@ -13,9 +13,10 @@ interface CuteSelectProps {
   onChange: (value: string) => void;
   label?: string;
   className?: string;
+  align?: 'left' | 'right';
 }
 
-const CuteSelect: React.FC<CuteSelectProps> = ({ options, value, onChange, label, className = '' }) => {
+const CuteSelect: React.FC<CuteSelectProps> = ({ options, value, onChange, label, className = '', align = 'left' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -43,7 +44,7 @@ const CuteSelect: React.FC<CuteSelectProps> = ({ options, value, onChange, label
       </div>
 
       {isOpen && (
-        <div className="cute-select-dropdown animate-pop">
+        <div className={`cute-select-dropdown animate-pop align-${align}`}>
           {options.map((option) => (
             <div 
               key={option.value} 
