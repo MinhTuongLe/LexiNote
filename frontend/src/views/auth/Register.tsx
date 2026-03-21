@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useRegisterMutation } from '../../store/apiSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
+import { Eye, EyeOff } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
 import './Auth.css';
 
@@ -15,6 +16,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [register, { isLoading }] = useRegisterMutation();
   const { showAlert } = useCuteDialog();
 
@@ -63,13 +65,18 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
           
           <div className="form-group">
             <label>Password</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input 
+                type={showPassword ? 'text' : 'password'}
+                placeholder="••••••••" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           
           <Button 

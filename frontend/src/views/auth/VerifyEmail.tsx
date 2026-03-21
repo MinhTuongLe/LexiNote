@@ -20,9 +20,11 @@ const VerifyEmail: React.FC = () => {
   const initialEmail = queryParams.get('email') || '';
 
   const [email] = useState(initialEmail);
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(import.meta.env.VITE_MASTER_VERIFY_CODE || '');
   const [countdown, setCountdown] = useState(0);
   const [isVerified, setIsVerified] = useState(false);
+
+  const masterCode = import.meta.env.VITE_MASTER_VERIFY_CODE;
 
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
   const [resendVerification, { isLoading: isResending }] = useResendVerificationMutation();
@@ -89,7 +91,10 @@ const VerifyEmail: React.FC = () => {
             <Mail size={32} />
           </div>
           <h2>Xác thực tài khoản</h2>
-          <p>Chúng mình đã gửi mã xác thực tới <b>{email}</b> 📧</p>
+          {masterCode 
+            ? <p>Nhập mã xác thực bên dưới để kích hoạt tài khoản <b>{email}</b> 🔑</p>
+            : <p>Chúng mình đã gửi mã xác thực tới <b>{email}</b> 📧</p>
+          }
         </div>
 
         <form onSubmit={handleVerify} className="auth-form">
@@ -112,14 +117,16 @@ const VerifyEmail: React.FC = () => {
         </form>
 
         <div className="auth-footer" style={{ flexDirection: 'column', gap: '12px' }}>
-          <Button 
-            variant="outline" 
-            onClick={handleResend} 
-            disabled={countdown > 0 || isResending}
-            style={{ width: '100%' }}
-          >
-            {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : 'Gửi lại mã xác thực'}
-          </Button>
+          {!masterCode && (
+            <Button 
+              variant="outline" 
+              onClick={handleResend} 
+              disabled={countdown > 0 || isResending}
+              style={{ width: '100%' }}
+            >
+              {countdown > 0 ? `Gửi lại mã sau ${countdown}s` : 'Gửi lại mã xác thực'}
+            </Button>
+          )}
           <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', marginTop: 12 }}>
             <ArrowLeft size={14} /> Quay lại Đăng nhập
           </span>

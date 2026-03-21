@@ -7,7 +7,7 @@ import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
 import CuteSelect from '../../components/CuteSelect';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft, Moon, Volume2, Trash2, ShieldAlert } from 'lucide-react';
+import { User, Mail, Lock, Pencil, Check, ArrowLeft, Moon, Volume2, Trash2, ShieldAlert, Eye, EyeOff } from 'lucide-react';
 import './ProfilePage.css';
 
 const AVATAR_OPTIONS = ['🐰', '🐱', '🐶', '🦊', '🐼', '🐨', '🐸', '🦄', '🐻', '🐧', '🦁', '🐯', '🐮', '🐷', '🐵', '🦋', '🌸', '🌟', '⭐', '🔥', '💎', '🎯', '🎨', '🎭'];
@@ -32,6 +32,9 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
   // Settings state mockups
@@ -280,35 +283,50 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         <form onSubmit={handleChangePassword} className="password-form">
           <div className="form-group">
             <label>Current Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showCurrentPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                required
+              />
+              <button type="button" className="password-toggle-btn" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+                {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div className="form-group">
             <label>New Password</label>
-            <input
-              type="password"
-              placeholder="At least 6 characters"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={6}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                placeholder="At least 6 characters"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <button type="button" className="password-toggle-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+                {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div className="form-group">
             <label>Confirm New Password</label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={6}
-            />
+            <div className="password-input-wrapper">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+              />
+              <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
           <div className="password-form-actions">
             <Button variant="primary" type="submit" disabled={isChangingPassword}>

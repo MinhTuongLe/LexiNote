@@ -3,7 +3,7 @@ import { useForgotPasswordMutation, useResetPasswordMutation } from '../../store
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
-import { ArrowLeft, Mail, KeyRound, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import './Auth.css';
 
 type ForgotStep = 'email' | 'code' | 'done';
@@ -15,10 +15,14 @@ interface ForgotPasswordProps {
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [step, setStep] = useState<ForgotStep>('email');
   const [email, setEmail] = useState('');
-  const [resetCode, setResetCode] = useState('');
+  const [resetCode, setResetCode] = useState(import.meta.env.VITE_MASTER_VERIFY_CODE || '');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [countdown, setCountdown] = useState(0);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const masterCode = import.meta.env.VITE_MASTER_VERIFY_CODE;
 
   const [forgotPassword, { isLoading: isSending }] = useForgotPasswordMutation();
   const [resetPassword, { isLoading: isResetting }] = useResetPasswordMutation();
@@ -77,7 +81,10 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                 <Mail size={32} />
               </div>
               <h2>Forgot Password?</h2>
-              <p>Enter your email and we'll send you a reset code 📧</p>
+              {masterCode
+                ? <p>Enter your email and use the master code to reset your password 🔑</p>
+                : <p>Enter your email and we'll send you a reset code 📧</p>
+              }
             </div>
 
             <form onSubmit={handleSendCode} className="auth-form">
@@ -129,26 +136,36 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
 
               <div className="form-group">
                 <label>New Password</label>
-                <input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    placeholder="At least 6 characters"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button type="button" className="password-toggle-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="form-group">
                 <label>Confirm Password</label>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  minLength={6}
-                />
+                <div className="password-input-wrapper">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                  <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <Button variant="primary" type="submit" disabled={isResetting} className="auth-submit">
@@ -157,14 +174,16 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
             </form>
 
             <div className="auth-footer" style={{ flexDirection: 'column', gap: '12px' }}>
-              <Button 
-                variant="outline" 
-                onClick={() => handleSendCode()} 
-                disabled={countdown > 0 || isSending}
-                style={{ width: '100%', pointerEvents: countdown > 0 ? 'none' : 'auto' }}
-              >
-                {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend Code'}
-              </Button>
+              {!masterCode && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleSendCode()} 
+                  disabled={countdown > 0 || isSending}
+                  style={{ width: '100%', pointerEvents: countdown > 0 ? 'none' : 'auto' }}
+                >
+                  {countdown > 0 ? `Resend code in ${countdown}s` : 'Resend Code'}
+                </Button>
+              )}
               <span onClick={() => { setStep('email'); setCountdown(0); }} style={{ cursor: 'pointer', marginTop: 24 }}>
                 <ArrowLeft size={14} /> Try a different email
               </span>

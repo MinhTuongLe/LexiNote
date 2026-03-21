@@ -7,6 +7,7 @@
 
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-bunny-key';
@@ -282,67 +283,30 @@ module.exports = {
         });
       }
 
-      // Generate reset token (6-digit code for simplicity)
-      const resetToken = crypto.randomInt(100000, 999999).toString();
-      const resetExpires = Date.now() + 5 * 60 * 1000; // 5 minutes
-
-      // Hash the reset token before storing
-      const hashedToken = await bcrypt.hash(resetToken, 10);
-
-      await User.updateOne({ id: user.id }).set({
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: resetExpires
-      });
-
-      // Send the email with the reset code
-      try {
-        const subject = '🔒 LexiNote - Password Reset Code';
-        const html = `
-          <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
-            <h2 style="color: #ff7675; text-align: center;">Hello from LexiNote! 🐰</h2>
-            <p style="font-size: 16px; color: #444;">We received a request to reset your password. Use the following 6-digit code to complete the process:</p>
-            <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-              <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${resetToken}</span>
-            </div>
-            <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
-            <hr style="border: 1px dashed #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #999; text-align: center;">If you didn't request a password reset, you can safely ignore this email.</p>
-          </div>
-        `;
-
-        if (resend) {
-          resend.emails.send({
-            from: 'LexiNote <onboarding@resend.dev>',
-            to: user.email,
-            subject: subject,
-            html: html,
-          }).then(() => {
-            sails.log.info(`🚀 Reset email sent via Resend API to ${user.email}`);
-          }).catch(err => {
-            sails.log.error(`❌ Resend API Error for ${user.email}:`, err);
-          });
-        } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-          const transporter = createTransporter();
-          const mailOptions = {
-            from: `"LexiNote App 🐰" <${process.env.SMTP_USER}>`,
-            to: user.email,
-            subject: subject,
-            html: html,
-          };
-          transporter.sendMail(mailOptions).catch(err => {
-            sails.log.error('❌ Failed to send reset email:', err);
-          });
-          sails.log.info(`📧 Password reset email attempt triggered for ${email}`);
-        } else {
-          sails.log.warn('⚠️ No email service configured. Simulating email drop:');
-          sails.log.info(`====== EMAIL TO: ${email} ======\nSubject: ${subject}\nCode: ${resetToken}\n================================`);
-        }
-      } catch (mailErr) {
-        sails.log.error('❌ Email setup error:', mailErr);
+      // With MASTER_VERIFY_CODE mode: no token generation needed, master code is used directly
+      const masterCode = process.env.MASTER_VERIFY_CODE;
+      if (masterCode) {
+        // Store master code hash so resetPassword can verify it
+        const hashedMaster = await bcrypt.hash(masterCode, 10);
+        await User.updateOne({ id: user.id }).set({
+          resetPasswordToken: hashedMaster,
+          resetPasswordExpires: Date.now() + 30 * 60 * 1000 // 30 mins for master code
+        });
+        sails.log.info(`🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE to reset.`);
+      } else {
+        // Normal flow: generate random token
+        const resetToken = crypto.randomInt(100000, 999999).toString();
+        const resetExpires = Date.now() + 5 * 60 * 1000;
+        const hashedToken = await bcrypt.hash(resetToken, 10);
+        await User.updateOne({ id: user.id }).set({
+          resetPasswordToken: hashedToken,
+          resetPasswordExpires: resetExpires
+        });
+        sails.log.info(`🔑 Reset token generated for ${user.email}: ${resetToken} (no email service configured)`);
       }
 
       return res.json({
-        message: 'If an account with that email exists, a reset code has been sent! 📬'
+        message: 'Reset code generated! Please use the master verification code to reset. 🔑'
       });
     } catch (err) {
       return res.serverError(err);

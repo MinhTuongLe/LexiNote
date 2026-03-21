@@ -86,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                   className="user-avatar-group clickable" 
                   onClick={() => setShowDropdown(!showDropdown)}
                 >
-                  <span className="user-name">{user?.fullName}</span>
+                  <span className="user-name" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.fullName}</span>
                   <div className="user-avatar">{user?.avatar || '🐰'}</div>
                 </div>
                 
