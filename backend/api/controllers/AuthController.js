@@ -7,46 +7,9 @@
 
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-bunny-key';
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
-
-// Helper: generate mail transporter
-function createTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  
-  // For Gmail, force Port 465 + secure: true to avoid Render's connection timeout on 587
-  if (host.includes('gmail')) {
-    return nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true, 
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-      // Timeout settings to handle cloud network slowness
-      connectionTimeout: 10000,
-      greetingTimeout: 5000,
-      socketTimeout: 15000,
-    });
-  }
-
-  // Fallback for other providers (manual config)
-  return nodemailer.createTransport({
-    host: host,
-    port: parseInt(process.env.SMTP_PORT) || 587,
-    secure: process.env.SMTP_SECURE === 'true', 
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS,
-    },
-  });
-}
 
 // Token durations
 const ACCESS_TOKEN_EXPIRY = '15m';
@@ -59,56 +22,6 @@ function generateAccessToken(userId) {
 
 function generateRefreshToken(userId) {
   return jwt.sign({ id: userId, type: 'refresh' }, JWT_SECRET, { expiresIn: REFRESH_TOKEN_EXPIRY });
-}
-
-// Helper: send verification email
-async function sendVerificationEmail(user, token) {
-  const subject = '✨ Verify your LexiNote Account!';
-  const html = `
-    <div style="font-family: sans-serif; padding: 20px; background: #fdfbf7; border-radius: 12px; border: 2px dashed #ffc3a0; max-width: 500px; margin: auto;">
-      <h2 style="color: #ff7675; text-align: center;">Welcome to LexiNote! 🐰</h2>
-      <p style="font-size: 16px; color: #444;">Click the link below or use the code to verify your email address:</p>
-      <div style="background: #fff; border: 2px solid #ff7675; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0;">
-        <span style="font-size: 24px; font-weight: bold; letter-spacing: 4px; color: #ff7675;">${token}</span>
-      </div>
-      <p style="font-size: 14px; color: #666; text-align: center;">This code will expire in 5 minutes. ⏰</p>
-      <hr style="border: 1px dashed #eee; margin: 20px 0;" />
-      <p style="font-size: 12px; color: #999; text-align: center;">If you didn't create an account, you can safely ignore this email.</p>
-    </div>
-  `;
-
-  if (resend) {
-    // API Approach (For Render/Production)
-    resend.emails.send({
-      from: 'LexiNote <onboarding@resend.dev>', // Default for Resend test accounts
-      to: user.email,
-      subject: subject,
-      html: html,
-    }).then(() => {
-      sails.log.info(`🚀 Verification email sent via Resend API to ${user.email}`);
-    }).catch(err => {
-      sails.log.error(`❌ Resend API Error for ${user.email}:`, err);
-    });
-  } else if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    // SMTP Approach (For Local or manual SMTP)
-    const transporter = createTransporter();
-    const mailOptions = {
-      from: `"LexiNote App 🐰" <${process.env.SMTP_USER}>`,
-      to: user.email,
-      subject: subject,
-      html: html,
-    };
-    transporter.sendMail(mailOptions)
-      .then(() => {
-        sails.log.info(`📧 Verification email sent via SMTP to ${user.email}`);
-      })
-      .catch(err => {
-        sails.log.error(`❌ SMTP Error for ${user.email}:`, err);
-      });
-  } else {
-    sails.log.warn('⚠️ No email service configured. Simulating email drop:');
-    sails.log.info(`====== VERIFICATION EMAIL TO: ${user.email} ======\nSubject: ${subject}\nCode: ${token}\n================================`);
-  }
 }
 
 // Helper: sanitize user object for response
@@ -146,26 +59,19 @@ module.exports = {
         return res.badRequest({ message: 'Email already registered! 😿' });
       }
 
-      // Generate verification token
-      const verificationToken = crypto.randomInt(100000, 999999).toString();
-      const verificationExpires = Date.now() + 5 * 60 * 1000; // 5 mins
-
+      // Create user — marked as unverified, awaiting master code
       const newUser = await User.create({
         email: email.toLowerCase().trim(),
         password,
         fullName: fullName.trim(),
-        emailVerificationToken: await bcrypt.hash(verificationToken, 10),
-        emailVerificationExpires: verificationExpires,
         isEmailVerified: false
       }).fetch();
 
-      // Send verification email (fire and forget to avoid hanging)
-      sendVerificationEmail(newUser, verificationToken);
+      sails.log.info(`👤 New user registered: ${newUser.email} (unverified). Use MASTER_VERIFY_CODE to verify.`);
 
       return res.status(201).json({
-        message: 'Account created! Please check your email for verification code. 📬',
-        email: newUser.email,
-        _devVerificationToken: process.env.NODE_ENV !== 'production' ? verificationToken : undefined
+        message: 'Account created! Please contact admin for verification code. 🔑',
+        email: newUser.email
       });
     } catch (err) {
       return res.serverError(err);
@@ -513,15 +419,22 @@ module.exports = {
         return res.badRequest({ message: 'Email is already verified! ✨' });
       }
 
-      // Check expiry
-      if (user.emailVerificationExpires < Date.now()) {
-        return res.badRequest({ message: 'Verification code has expired! Please request a new one. ⏰' });
-      }
+      // Check expiry — skip if master code mode is active
+      const masterCode = process.env.MASTER_VERIFY_CODE;
+      const isMasterCode = masterCode && token === masterCode;
 
-      // Verify token
-      const isValid = await bcrypt.compare(token, user.emailVerificationToken);
-      if (!isValid) {
-        return res.badRequest({ message: 'Invalid verification code! ❌' });
+      if (!isMasterCode) {
+        // Normal flow: check expiry and verify hashed token
+        if (!user.emailVerificationExpires || user.emailVerificationExpires < Date.now()) {
+          return res.badRequest({ message: 'Verification code has expired! Please request a new one. ⏰' });
+        }
+
+        const isValid = await bcrypt.compare(token, user.emailVerificationToken);
+        if (!isValid) {
+          return res.badRequest({ message: 'Invalid verification code! ❌' });
+        }
+      } else {
+        sails.log.info(`🔑 [MASTER_CODE] Account verified via master code for ${user.email}`);
       }
 
       // Update user
@@ -569,21 +482,11 @@ module.exports = {
         return res.badRequest({ message: 'Email is already verified! ✨' });
       }
 
-      // Generate new token
-      const verificationToken = crypto.randomInt(100000, 999999).toString();
-      const verificationExpires = Date.now() + 5 * 60 * 1000; // 5 mins
-
-      await User.updateOne({ id: user.id }).set({
-        emailVerificationToken: await bcrypt.hash(verificationToken, 10),
-        emailVerificationExpires: verificationExpires
-      });
-
-      // Send verification email (fire and forget)
-      sendVerificationEmail(user, verificationToken);
+      // No email sending — just confirm to user to use MASTER_VERIFY_CODE
+      sails.log.info(`🔁 Resend verification requested for: ${user.email} (use MASTER_VERIFY_CODE)`);
 
       return res.json({
-        message: 'Verification code resent! Please check your email. 📬',
-        _devVerificationToken: process.env.NODE_ENV !== 'production' ? verificationToken : undefined
+        message: 'Please use the verification code provided by the administrator. 🔑'
       });
     } catch (err) {
       return res.serverError(err);
