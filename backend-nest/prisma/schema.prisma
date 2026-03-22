@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                       Int      @id @default(autoincrement())
+  email                    String   @unique
+  password                 String
+  fullName                 String   @map("full_name")
+  avatar                   String?  @default("🐰")
+  refreshToken             String?  @map("refresh_token")
+  resetPasswordToken       String?  @map("reset_password_token")
+  resetPasswordExpires     BigInt?  @map("reset_password_expires")
+  isEmailVerified          Boolean  @default(false) @map("is_email_verified")
+  emailVerificationToken   String?  @map("email_verification_token")
+  emailVerificationExpires BigInt?  @map("email_verification_expires")
+  createdAt                BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt                BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  
+  words                    Word[]
+
+  @@map("user")
+}
+
+model Word {
+  id          Int      @id @default(autoincrement())
+  word        String   @unique
+  meaningVi   String   @map("meaning_vi")
+  example     String?
+  type        String   @default("noun")
+  ownerId     Int      @map("owner")
+  createdAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  owner       User     @relation(fields: [ownerId], references: [id])
+  relations   WordRelation[]
+  reviews     Review[]
+
+  @@map("word")
+}
+
+model WordRelation {
+  id        Int      @id @default(autoincrement())
+  wordId    Int      @map("word")
+  type      String
+  value     String
+  createdAt BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  word      Word     @relation(fields: [wordId], references: [id])
+
+  @@map("wordrelation")
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  wordId         Int      @unique @map("word")
+  interval       Int      @default(0)
+  easeFactor     Float    @default(2.5) @map("ease_factor")
+  correctCount   Int      @default(0) @map("correct_count")
+  wrongCount     Int      @default(0) @map("wrong_count")
+  lastReviewed   BigInt?  @map("last_reviewed")
+  nextReview     BigInt   @default(dbgenerated("extract(epoch from now()) * 1000")) @map("next_review")
+  createdAt      BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt      BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  word           Word     @relation(fields: [wordId], references: [id])
+
+  @@map("review")
+}
