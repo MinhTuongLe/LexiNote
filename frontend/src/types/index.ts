@@ -3,7 +3,7 @@ export interface Word {
   word: string;
   meaningVi: string;
   example?: string;
-  type: 'noun' | 'verb' | 'adj' | 'adv' | 'phrasal_verb' | 'idiom' | 'phrase' | 'noun_phrase' | 'other';
+  type: 'noun' | 'verb' | 'adj' | 'adv' | 'phrasal_verb' | 'idiom' | 'phrase' | 'noun_phrase' | 'verb_phrase' | 'other';
   createdAt: number;
   relations?: WordRelation[];
   reviews?: Review[];

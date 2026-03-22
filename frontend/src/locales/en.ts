@@ -8,6 +8,7 @@ import stats from './en/stats.json';
 import study from './en/study.json';
 import games from './en/games.json';
 import words from './en/words.json';
+import settings from './en/settings.json';
 
 const en = {
   common,
@@ -19,7 +20,8 @@ const en = {
   stats,
   study,
   games,
-  words
+  words,
+  settings
 };
 
 export default en;

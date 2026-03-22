@@ -22,9 +22,33 @@
 }
 
 .word-form input, 
-.word-form select, 
-.word-form textarea {
+.word-form textarea,
+.word-form .cute-select-trigger {
   width: 100%;
+  border: 3px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  background: white;
+  transition: all 0.2s;
+  box-shadow: none; /* No shadow by default in form */
+}
+
+/* Hover & Focus state for all form fields */
+.word-form input:hover, 
+.word-form textarea:hover,
+.word-form .cute-select-trigger:hover,
+.word-form input:focus, 
+.word-form textarea:focus,
+.word-form .cute-select-trigger.open {
+  transform: translateY(-2px);
+  box-shadow: 4px 4px 0px 0px var(--border);
+  outline: none;
+}
+
+.word-form .cute-select-trigger.open,
+.word-form input:focus, 
+.word-form textarea:focus {
+  border-color: var(--primary);
 }
 
 .word-form textarea {

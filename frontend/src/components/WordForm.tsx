@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { WORD_TYPES } from '../constants/wordTypes';
+import { useGetSettingsQuery } from '../store/apiSlice';
 import Button from './Button';
 import CuteSelect from './CuteSelect';
 import type { CreateWordDTO } from '../types';
@@ -12,6 +14,7 @@ interface WordFormProps {
 }
 
 const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) => {
+  const { data: settingsData } = useGetSettingsQuery();
   const { t } = useTranslation();
   const [formData, setFormData] = useState<CreateWordDTO>(initialData || {
     word: '',
@@ -21,15 +24,14 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
   });
 
   const wordTypeOptions = [
-    { value: 'noun', label: 'Noun' },
-    { value: 'verb', label: 'Verb' },
-    { value: 'adj', label: 'Adjective' },
-    { value: 'adv', label: 'Adverb' },
-    { value: 'phrasal_verb', label: 'Phrasal Verb' },
-    { value: 'idiom', label: 'Idiom' },
-    { value: 'phrase', label: 'Phrase' },
-    { value: 'noun_phrase', label: 'Noun Phrase' },
-    { value: 'other', label: 'Other' }
+    ...WORD_TYPES.map(type => ({
+      value: type.value,
+      label: t(`library.word_types.${type.value}`)
+    })),
+    ...(settingsData?.wordTypes?.custom || []).map((type: any) => ({
+      value: type.value,
+      label: type.label
+    }))
   ];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

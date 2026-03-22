@@ -23,5 +23,17 @@
   "deselect_all": "Bỏ chọn tất cả",
   "selected_count": "Đã chọn {{count}}",
   "load_more": "Hiện thêm 🐰",
-  "loading_more": "Đang tải... ✨"
+  "loading_more": "Đang tải... ✨",
+  "word_types": {
+    "noun": "Danh từ",
+    "verb": "Động từ",
+    "adj": "Tính từ",
+    "adv": "Trạng từ",
+    "phrasal_verb": "Cụm động từ",
+    "idiom": "Thành ngữ",
+    "phrase": "Cụm từ",
+    "noun_phrase": "Cụm danh từ",
+    "verb_phrase": "Cụm động từ (Phrase)",
+    "other": "Khác"
+  }
 }
