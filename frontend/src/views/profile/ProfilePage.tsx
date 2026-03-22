@@ -19,7 +19,7 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const { user } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { showAlert } = useCuteDialog();
 
   // Profile edit
