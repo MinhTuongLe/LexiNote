@@ -20,6 +20,7 @@ model User {
   emailVerificationExpires BigInt?  @map("email_verification_expires")
   createdAt                BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
   updatedAt                BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  settings                 Json?    @default("{}") @db.Json
   
   words                    Word[]
 
@@ -28,7 +29,7 @@ model User {
 
 model Word {
   id          Int      @id @default(autoincrement())
-  word        String   @unique
+  word        String
   meaningVi   String   @map("meaning_vi")
   example     String?
   type        String   @default("noun")
@@ -40,6 +41,7 @@ model Word {
   relations   WordRelation[]
   reviews     Review[]
 
+  @@unique([word, ownerId])
   @@map("word")
 }
 
@@ -71,4 +73,12 @@ model Review {
   word           Word     @relation(fields: [wordId], references: [id])
 
   @@map("review")
+}
+
+model archive {
+  id               Int     @id @default(autoincrement())
+  createdAt        BigInt?
+  fromModel        String?
+  originalRecord   Json?   @db.Json
+  originalRecordId Json?   @db.Json
 }

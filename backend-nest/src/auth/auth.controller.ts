@@ -17,11 +17,7 @@ export class AuthController {
   @Post('login')
   @ApiOperation({ summary: 'Login and receive tokens' })
   async login(@Body() body: any) {
-    // In Nest, we could use a LocalAuthGuard but here we're porting Sails logic
     const user = await this.authService.validateUser(body.email, body.password);
-    if (!user) {
-      return { status: 400, message: 'Invalid credentials! ❌' };
-    }
     return this.authService.login(user);
   }
 
@@ -78,6 +74,7 @@ export class AuthController {
   async logout(@Request() req: any) {
     return this.authService.logout(req.user.userId);
   }
+
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

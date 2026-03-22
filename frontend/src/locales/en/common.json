@@ -17,5 +17,7 @@
   "cancel_cute": "Cancel 🥺",
   "system_error": "An error occurred, you have been logged out for security.",
   "logout_confirm_title": "Log out? 🐰",
-  "logout_confirm_msg": "See you again soon!"
+  "logout_confirm_msg": "See you again soon!",
+  "more": "more",
+  "info": "Info"
 }

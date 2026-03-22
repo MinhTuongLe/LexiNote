@@ -8,6 +8,7 @@ import stats from './vi/stats.json';
 import study from './vi/study.json';
 import games from './vi/games.json';
 import words from './vi/words.json';
+import settings from './vi/settings.json';
 
 const vi = {
   common,
@@ -19,7 +20,8 @@ const vi = {
   stats,
   study,
   games,
-  words
+  words,
+  settings
 };
 
 export default vi;

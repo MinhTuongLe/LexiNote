@@ -18,18 +18,31 @@ export class ReviewService {
       },
     });
 
-    return reviews.map(r => ({
-      ...r,
-      lastReviewed: r.lastReviewed ? Number(r.lastReviewed) : null,
-      nextReview: r.nextReview ? Number(r.nextReview) : null,
-      createdAt: Number(r.createdAt),
-      updatedAt: Number(r.updatedAt),
-      word: {
-        ...r.word,
-        createdAt: Number(r.word.createdAt),
-        updatedAt: Number(r.word.updatedAt),
-      },
-    }));
+    return reviews.map(r => this.formatReview(r));
+  }
+
+  private formatReview(review: any) {
+    if (!review) return null;
+    const formatted: any = {
+      ...review,
+      id: Number(review.id),
+      wordId: Number(review.wordId),
+      createdAt: Number(review.createdAt),
+      updatedAt: Number(review.updatedAt),
+      lastReviewed: review.lastReviewed ? Number(review.lastReviewed) : null,
+      nextReview: review.nextReview ? Number(review.nextReview) : null,
+    };
+
+    if (review.word) {
+      formatted.word = {
+        ...review.word,
+        id: Number(review.word.id),
+        ownerId: Number(review.word.ownerId || review.word.owner), // Support owner or ownerId
+        createdAt: Number(review.word.createdAt),
+        updatedAt: Number(review.word.updatedAt),
+      };
+    }
+    return formatted;
   }
 
   async updateSRS(userId: number, reviewId: number, quality: number) {
@@ -71,40 +84,45 @@ export class ReviewService {
       },
     });
 
-    return {
-      ...updated,
-      createdAt: Number(updated.createdAt),
-      updatedAt: Number(updated.updatedAt),
-      lastReviewed: updated.lastReviewed ? Number(updated.lastReviewed) : null,
-      nextReview: updated.nextReview ? Number(updated.nextReview) : null,
-    };
+    return this.formatReview(updated);
   }
 
   async resetBulk(userId: number, wordIds: number[]) {
-    const reviews = await this.prisma.review.findMany({
+    // 1. Verify all wordIds belong to the user
+    const words = await this.prisma.word.findMany({
       where: {
-        wordId: { in: wordIds },
-        word: { ownerId: userId },
+        id: { in: wordIds },
+        ownerId: userId,
       },
+      select: { id: true },
     });
 
-    const reviewIds = reviews.map(r => r.id);
+    const verifiedIds = words.map(w => w.id);
 
-    if (reviewIds.length > 0) {
-      await this.prisma.review.updateMany({
-        where: { id: { in: reviewIds } },
-        data: {
-          nextReview: BigInt(Date.now()),
-          lastReviewed: 0,
+    if (verifiedIds.length === 0) {
+      return { success: true, count: 0 };
+    }
+
+    // 2. Start transaction: Reset progress by deleting and recreating fresh SRS records
+    return this.prisma.$transaction(async (tx) => {
+      // Remove existing review records for these words
+      await tx.review.deleteMany({
+        where: { wordId: { in: verifiedIds } },
+      });
+
+      // Create fresh starting points (due 1h ago to bypass float precision loss)
+      await tx.review.createMany({
+        data: verifiedIds.map(id => ({
+          wordId: id,
+          nextReview: BigInt(Date.now() - 3600000),
           interval: 0,
           easeFactor: 2.5,
           correctCount: 0,
           wrongCount: 0,
-        },
+        })),
       });
-      return { success: true, count: reviewIds.length };
-    }
 
-    return { success: true, count: 0 };
+      return { success: true, count: verifiedIds.length };
+    });
   }
 }

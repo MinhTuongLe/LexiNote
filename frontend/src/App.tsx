@@ -9,6 +9,8 @@ import WordImport from './components/WordImport';
 import Library from './views/Library';
 import StudyMode from './views/StudyMode';
 import ProfilePage from './views/profile/ProfilePage';
+import SettingsPage from './views/settings/SettingsPage';
+import LanguageSettingsPage from './views/settings/LanguageSettingsPage';
 import ForgotPassword from './views/auth/ForgotPassword';
 import MatchGame from './views/games/MatchGame';
 import ScrollToTop from './components/ScrollToTop';
@@ -24,6 +26,7 @@ import { useCuteDialog } from './context/DialogContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized } from './store/authSlice';
+import { WORD_TYPES } from './constants/wordTypes';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
@@ -37,14 +40,14 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
-  const { isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
   const { t } = useTranslation();
 
-  // Try to load user profile if authenticated but not fully initialized
+  // Always sync user profile when authenticated
   const { data: meData, error: meError, isLoading: meLoading } = useGetMeQuery(undefined, { 
-    skip: !isAuthenticated || isInitialized 
+    skip: !isAuthenticated 
   });
 
   useEffect(() => {
@@ -95,6 +98,13 @@ function App() {
     );
   }
 
+  const getTypeLabel = (typeValue: string) => {
+    const defaultType = WORD_TYPES.find(t => t.value === typeValue);
+    if (defaultType) return t(`library.word_types.${typeValue}`);
+    const customType = user?.settings?.wordTypes?.find((t: any) => t.value === typeValue);
+    return customType ? customType.label : typeValue;
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="app-container">
@@ -143,6 +153,8 @@ function App() {
       <main className="main-content">
         <Routes>
           <Route path="/profile" element={<ProfilePage onBack={() => navigate('/dashboard')} />} />
+          <Route path="/settings" element={<SettingsPage onBack={() => navigate('/dashboard')} />} />
+          <Route path="/settings/language" element={<LanguageSettingsPage onBack={() => navigate('/settings')} />} />
           <Route path="/match-game" element={<MatchGame onBack={() => navigate('/dashboard')} />} />
           
           <Route path="/study" element={<StudyMode onComplete={() => navigate('/dashboard')} />} />
@@ -209,7 +221,7 @@ function App() {
                     <Card key={word.id} className="word-item">
                       <div className="word-header">
                         <h3>{word.word}</h3>
-                        <span className="type-tag">{word.type}</span>
+                        <span className="type-tag">{getTypeLabel(word.type)}</span>
                       </div>
                       <p className="meaning">{word.meaningVi}</p>
                       <div className="card-footer">

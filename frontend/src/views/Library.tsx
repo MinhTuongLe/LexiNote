@@ -3,48 +3,68 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
 import WordForm from '../components/WordForm';
-import { Search, Trash2, RotateCcw, CheckSquare, Square, Pencil, Download } from 'lucide-react';
+import { 
+  Search, Trash2, RotateCcw, CheckSquare, Square, 
+  Pencil, Download, Loader2, Plus, Upload 
+} from 'lucide-react';
 import * as XLSX from 'xlsx';
+import WordImport from '../components/WordImport';
 import { 
   useGetWordsQuery, 
+  useLazyGetWordsQuery,
   useDeleteWordMutation, 
   useDeleteBulkWordsMutation,
   useUpdateWordMutation,
-  useResetProgressMutation 
+  useResetProgressMutation,
+  useGetSettingsQuery,
+  useCreateWordMutation,
+  useImportWordsMutation,
+  useGetDashboardStatsQuery
 } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
 import CuteSelect from '../components/CuteSelect';
 import SkeletonWordCard from '../components/SkeletonWordCard';
 import type { Word } from '../types';
 import { useTranslation } from 'react-i18next';
+import { WORD_TYPES } from '../constants/wordTypes';
 import '../components/Skeleton.css';
 import './Library.css';
 
 const Library: React.FC = () => {
+  const { data: settingsData } = useGetSettingsQuery();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
   const { t } = useTranslation();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const [page, setPage] = useState(1);
   const [loadedWords, setLoadedWords] = useState<Word[]>([]);
+  const [isExporting, setIsExporting] = useState(false);
   const limit = 20;
 
   // RTK Query
   const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType });
+  const [triggerGetWords] = useLazyGetWordsQuery();
   const meta = wordsData?.meta;
 
   const [deleteWord] = useDeleteWordMutation();
   const [deleteBulkWords] = useDeleteBulkWordsMutation();
   const [updateWord] = useUpdateWordMutation();
   const [resetProgress] = useResetProgressMutation();
+  const [createWord] = useCreateWordMutation();
+  const [importWords, { isLoading: isImportingApi }] = useImportWordsMutation();
+  const { data: stats } = useGetDashboardStatsQuery();
 
   const handleDelete = async (id: number) => {
     showConfirm(t('library.delete_confirm_title'), t('library.delete_confirm_msg'), async () => {
       try {
         await deleteWord(id).unwrap();
+        showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
+        setLoadedWords(prev => prev.filter(w => w.id !== id));
         setSelectedIds(prev => prev.filter(sid => sid !== id));
       } catch (err) {
         console.error(err);
@@ -62,6 +82,7 @@ const Library: React.FC = () => {
         try {
           await deleteBulkWords({ wordIds: selectedIds }).unwrap();
           showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
+          setLoadedWords(prev => prev.filter(w => !selectedIds.includes(w.id)));
           setSelectedIds([]);
         } catch (err) {
           showAlert(t('common.error'), t('common.error'), 'error');
@@ -81,18 +102,60 @@ const Library: React.FC = () => {
     }
   };
 
-  const exportToExcel = () => {
-    const dataToExport = loadedWords.map(w => ({
-      Word: w.word,
-      Meaning: w.meaningVi,
-      Example: w.example || '',
-      Type: w.type
-    }));
+  const handleAddWord = async (data: any) => {
+    try {
+      await createWord(data).unwrap();
+      showAlert(t('common.success'), t('dashboard.add_success'), 'success');
+      setIsAddModalOpen(false);
+    } catch (err) {
+      showAlert(t('common.error'), t('dashboard.add_error'), 'error');
+    }
+  };
 
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
-    XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const handleImport = async (words: any[]) => {
+    try {
+      await importWords(words).unwrap();
+      showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
+      setIsImportModalOpen(false);
+    } catch (err) {
+      showAlert(t('common.error'), t('dashboard.import_error'), 'error');
+    }
+  };
+
+  const exportToExcel = async () => {
+    try {
+      setIsExporting(true);
+      // Fetch ALL words matching current filters regardless of pagination
+      const result = await triggerGetWords({ 
+        limit: 'all', 
+        search, 
+        type: filterType 
+      }).unwrap();
+      
+      const allWords = result.data || [];
+      
+      if (allWords.length === 0) {
+        showAlert(t('common.info'), t('library.empty_library'), 'alert');
+        return;
+      }
+
+      const dataToExport = allWords.map(w => ({
+        Word: w.word,
+        Meaning: w.meaningVi,
+        Example: w.example || '',
+        Type: w.type
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
+      XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
+    } catch (err) {
+      console.error('Export failed:', err);
+      showAlert(t('common.error'), t('common.error'), 'error');
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleReset = async (ids?: number[]) => {
@@ -122,15 +185,21 @@ const Library: React.FC = () => {
 
   useEffect(() => {
     if (wordsData?.data) {
-      if (page === 1) {
-        setLoadedWords(wordsData.data);
-      } else {
-        // Prevent duplicate appending if component re-renders
-        setLoadedWords(prev => {
-          const newWords = wordsData.data.filter(w => !prev.some(p => p.id === w.id));
-          return [...prev, ...newWords];
+      setLoadedWords(prev => {
+        if (page === 1) return wordsData.data;
+
+        // Correctly merge: update existing and append new ones
+        const updated = [...prev];
+        wordsData.data.forEach(freshWord => {
+          const index = updated.findIndex(w => w.id === freshWord.id);
+          if (index !== -1) {
+            updated[index] = freshWord; // Keep in-place update
+          } else {
+            updated.push(freshWord); // Add next page
+          }
         });
-      }
+        return updated;
+      });
     }
   }, [wordsData, page]);
 
@@ -140,16 +209,22 @@ const Library: React.FC = () => {
 
   const wordTypeOptions = [
     { value: 'all', label: t('library.type_filter') },
-    { value: 'noun', label: 'Noun' },
-    { value: 'verb', label: 'Verb' },
-    { value: 'adj', label: 'Adjective' },
-    { value: 'adv', label: 'Adverb' },
-    { value: 'phrasal_verb', label: 'Phrasal Verb' },
-    { value: 'idiom', label: 'Idiom' },
-    { value: 'phrase', label: 'Phrase' },
-    { value: 'noun_phrase', label: 'Noun Phrase' },
-    { value: 'other', label: 'Other' }
+    ...WORD_TYPES.map(type => ({
+      value: type.value,
+      label: t(`library.word_types.${type.value}`)
+    })),
+    ...(settingsData?.wordTypes?.custom || []).map((type: any) => ({
+      value: type.value,
+      label: type.label
+    }))
   ];
+
+  const getTypeLabel = (typeValue: string) => {
+    const defaultType = WORD_TYPES.find(t => t.value === typeValue);
+    if (defaultType) return t(`library.word_types.${typeValue}`);
+    const customType = settingsData?.wordTypes?.custom?.find((t: any) => t.value === typeValue);
+    return customType ? customType.label : typeValue;
+  };
 
   const selectAll = () => {
     if (selectedIds.length === loadedWords.length && loadedWords.length > 0) {
@@ -162,6 +237,23 @@ const Library: React.FC = () => {
   return (
     <div className="library-view">
       <div className="library-header">
+        <div className="library-top-bar">
+          <div className="library-title-group">
+            <h2>{t('dashboard.library')}</h2>
+            <p className="library-stats-hint">
+              {stats?.totalWords ? t('dashboard.words_count', { count: stats.totalWords }) : t('dashboard.words_count_zero')}
+            </p>
+          </div>
+          <div className="header-main-actions">
+            <Button variant="primary" size="sm" onClick={() => setIsAddModalOpen(true)}>
+              <Plus size={18} /> {t('dashboard.add_word')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsImportModalOpen(true)}>
+              <Upload size={18} /> {t('dashboard.import')}
+            </Button>
+          </div>
+        </div>
+
         <div className="library-controls">
           <div className="search-bar">
             <Search size={20} />
@@ -186,8 +278,10 @@ const Library: React.FC = () => {
             variant="outline" 
             size="sm" 
             onClick={exportToExcel}
+            disabled={isExporting}
           >
-            <Download size={18} /> {t('library.export')}
+            {isExporting ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />} 
+            {t('library.export')}
           </Button>
           
           <Button 
@@ -249,7 +343,7 @@ const Library: React.FC = () => {
                   <div>
                     <div className="word-main">
                       <h3>{word.word}</h3>
-                      <span className="type-badge">{word.type}</span>
+                      <span className="type-badge">{getTypeLabel(word.type)}</span>
                     </div>
                   </div>
                   <div className="word-card-actions">
@@ -300,6 +394,29 @@ const Library: React.FC = () => {
           </Button>
         </div>
       )}
+
+      <Modal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+        title={t('dashboard.add_word')}
+      >
+        <WordForm 
+          onSubmit={handleAddWord} 
+          onCancel={() => setIsAddModalOpen(false)} 
+        />
+      </Modal>
+
+      <Modal 
+        isOpen={isImportModalOpen} 
+        onClose={() => setIsImportModalOpen(false)} 
+        title={t('dashboard.import')}
+      >
+        <WordImport 
+          onImport={handleImport} 
+          onCancel={() => setIsImportModalOpen(false)} 
+          isLoading={isImportingApi}
+        />
+      </Modal>
 
       <Modal 
         isOpen={!!editingWord} 

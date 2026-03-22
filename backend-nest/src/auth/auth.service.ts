@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
+import { VALID_WORD_TYPES } from '../word/word.constants';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +17,17 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user;
-      return result;
+    if (!user) {
+      throw new UnauthorizedException('Email không tồn tại! 📧');
     }
-    return null;
+    
+    const isMatch = await bcrypt.compare(pass, user.password);
+    if (!isMatch) {
+      throw new UnauthorizedException('Mật khẩu không chính xác! ❌');
+    }
+
+    const { password, ...result } = user;
+    return result;
   }
 
   async login(user: any) {
@@ -256,10 +263,14 @@ export class AuthService {
       throw new BadRequestException('Current password is incorrect! ❌');
     }
 
-    await this.userService.update(userId, { password: newPassword });
+    await this.userService.update(userId, { 
+      password: newPassword,
+      refreshToken: null // Invalidate sessions on password change
+    });
 
     return { message: 'Password changed successfully! 🎉' };
   }
+
 
   async resendVerification(email: string) {
     if (!email) throw new BadRequestException('E-mail is required! 📧');
@@ -317,6 +328,7 @@ export class AuthService {
       fullName: user.fullName,
       avatar: user.avatar,
       isEmailVerified: user.isEmailVerified,
+      settings: user.settings,
     };
   }
 }

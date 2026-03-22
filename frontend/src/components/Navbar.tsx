@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BookOpen, Trophy, Plus, LogOut, User as UserIcon } from 'lucide-react';
+import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -115,6 +115,15 @@ const Navbar: React.FC<NavbarProps> = () => {
                       }}
                     >
                       <UserIcon size={16} /> {t('nav.profile')}
+                    </button>
+                    <button 
+                      className="dropdown-item" 
+                      onClick={() => {
+                        navigate('/settings');
+                        setShowDropdown(false);
+                      }}
+                    >
+                      <Settings size={16} /> {t('profile.title')}
                     </button>
                     <button 
                       className="dropdown-item danger" 

@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { WordModule } from './word/word.module';
 import { ReviewModule } from './review/review.module';
 import { MetaController } from './meta/meta.controller';
+import { SettingsModule } from './settings/settings.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MetaController } from './meta/meta.controller';
     UserModule,
     WordModule,
     ReviewModule,
+    SettingsModule,
   ],
   controllers: [MetaController],
   providers: [],

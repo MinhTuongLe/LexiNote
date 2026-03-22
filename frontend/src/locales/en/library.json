@@ -23,5 +23,17 @@
   "deselect_all": "Deselect All",
   "selected_count": "{{count}} selected",
   "load_more": "Load More 🐰",
-  "loading_more": "Loading... ✨"
+  "loading_more": "Loading... ✨",
+  "word_types": {
+    "noun": "Noun",
+    "verb": "Verb",
+    "adj": "Adjective",
+    "adv": "Adverb",
+    "phrasal_verb": "Phrasal Verb",
+    "idiom": "Idiom",
+    "phrase": "Phrase",
+    "noun_phrase": "Noun Phrase",
+    "verb_phrase": "Verb Phrase",
+    "other": "Other"
+  }
 }

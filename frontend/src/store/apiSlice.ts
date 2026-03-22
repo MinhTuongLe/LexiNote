@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats } from '../types';
-import { logout, updateTokens } from './authSlice';
+import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 
 // Base query with auth header
@@ -99,6 +99,12 @@ export const apiSlice = createApi({
     getMe: builder.query<{ user: User }, void>({
       query: () => '/auth/me',
       providesTags: ['User'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(updateUser(data.user));
+        } catch (err) {}
+      },
     }),
     refreshToken: builder.mutation<{ user: User; token: string; refreshToken: string }, { refreshToken: string }>({
       query: (body) => ({
@@ -233,6 +239,27 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
+    updateSettings: builder.mutation<{ settings: any; message: string }, any>({
+      query: (settings) => ({
+        url: '/settings',
+        method: 'PATCH',
+        body: settings,
+      }),
+      invalidatesTags: ['User'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled, getState }) {
+        try {
+          const { data } = await queryFulfilled;
+          const currentUser = (getState() as any).auth.user;
+          if (currentUser) {
+            dispatch(updateUser({ ...currentUser, settings: data.settings }));
+          }
+        } catch (err) {}
+      },
+    }),
+    getSettings: builder.query<{ preferences: any; wordTypes: { system: string[], custom: any[] } }, void>({
+      query: () => '/settings',
+      providesTags: ['User'],
+    }),
   }),
 });
 
@@ -248,6 +275,8 @@ export const {
   useVerifyEmailMutation,
   useResendVerificationMutation,
   useLogoutServerMutation,
+  useUpdateSettingsMutation,
+  useGetSettingsQuery,
   useGetDashboardStatsQuery,
   useGetWordsQuery,
   useCreateWordMutation,
@@ -258,4 +287,5 @@ export const {
   useGetDueReviewsQuery,
   useUpdateSRSMutation,
   useResetProgressMutation,
+  useLazyGetWordsQuery,
 } = apiSlice;

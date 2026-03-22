@@ -1,16 +1,20 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Word, Prisma } from '@prisma/client';
+import { SettingsService } from '../settings/settings.service';
 
 @Injectable()
 export class WordService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private settingsService: SettingsService,
+  ) {}
 
   async create(userId: number, data: any) {
     const { word, meaningVi, example, type, synonyms, antonyms } = data;
 
     // Normalize type
-    const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+    const validTypes = await this.getValidTypes(userId);
     let normalizedType = (type || 'other').toLowerCase().trim();
     if (normalizedType.includes('/') || normalizedType.includes(',')) {
       normalizedType = normalizedType.split(/[/,]/)[0].trim();
@@ -59,12 +63,40 @@ export class WordService {
         },
       });
 
-      return {
-        ...newWord,
-        createdAt: Number(newWord.createdAt),
-        updatedAt: Number(newWord.updatedAt),
-      };
+      const formattedResult = await tx.word.findUnique({
+        where: { id: newWord.id },
+        include: { relations: true, reviews: true },
+      });
+
+      return this.formatWord(formattedResult);
     });
+  }
+
+  private formatWord(word: any) {
+    if (!word) return null;
+    return {
+      ...word,
+      id: Number(word.id),
+      ownerId: Number(word.ownerId),
+      createdAt: Number(word.createdAt),
+      updatedAt: Number(word.updatedAt),
+      relations: word.relations?.map((rel: any) => ({
+        ...rel,
+        id: Number(rel.id),
+        wordId: Number(rel.wordId),
+        createdAt: Number(rel.createdAt),
+        updatedAt: Number(rel.updatedAt),
+      })),
+      reviews: word.reviews?.map((rev: any) => ({
+        ...rev,
+        id: Number(rev.id),
+        wordId: Number(rev.wordId),
+        createdAt: Number(rev.createdAt),
+        updatedAt: Number(rev.updatedAt),
+        lastReviewed: rev.lastReviewed ? Number(rev.lastReviewed) : null,
+        nextReview: rev.nextReview ? Number(rev.nextReview) : null,
+      })),
+    };
   }
 
   async find(userId: number, filters: any) {
@@ -105,23 +137,7 @@ export class WordService {
     ]);
 
     // Format BigInt to Number or String for JSON response
-    const formattedWords = words.map(w => ({
-      ...w,
-      createdAt: Number(w.createdAt),
-      updatedAt: Number(w.updatedAt),
-      relations: w.relations.map(rel => ({
-        ...rel,
-        createdAt: Number(rel.createdAt),
-        updatedAt: Number(rel.updatedAt),
-      })),
-      reviews: w.reviews.map(rev => ({
-        ...rev,
-        createdAt: Number(rev.createdAt),
-        updatedAt: Number(rev.updatedAt),
-        lastReviewed: rev.lastReviewed ? Number(rev.lastReviewed) : null,
-        nextReview: rev.nextReview ? Number(rev.nextReview) : null,
-      })),
-    }));
+    const formattedWords = words.map(w => this.formatWord(w));
 
     return {
       data: formattedWords,
@@ -145,23 +161,7 @@ export class WordService {
 
     if (!word) throw new NotFoundException('Word not found');
 
-    return {
-      ...word,
-      createdAt: Number(word.createdAt),
-      updatedAt: Number(word.updatedAt),
-      relations: word.relations.map(rel => ({
-        ...rel,
-        createdAt: Number(rel.createdAt),
-        updatedAt: Number(rel.updatedAt),
-      })),
-      reviews: word.reviews.map(rev => ({
-        ...rev,
-        createdAt: Number(rev.createdAt),
-        updatedAt: Number(rev.updatedAt),
-        lastReviewed: rev.lastReviewed ? Number(rev.lastReviewed) : null,
-        nextReview: rev.nextReview ? Number(rev.nextReview) : null,
-      })),
-    };
+    return this.formatWord(word);
   }
 
   async update(userId: number, id: number, data: any) {
@@ -170,7 +170,7 @@ export class WordService {
     // Normalize type if provided
     let normalizedType = type;
     if (type) {
-      const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+      const validTypes = await this.getValidTypes(userId);
       normalizedType = type.toLowerCase().trim();
       if (normalizedType.includes('/') || normalizedType.includes(',')) {
         normalizedType = normalizedType.split(/[/,]/)[0].trim();
@@ -178,19 +178,53 @@ export class WordService {
       if (!validTypes.includes(normalizedType)) normalizedType = 'other';
     }
 
-    const updatedWord = await this.prisma.word.updateMany({
-      where: { id, ownerId: userId },
-      data: {
-        word,
-        meaningVi,
-        example,
-        type: normalizedType,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updatedWord = await tx.word.updateMany({
+        where: { id, ownerId: userId },
+        data: {
+          word,
+          meaningVi,
+          example,
+          type: normalizedType,
+        },
+      });
+
+      if (updatedWord.count === 0) throw new NotFoundException('Word not found');
+
+      // Update relations if provided
+      if (data.synonyms !== undefined) {
+        await tx.wordRelation.deleteMany({ where: { wordId: id, type: 'synonym' } });
+        if (data.synonyms && data.synonyms.length > 0) {
+          await tx.wordRelation.createMany({
+            data: data.synonyms.map((val: string) => ({
+              type: 'synonym',
+              value: val,
+              wordId: id,
+            })),
+          });
+        }
+      }
+
+      if (data.antonyms !== undefined) {
+        await tx.wordRelation.deleteMany({ where: { wordId: id, type: 'antonym' } });
+        if (data.antonyms && data.antonyms.length > 0) {
+          await tx.wordRelation.createMany({
+            data: data.antonyms.map((val: string) => ({
+              type: 'antonym',
+              value: val,
+              wordId: id,
+            })),
+          });
+        }
+      }
+
+      const result = await tx.word.findUnique({
+        where: { id },
+        include: { relations: true, reviews: true },
+      });
+
+      return this.formatWord(result);
     });
-
-    if (updatedWord.count === 0) throw new NotFoundException('Word not found');
-
-    return this.prisma.word.findUnique({ where: { id } });
   }
 
   async destroy(userId: number, id: number) {
@@ -203,7 +237,8 @@ export class WordService {
     return this.prisma.$transaction(async (tx) => {
       await tx.wordRelation.deleteMany({ where: { wordId: id } });
       await tx.review.deleteMany({ where: { wordId: id } });
-      return tx.word.delete({ where: { id } });
+      const deleted = await tx.word.delete({ where: { id } });
+      return this.formatWord(deleted);
     });
   }
 
@@ -246,7 +281,7 @@ export class WordService {
       });
       if (existing) continue;
 
-      const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+      const validTypes = await this.getValidTypes(userId);
       let normalizedType = (type || 'other').toLowerCase().trim();
       if (normalizedType.includes('/') || normalizedType.includes(',')) {
         normalizedType = normalizedType.split(/[/,]/)[0].trim();
@@ -283,7 +318,7 @@ export class WordService {
   }
 
   async getDashboardStats(userId: number) {
-    const now = BigInt(Date.now());
+    const now = BigInt(Date.now() + 10 * 60 * 1000); // 10 min buffer for precision loss
     
     const [totalWords, dueReviewsCount, recentWords] = await Promise.all([
       this.prisma.word.count({ where: { ownerId: userId } }),
@@ -329,5 +364,9 @@ export class WordService {
       dueReviewsCount,
       recentWords: formattedRecentWords,
     };
+  }
+
+  private async getValidTypes(userId: number): Promise<string[]> {
+    return this.settingsService.getValidTypes(userId);
   }
 }

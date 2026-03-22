@@ -17,5 +17,7 @@
   "cancel_cute": "Hủy 🥺",
   "system_error": "Có lỗi xảy ra, bạn đã được đăng xuất để bảo mật.",
   "logout_confirm_title": "Đăng xuất? 🐰",
-  "logout_confirm_msg": "Hẹn gặp lại bạn sớm nhé!"
+  "logout_confirm_msg": "Hẹn gặp lại bạn sớm nhé!",
+  "more": "thêm",
+  "info": "Thông tin"
 }
