@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Button from './components/Button';
@@ -25,7 +25,7 @@ import {
 import { useCuteDialog } from './context/DialogContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { updateUser, setInitialized } from './store/authSlice';
+import { updateUser, setInitialized, logout } from './store/authSlice';
 import { WORD_TYPES } from './constants/wordTypes';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
@@ -55,6 +55,8 @@ function App() {
       dispatch(updateUser(meData.user));
       dispatch(setInitialized());
     } else if (meError) {
+      // If the me query fails (e.g. 401 Unauthorized), we logout to clear stale state
+      dispatch(logout());
       dispatch(setInitialized());
     }
   }, [meData, meError, dispatch]);

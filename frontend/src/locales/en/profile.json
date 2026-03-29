@@ -16,8 +16,6 @@
   "minigame_sounds_desc": "Play 'ting ting' effects in games.",
   "flashcard_start": "Flashcard Start",
   "flashcard_start_desc": "Which side to show first.",
-  "remember_login": "Remember Login",
-  "remember_login_desc": "Keep me logged in on this device.",
   "delete_all_data": "Delete All Data",
   "delete_all_data_desc": "Permanently remove your account and all words.",
   "current_password": "Current Password",

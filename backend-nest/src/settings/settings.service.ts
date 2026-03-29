@@ -21,7 +21,6 @@ export class SettingsService {
         darkTheme: currentSettings.darkTheme ?? false,
         soundEnabled: currentSettings.soundEnabled ?? true,
         flashcardFront: currentSettings.flashcardFront ?? 'en',
-        rememberLogin: currentSettings.rememberLogin ?? true,
       },
       wordTypes: {
         system: VALID_WORD_TYPES,

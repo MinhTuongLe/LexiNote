@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../store/authSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
-import { Check, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
@@ -19,43 +19,20 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
   const { showAlert } = useCuteDialog();
   const { t } = useTranslation();
 
-  React.useEffect(() => {
-    // Attempt to load saved credentials
-    try {
-      const saved = localStorage.getItem('lexinote_creds');
-      if (saved) {
-        const decoded = atob(saved);
-        const { em, pw } = JSON.parse(decoded);
-        if (em && pw) {
-          setEmail(em);
-          setPassword(pw);
-          setRememberMe(true);
-        }
-      }
-    } catch (e) {
-      // ignore
-    }
-  }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await login({ email, password }).unwrap();
       
-      // Save credentials if requested
-      if (rememberMe) {
-        const payload = btoa(JSON.stringify({ em: email, pw: password }));
-        localStorage.setItem('lexinote_creds', payload);
-      } else {
-        localStorage.removeItem('lexinote_creds');
-      }
+
 
       dispatch(setCredentials(result));
       showAlert(t('auth.login_success_title'), t('auth.login_success_msg', { name: result.user.fullName }), 'success');
@@ -106,16 +83,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
             </div>
           </div>
 
-          <div className="auth-options">
-            <div 
-              className="remember-me-label" 
-              onClick={() => setRememberMe(!rememberMe)}
-            >
-              <div className={`custom-checkbox ${rememberMe ? 'checked' : ''}`}>
-                {rememberMe && <Check size={16} strokeWidth={4} />}
-              </div>
-              <span>{t('auth.remember_me')}</span>
-            </div>
+          <div className="auth-options" style={{ justifyContent: 'flex-end' }}>
             <span className="forgot-password-link" onClick={onForgot}>{t('auth.forgot_password')}</span>
           </div>
           

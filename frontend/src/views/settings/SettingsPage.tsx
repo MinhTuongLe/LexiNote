@@ -25,14 +25,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
   // Settings state from user profile or defaults
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const [rememberLogin, setRememberLogin] = useState(true);
 
   const language = i18n.language || 'en';
 
   useEffect(() => {
     if (settingsData) {
       if (settingsData.preferences?.darkTheme !== undefined) setIsDarkTheme(settingsData.preferences.darkTheme);
-      if (settingsData.preferences?.rememberLogin !== undefined) setRememberLogin(settingsData.preferences.rememberLogin);
     }
   }, [settingsData]);
 
@@ -134,24 +132,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
               <h4 style={{ color: '#ff7675' }}>{t('profile.danger_zone')}</h4>
             </div>
             <div className="settings-content">
-              <div className="setting-item">
-                <div className="setting-label">
-                  <span>{t('profile.remember_login')}</span>
-                  <p>{t('profile.remember_login_desc')}</p>
-                </div>
-                <label className="cute-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={rememberLogin} 
-                    onChange={(e) => {
-                      setRememberLogin(e.target.checked);
-                      handleSaveSetting('rememberLogin', e.target.checked);
-                    }} 
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
-
               <div className="setting-item delete-data-item" style={{ marginTop: '8px' }}>
                 <div className="setting-label">
                   <span style={{ color: '#d63031', fontWeight: 'bold' }}>{t('profile.delete_all_data')}</span>

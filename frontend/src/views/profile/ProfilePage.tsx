@@ -76,19 +76,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     try {
       await changePassword({ currentPassword, newPassword }).unwrap();
       
-      // Update saved credentials if Remember Me was active
-      const saved = localStorage.getItem('lexinote_creds');
-      if (saved) {
-        try {
-          const decoded = atob(saved);
-          const creds = JSON.parse(decoded);
-          if (creds.em === user?.email) {
-            const newPayload = btoa(JSON.stringify({ em: creds.em, pw: newPassword }));
-            localStorage.setItem('lexinote_creds', newPayload);
-          }
-        } catch (e) { /* ignore */ }
-      }
-
       showAlert('Success! 🎉', 'Your password has been changed!', 'success');
       setIsPasswordModalOpen(false);
       setCurrentPassword('');
