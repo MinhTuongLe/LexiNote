@@ -12,7 +12,7 @@ interface NavbarProps {}
 
 const Navbar: React.FC<NavbarProps> = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, refreshToken } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { showConfirm } = useCuteDialog();
@@ -46,7 +46,7 @@ const Navbar: React.FC<NavbarProps> = () => {
       t('common.logout_confirm_msg'),
       async () => {
         try {
-          await logoutServer().unwrap();
+          await logoutServer({ refreshToken }).unwrap();
         } catch (err) {
           console.warn('Failed to logout on server, still logging out locally', err);
         } finally {

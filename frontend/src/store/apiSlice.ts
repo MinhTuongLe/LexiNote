@@ -156,10 +156,11 @@ export const apiSlice = createApi({
         body: data,
       }),
     }),
-    logoutServer: builder.mutation<{ message: string }, void>({
-      query: () => ({
+    logoutServer: builder.mutation<{ message: string }, { refreshToken?: string } | void>({
+      query: (body) => ({
         url: '/auth/logout',
         method: 'POST',
+        body,
       }),
     }),
 

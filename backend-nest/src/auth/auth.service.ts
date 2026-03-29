@@ -7,12 +7,15 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { VALID_WORD_TYPES } from '../word/word.constants';
 
+import { PrismaService } from '../prisma/prisma.service';
+
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private prisma: PrismaService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -30,7 +33,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: any, request?: any) {
     if (!user.isEmailVerified) {
       throw new ForbiddenException({
         message: 'Please verify your email to login! 📧',
@@ -41,11 +44,26 @@ export class AuthService {
 
     const payload = { id: user.id, email: user.email };
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.generateRefreshToken(user.id);
 
-    // Hash and store refresh token in DB
-    const hashedRefresh = await bcrypt.hash(refreshToken, 10);
-    await this.userService.update(user.id, { refreshToken: hashedRefresh });
+    // Create a new session in DB
+    const refreshTokenRecord = await this.prisma.refreshToken.create({
+      data: {
+        userId: user.id,
+        hashedToken: '', // Placeholder
+        userAgent: request?.headers?.['user-agent'] || null,
+        ipAddress: request?.ip || null,
+        expiresAt: BigInt(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      },
+    });
+
+    const refreshToken = this.generateRefreshToken(user.id, refreshTokenRecord.id);
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+
+    // Update with real hashed token
+    await this.prisma.refreshToken.update({
+      where: { id: refreshTokenRecord.id },
+      data: { hashedToken },
+    });
 
     return {
       user: this.sanitizeUser(user),
@@ -85,7 +103,7 @@ export class AuthService {
     };
   }
 
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string, request?: any) {
     if (!refreshToken) {
       throw new BadRequestException('Refresh token is required! 🔄');
     }
@@ -99,34 +117,50 @@ export class AuthService {
       throw new UnauthorizedException('Invalid or expired refresh token! ❌');
     }
 
-    if (decoded.type !== 'refresh') {
-      throw new UnauthorizedException('Invalid token type! ❌');
+    if (decoded.type !== 'refresh' || !decoded.sid) {
+      throw new UnauthorizedException('Invalid token structure! ❌');
     }
 
-    const userId = decoded.id;
-    if (!userId) throw new UnauthorizedException('Invalid token payload! ❌');
+    const session = await this.prisma.refreshToken.findUnique({
+      where: { id: decoded.sid },
+      include: { user: true },
+    });
 
-    const user = await this.userService.findOneById(userId);
-    if (!user || !user.refreshToken) {
-      throw new UnauthorizedException('User not found or session expired! 🏜️');
+    if (!session || !session.user) {
+      throw new UnauthorizedException('Session expired or user not found! 🏜️');
     }
 
-    const isValidRefresh = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (session.expiresAt < BigInt(Date.now())) {
+      await this.prisma.refreshToken.delete({ where: { id: session.id } });
+      throw new UnauthorizedException('Session expired! ⏰');
+    }
+
+    const isValidRefresh = await bcrypt.compare(refreshToken, session.hashedToken);
     if (!isValidRefresh) {
-      // Possible token reuse attack - invalidate session
-      await this.userService.update(user.id, { refreshToken: null });
-      throw new UnauthorizedException('Session invalidated. Please login again! 🔒');
+      // Possible token reuse attack - invalidate EVERY session for security
+      await this.prisma.refreshToken.deleteMany({ where: { userId: session.userId } });
+      throw new UnauthorizedException('Security alert: Potential token theft. All sessions invalidated! 🔒');
     }
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: session.user.id, email: session.user.email };
     const newAccessToken = this.jwtService.sign(payload);
-    const newRefreshToken = this.generateRefreshToken(user.id);
-
+    
+    // Rotate refresh token
+    const newRefreshToken = this.generateRefreshToken(session.user.id, session.id);
     const hashedRefresh = await bcrypt.hash(newRefreshToken, 10);
-    await this.userService.update(user.id, { refreshToken: hashedRefresh });
+
+    await this.prisma.refreshToken.update({
+      where: { id: session.id },
+      data: { 
+        hashedToken: hashedRefresh,
+        userAgent: request?.headers?.['user-agent'] || session.userAgent,
+        ipAddress: request?.ip || session.ipAddress,
+        expiresAt: BigInt(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
 
     return {
-      user: this.sanitizeUser(user),
+      user: this.sanitizeUser(session.user),
       token: newAccessToken,
       refreshToken: newRefreshToken,
     };
@@ -160,9 +194,22 @@ export class AuthService {
 
     const payload = { id: updatedUser.id, email: updatedUser.email };
     const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.generateRefreshToken(updatedUser.id);
+    
+    // Create new session upon verification
+    const refreshTokenRecord = await this.prisma.refreshToken.create({
+      data: {
+        userId: updatedUser.id,
+        hashedToken: '',
+        expiresAt: BigInt(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    const refreshToken = this.generateRefreshToken(updatedUser.id, refreshTokenRecord.id);
     const hashedRefresh = await bcrypt.hash(refreshToken, 10);
-    await this.userService.update(updatedUser.id, { refreshToken: hashedRefresh });
+    await this.prisma.refreshToken.update({
+      where: { id: refreshTokenRecord.id },
+      data: { hashedToken: hashedRefresh },
+    });
 
     return {
       message: 'Account verified successfully! 🎉',
@@ -265,8 +312,10 @@ export class AuthService {
 
     await this.userService.update(userId, { 
       password: newPassword,
-      refreshToken: null // Invalidate sessions on password change
     });
+
+    // Invalidate ALL sessions on password change for security
+    await this.prisma.refreshToken.deleteMany({ where: { userId } });
 
     return { message: 'Password changed successfully! 🎉' };
   }
@@ -309,15 +358,29 @@ export class AuthService {
     };
   }
 
-  async logout(userId: number) {
-    await this.userService.update(userId, { refreshToken: null });
+  async logout(userId: number, currentToken?: string) {
+    if (currentToken) {
+      // Logout from specific device
+      try {
+        const decoded: any = this.jwtService.decode(currentToken);
+        if (decoded?.sid) {
+          await this.prisma.refreshToken.delete({ where: { id: decoded.sid } });
+        }
+      } catch (e) {
+        // Just clear all if decode fails
+        await this.prisma.refreshToken.deleteMany({ where: { userId } });
+      }
+    } else {
+      // Logout from ALL devices
+      await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    }
     return { message: 'Logged out successfully! 👋' };
   }
 
-  private generateRefreshToken(userId: number) {
+  private generateRefreshToken(userId: number, sessionId: number) {
     return this.jwtService.sign(
-      { id: userId, type: 'refresh' },
-      { expiresIn: '7d' }, // 7d as per original settings
+      { id: userId, sid: sessionId, type: 'refresh' },
+      { expiresIn: '7d' },
     );
   }
 

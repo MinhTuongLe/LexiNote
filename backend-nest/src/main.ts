@@ -7,6 +7,7 @@ import {
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import helmet from '@fastify/helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -26,10 +27,38 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS with origins from .env or default to all in dev
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()) || [];
+  // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
+  await app.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [`'self'`],
+        styleSrc: [`'self'`, `'unsafe-inline'`],
+        imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
+        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
+      },
+    },
+  });
+
+  // 🛡️ Security: Enable CORS with tighter origins
+  const isProd = process.env.NODE_ENV === 'production';
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean) || [];
+  
   app.enableCors({
-    origin: allowedOrigins.length > 0 ? allowedOrigins : true,
+    origin: (origin, callback) => {
+      // Allow all in dev if no origins specified, or if origin matches
+      if (!isProd) {
+        if (!origin || allowedOrigins.length === 0 || allowedOrigins.indexOf(origin) !== -1) {
+          return callback(null, true);
+        }
+      }
+      
+      if (origin && allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        const error = new Error(`Origin ${origin} not allowed by CORS`);
+        callback(error, false);
+      }
+    },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization',

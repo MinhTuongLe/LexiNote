@@ -7,6 +7,7 @@ import { WordModule } from './word/word.module';
 import { ReviewModule } from './review/review.module';
 import { MetaController } from './meta/meta.controller';
 import { SettingsModule } from './settings/settings.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -19,6 +20,10 @@ import { SettingsModule } from './settings/settings.module';
     WordModule,
     ReviewModule,
     SettingsModule,
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
   ],
   controllers: [MetaController],
   providers: [],

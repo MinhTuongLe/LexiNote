@@ -2,6 +2,8 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Re
 import { WordService } from './word.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { CreateWordDto } from './dto/create-word.dto';
+import { UpdateWordDto } from './dto/update-word.dto';
 
 @ApiTags('Words')
 @Controller('words') // Under /api prefix -> /api/words
@@ -12,7 +14,7 @@ export class WordController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new word' })
-  async create(@Request() req: any, @Body() body: any) {
+  async create(@Request() req: any, @Body() body: CreateWordDto) {
     return this.wordService.create(req.user.userId, body);
   }
 
@@ -30,7 +32,7 @@ export class WordController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a word' })
-  async update(@Request() req: any, @Param('id') id: string, @Body() body: any) {
+  async update(@Request() req: any, @Param('id') id: string, @Body() body: UpdateWordDto) {
     return this.wordService.update(req.user.userId, parseInt(id), body);
   }
 

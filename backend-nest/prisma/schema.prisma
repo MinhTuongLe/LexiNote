@@ -12,7 +12,6 @@ model User {
   password                 String
   fullName                 String   @map("full_name")
   avatar                   String?  @default("🐰")
-  refreshToken             String?  @map("refresh_token")
   resetPasswordToken       String?  @map("reset_password_token")
   resetPasswordExpires     BigInt?  @map("reset_password_expires")
   isEmailVerified          Boolean  @default(false) @map("is_email_verified")
@@ -23,6 +22,7 @@ model User {
   settings                 Json?    @default("{}") @db.Json
   
   words                    Word[]
+  refreshTokens            RefreshToken[]
 
   @@map("user")
 }
@@ -81,4 +81,18 @@ model archive {
   fromModel        String?
   originalRecord   Json?   @db.Json
   originalRecordId Json?   @db.Json
+}
+
+model RefreshToken {
+  id               Int      @id @default(autoincrement())
+  hashedToken      String   @map("hashed_token")
+  userId           Int      @map("user_id")
+  userAgent        String?  @map("user_agent")
+  ipAddress        String?  @map("ip_address")
+  expiresAt        BigInt   @map("expires_at")
+  createdAt        BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_token")
 }
