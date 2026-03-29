@@ -1,15 +1,15 @@
 ﻿$LocalDB = "postgresql://postgres:postgres@localhost:5432/lexinote"
-$LivePooler = "postgresql://postgres.htrrsvagyxbvbmudgqgp:Minhtuongle%4009122002@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-$LiveDirect = "postgresql://postgres:Minhtuongle%4009122002@db.htrrsvagyxbvbmudgqgp.supabase.co:5432/postgres"
+$LiveRuntime = "postgresql://postgres.htrrsvagyxbvbmudgqgp:Minhtuongle%4009122002@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+$LiveSession = "postgresql://postgres.htrrsvagyxbvbmudgqgp:Minhtuongle%4009122002@aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres"
 
 $Mode = $args[0]
 
 if ($Mode -eq "push") {
     $Src = $LocalDB
-    $Dst = $LiveDirect
+    $Dst = $LiveSession
     Write-Host "MODE: PUSH  LOCAL -> LIVE (Supabase)" -ForegroundColor Yellow
 } elseif ($Mode -eq "pull") {
-    $Src = $LiveDirect
+    $Src = $LiveSession
     $Dst = $LocalDB
     Write-Host "MODE: PULL  LIVE (Supabase) -> LOCAL" -ForegroundColor Yellow
 } else {
@@ -21,9 +21,9 @@ $Confirm = Read-Host "Are you sure? This will OVERWRITE data at destination! (y/
 if ($Confirm -ne "y") { Write-Host "Cancelled."; exit 0 }
 
 if ($Mode -eq "push") {
-    Write-Host "Step 1/3: Syncing Schema to Live via Direct URL..." -ForegroundColor Cyan
-    $env:DIRECT_URL = $LiveDirect
-    $env:DATABASE_URL = $LivePooler
+    Write-Host "Step 1/3: Syncing Schema to Live..." -ForegroundColor Cyan
+    $env:DIRECT_URL = $LiveSession
+    $env:DATABASE_URL = $LiveRuntime
     npx prisma db push --accept-data-loss
 }
 
