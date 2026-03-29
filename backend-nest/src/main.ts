@@ -8,7 +8,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import helmet from '@fastify/helmet';
-
+import { I18nExceptionFilter } from './common/filters/i18n-exception.filter';
+import { I18nResponseInterceptor } from './common/interceptors/i18n-response.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
@@ -26,6 +27,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+
+  // Enable Global I18n translations
+  app.useGlobalFilters(new I18nExceptionFilter());
+  app.useGlobalInterceptors(new I18nResponseInterceptor());
 
   // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
   await app.register(helmet, {
@@ -61,7 +66,7 @@ async function bootstrap() {
     },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization',
+    allowedHeaders: 'Content-Type, Accept, Authorization, Accept-Language, x-custom-lang',
   });
 
   // Swagger Documentation Setup

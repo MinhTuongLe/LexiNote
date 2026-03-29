@@ -3,6 +3,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
+import i18n from '../i18n';
 
 // Base query with auth header
 const rawBaseQuery = fetchBaseQuery({
@@ -12,6 +13,8 @@ const rawBaseQuery = fetchBaseQuery({
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
+    const language = i18n.language || 'en';
+    headers.set('Accept-Language', language);
     return headers;
   },
 });

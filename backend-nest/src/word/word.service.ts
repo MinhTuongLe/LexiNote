@@ -159,7 +159,7 @@ export class WordService {
       },
     });
 
-    if (!word) throw new NotFoundException('Word not found');
+    if (!word) throw new NotFoundException('error.word.not_found');
 
     return this.formatWord(word);
   }
@@ -189,7 +189,7 @@ export class WordService {
         },
       });
 
-      if (updatedWord.count === 0) throw new NotFoundException('Word not found');
+      if (updatedWord.count === 0) throw new NotFoundException('error.word.not_found');
 
       // Update relations if provided
       if (data.synonyms !== undefined) {
@@ -232,7 +232,7 @@ export class WordService {
       where: { id, ownerId: userId },
     });
 
-    if (!word) throw new NotFoundException('Word not found');
+    if (!word) throw new NotFoundException('error.word.not_found');
 
     return this.prisma.$transaction(async (tx) => {
       await tx.wordRelation.deleteMany({ where: { wordId: id } });
@@ -244,7 +244,7 @@ export class WordService {
 
   async destroyBulk(userId: number, wordIds: number[]) {
     if (!wordIds || !wordIds.length) {
-      throw new BadRequestException('No word IDs provided');
+      throw new BadRequestException('error.word.no_ids');
     }
 
     const words = await this.prisma.word.findMany({

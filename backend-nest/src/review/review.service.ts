@@ -51,7 +51,7 @@ export class ReviewService {
       include: { word: true },
     });
 
-    if (!review) throw new NotFoundException('Review session not found');
+    if (!review) throw new NotFoundException('error.review.not_found');
 
     let { interval, easeFactor, correctCount, wrongCount } = review;
 

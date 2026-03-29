@@ -21,12 +21,12 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
     if (!user) {
-      throw new UnauthorizedException('Email không tồn tại! 📧');
+      throw new UnauthorizedException('error.auth.email_not_found');
     }
     
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Mật khẩu không chính xác! ❌');
+      throw new UnauthorizedException('error.auth.wrong_password');
     }
 
     const { password, ...result } = user;
@@ -36,7 +36,7 @@ export class AuthService {
   async login(user: any, request?: any) {
     if (!user.isEmailVerified) {
       throw new ForbiddenException({
-        message: 'Please verify your email to login! 📧',
+        message: 'error.auth.unverified_email',
         code: 'EMAIL_NOT_VERIFIED',
         email: user.email,
       });
@@ -76,16 +76,16 @@ export class AuthService {
     const { email, password, fullName } = registrationData;
 
     if (!email || !password || !fullName) {
-      throw new BadRequestException('Missing required fields! 🐰');
+      throw new BadRequestException('error.auth.missing_fields');
     }
 
     if (password.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters! 🔑');
+      throw new BadRequestException('error.auth.password_too_short');
     }
 
     const existing = await this.userService.findOneByEmail(email.toLowerCase().trim());
     if (existing) {
-      throw new BadRequestException('E-mail already registered! 😿');
+      throw new BadRequestException('error.auth.email_exists');
     }
 
     const newUser = await this.userService.create({
@@ -98,14 +98,14 @@ export class AuthService {
     console.info(`👤 New user registered: ${newUser.email} (unverified). Use MASTER_VERIFY_CODE to verify.`);
 
     return {
-      message: 'Account created! Please contact admin for verification code. 🔑',
+      message: 'success.auth.registered',
       email: newUser.email,
     };
   }
 
   async refresh(refreshToken: string, request?: any) {
     if (!refreshToken) {
-      throw new BadRequestException('Refresh token is required! 🔄');
+      throw new BadRequestException('error.auth.refresh_required');
     }
 
     let decoded: any;
@@ -114,11 +114,11 @@ export class AuthService {
         secret: this.configService.get('JWT_SECRET'),
       });
     } catch (err) {
-      throw new UnauthorizedException('Invalid or expired refresh token! ❌');
+      throw new UnauthorizedException('error.auth.invalid_refresh');
     }
 
     if (decoded.type !== 'refresh' || !decoded.sid) {
-      throw new UnauthorizedException('Invalid token structure! ❌');
+      throw new UnauthorizedException('error.auth.invalid_token_structure');
     }
 
     const session = await this.prisma.refreshToken.findUnique({
@@ -127,19 +127,19 @@ export class AuthService {
     });
 
     if (!session || !session.user) {
-      throw new UnauthorizedException('Session expired or user not found! 🏜️');
+      throw new UnauthorizedException('error.auth.session_expired_not_found');
     }
 
     if (session.expiresAt < BigInt(Date.now())) {
       await this.prisma.refreshToken.delete({ where: { id: session.id } });
-      throw new UnauthorizedException('Session expired! ⏰');
+      throw new UnauthorizedException('error.auth.session_expired');
     }
 
     const isValidRefresh = await bcrypt.compare(refreshToken, session.hashedToken);
     if (!isValidRefresh) {
       // Possible token reuse attack - invalidate EVERY session for security
       await this.prisma.refreshToken.deleteMany({ where: { userId: session.userId } });
-      throw new UnauthorizedException('Security alert: Potential token theft. All sessions invalidated! 🔒');
+      throw new UnauthorizedException('error.auth.token_theft');
     }
 
     const payload = { id: session.user.id, email: session.user.email };
@@ -168,8 +168,8 @@ export class AuthService {
 
   async verifyEmail(email: string, token: string) {
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
-    if (!user) throw new NotFoundException('User not found! 🏜️');
-    if (user.isEmailVerified) throw new BadRequestException('E-mail is already verified! ✨');
+    if (!user) throw new NotFoundException('error.auth.user_not_found');
+    if (user.isEmailVerified) throw new BadRequestException('error.auth.already_verified');
 
     const masterCode = this.configService.get('MASTER_VERIFY_CODE');
     const isMasterCode = masterCode && token === masterCode;
@@ -178,11 +178,11 @@ export class AuthService {
       // Logic for verification code verification (if implemented)
       // Original code skip this if master mode.
       if (!user.emailVerificationExpires || Number(user.emailVerificationExpires) < Date.now()) {
-        throw new BadRequestException('Verification code has expired! Please request a new one. ⏰');
+        throw new BadRequestException('error.auth.verification_expired');
       }
       
       const isValid = user.emailVerificationToken ? await bcrypt.compare(token, user.emailVerificationToken) : false;
-      if (!isValid) throw new BadRequestException('Invalid verification code! ❌');
+      if (!isValid) throw new BadRequestException('error.auth.invalid_verification');
     }
 
     // Update user to verified
@@ -212,7 +212,7 @@ export class AuthService {
     });
 
     return {
-      message: 'Account verified successfully! 🎉',
+      message: 'success.auth.verified',
       user: this.sanitizeUser(updatedUser),
       token: accessToken,
       refreshToken,
@@ -220,13 +220,13 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    if (!email) throw new BadRequestException('E-mail is required! 📧');
+    if (!email) throw new BadRequestException('error.auth.email_required');
 
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
     if (!user) {
       // Don't reveal if user exists
       return {
-        message: 'If an account with that email exists, a reset code has been generated! 📬',
+        message: 'message.auth.reset_code_masked',
       };
     }
 
@@ -250,14 +250,14 @@ export class AuthService {
     }
 
     return {
-      message: 'Reset code generated! Please use the master verification code to reset. 🔑',
+      message: 'success.auth.reset_code_generated',
     };
   }
 
   async resetPassword(data: any) {
     const { email, resetToken, newPassword } = data;
     if (!email || !resetToken || !newPassword) {
-      throw new BadRequestException('E-mail, reset code, and new password are required! 🔑');
+      throw new BadRequestException('error.auth.current_new_password_required');
     }
 
     if (newPassword.length < 6) {
@@ -266,7 +266,7 @@ export class AuthService {
 
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
     if (!user || !user.resetPasswordToken) {
-      throw new BadRequestException('Invalid reset request! ❌');
+      throw new BadRequestException('error.auth.invalid_reset_request');
     }
 
     if (user.resetPasswordExpires && Number(user.resetPasswordExpires) < Date.now()) {
@@ -274,12 +274,12 @@ export class AuthService {
         resetPasswordToken: null,
         resetPasswordExpires: null,
       });
-      throw new BadRequestException('Reset code has expired! Please request a new one. ⏰');
+      throw new BadRequestException('error.auth.reset_expired');
     }
 
     const isValidToken = await bcrypt.compare(resetToken, user.resetPasswordToken);
     if (!isValidToken) {
-      throw new BadRequestException('Invalid reset code! ❌');
+      throw new BadRequestException('error.auth.invalid_reset_code');
     }
 
     // Update password (hashing handled in UserService)
@@ -289,13 +289,13 @@ export class AuthService {
       resetPasswordExpires: null,
     });
 
-    return { message: 'Password reset successfully! You can now login. 🎉' };
+    return { message: 'success.auth.password_reset' };
   }
 
   async changePassword(userId: number, data: any) {
     const { currentPassword, newPassword } = data;
     if (!currentPassword || !newPassword) {
-      throw new BadRequestException('Current and new password required! 🔑');
+      throw new BadRequestException('error.auth.current_new_password_required');
     }
 
     if (newPassword.length < 6) {
@@ -303,11 +303,11 @@ export class AuthService {
     }
 
     const user = await this.userService.findOneById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('error.auth.user_not_found');
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException('Current password is incorrect! ❌');
+      throw new BadRequestException('error.auth.wrong_current_password');
     }
 
     await this.userService.update(userId, { 
@@ -317,24 +317,24 @@ export class AuthService {
     // Invalidate ALL sessions on password change for security
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
 
-    return { message: 'Password changed successfully! 🎉' };
+    return { message: 'success.auth.password_changed' };
   }
 
 
   async resendVerification(email: string) {
-    if (!email) throw new BadRequestException('E-mail is required! 📧');
+    if (!email) throw new BadRequestException('error.auth.email_required');
 
     const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
-    if (!user) throw new NotFoundException('User not found! 🏜️');
+    if (!user) throw new NotFoundException('error.auth.user_not_found');
 
     if (user.isEmailVerified) {
-      throw new BadRequestException('E-mail is already verified! ✨');
+      throw new BadRequestException('error.auth.already_verified');
     }
 
     console.info(`🔁 Resend verification requested for: ${user.email} (use MASTER_VERIFY_CODE)`);
 
     return {
-      message: 'Please use the verification code provided by the administrator. 🔑',
+      message: 'success.auth.resend_verification',
     };
   }
 
@@ -346,15 +346,15 @@ export class AuthService {
     if (avatar !== undefined) updateData.avatar = avatar;
 
     if (Object.keys(updateData).length === 0) {
-      throw new BadRequestException('Nothing to update! 🤔');
+      throw new BadRequestException('error.auth.nothing_to_update');
     }
 
     const updatedUser = await this.userService.update(userId, updateData);
-    if (!updatedUser) throw new NotFoundException('User not found');
+    if (!updatedUser) throw new NotFoundException('error.auth.user_not_found');
 
     return {
       user: this.sanitizeUser(updatedUser),
-      message: 'Profile updated successfully! ✨',
+      message: 'success.auth.profile_updated',
     };
   }
 
@@ -374,7 +374,7 @@ export class AuthService {
       // Logout from ALL devices
       await this.prisma.refreshToken.deleteMany({ where: { userId } });
     }
-    return { message: 'Logged out successfully! 👋' };
+    return { message: 'success.auth.logged_out' };
   }
 
   private generateRefreshToken(userId: number, sessionId: number) {
