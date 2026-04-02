@@ -41,4 +41,10 @@ yarn-error.log*
 Thumbs.db
 ehthumbs.db
 Desktop.ini
-.gitnexus
+# Assistant & Meta
+.claude/
+.gitnexus/
+AGENTS.md
+CLAUDE.md
+system_design.md
+testSettings.js
