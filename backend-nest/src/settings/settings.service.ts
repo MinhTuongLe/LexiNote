@@ -21,6 +21,7 @@ export class SettingsService {
         darkTheme: currentSettings.darkTheme ?? false,
         soundEnabled: currentSettings.soundEnabled ?? true,
         flashcardFront: currentSettings.flashcardFront ?? 'en',
+        hasSeenGuide: currentSettings.hasSeenGuide ?? false,
       },
       wordTypes: {
         system: VALID_WORD_TYPES,
@@ -46,7 +47,7 @@ export class SettingsService {
     }) as any;
 
     return {
-      settings: updatedUser.settings,
+      settings: await this.getSettings(userId),
       message: 'Settings updated successfully! ✨',
     };
   }

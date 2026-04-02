@@ -9,9 +9,11 @@ import study from './vi/study.json';
 import games from './vi/games.json';
 import words from './vi/words.json';
 import settings from './vi/settings.json';
+import welcome from './vi/welcome.json';
 
 const vi = {
   common,
+  welcome,
   auth,
   nav,
   library,

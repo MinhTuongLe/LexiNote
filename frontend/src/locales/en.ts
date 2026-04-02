@@ -9,9 +9,11 @@ import study from './en/study.json';
 import games from './en/games.json';
 import words from './en/words.json';
 import settings from './en/settings.json';
+import welcome from './en/welcome.json';
 
 const en = {
   common,
+  welcome,
   auth,
   nav,
   library,

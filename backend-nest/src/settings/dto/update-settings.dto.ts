@@ -21,4 +21,9 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsString()
   language?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  hasSeenGuide?: boolean;
 }

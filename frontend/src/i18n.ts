@@ -8,10 +8,12 @@ import vi from './locales/vi.ts';
 
 const resources = {
   en: {
-    translation: en
+    translation: en,
+    ...en
   },
   vi: {
-    translation: vi
+    translation: vi,
+    ...vi
   }
 };
 

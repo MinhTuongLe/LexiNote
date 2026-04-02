@@ -1,0 +1,27 @@
+{
+  "skip": "Bỏ qua",
+  "prev": "Quay lại",
+  "next": "Tiếp theo",
+  "start": "Bắt đầu ngay",
+  "processing": "Đang vào...",
+  "slide1": {
+    "tag": "👋 Xin chào!",
+    "title": "Khởi đầu cùng LexiNote",
+    "description": "Nền tảng flashcard cá nhân hoá với giao diện siêu đáng yêu. Thu thập, quản lý và ghi nhớ vĩnh viễn mọi từ vựng bạn muốn."
+  },
+  "slide2": {
+    "tag": "📚 Cơ sở dữ liệu",
+    "title": "Xây dựng Thư viện",
+    "description": "Thêm flashcard thủ công kết hợp hình ảnh cực nhanh, hoặc Import hàng ngàn từ vựng từ tệp Excel & JSON chỉ trong 1 click."
+  },
+  "slide3": {
+    "tag": "🧠 Thuật toán SM-2",
+    "title": "Ôn tập đúng thời điểm",
+    "description": "Công nghệ Spaced Repetition tự động phán đoán điểm rơi trí nhớ, nhắc nhở ôn đúng từ vào lúc bạn sắp quên."
+  },
+  "slide4": {
+    "tag": "🎮 Tiện ích",
+    "title": "Học mà như Chơi",
+    "description": "Thổi bay sự nhàm chán bằng hệ thống Minigame lật thẻ bài. Găm chặt từ vựng vào tiềm thức và thu thập thành tích!"
+  }
+}

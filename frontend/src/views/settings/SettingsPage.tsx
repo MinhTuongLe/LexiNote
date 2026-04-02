@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Moon, ShieldAlert, Trash2, 
-  Settings as SettingsIcon, Languages, ChevronRight
+  Settings as SettingsIcon, Languages, ChevronRight, Sparkles
 } from 'lucide-react';
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
@@ -120,6 +120,20 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             </div>
             <div className="settings-content">
               <p className="group-desc">{t('settings.language_study_desc') || 'Manage word categories and flashcard preferences'}</p>
+            </div>
+          </div>
+
+          <div className="settings-divider"></div>
+
+          {/* Guide / Onboarding Replay */}
+          <div className="settings-group clickable-group" onClick={() => navigate('/welcome')}>
+            <div className="settings-header">
+              <Sparkles className="settings-icon" size={20} color="#feca57" />
+              <h4>{t('settings.replay_guide') || 'Xem lại hướng dẫn từ đầu'}</h4>
+              <ChevronRight className="group-arrow" size={20} />
+            </div>
+            <div className="settings-content">
+              <p className="group-desc">{t('settings.replay_guide_desc') || 'Mở lại các trang giới thiệu cơ bản về tính năng của LexiNote dành cho người dùng mới'}</p>
             </div>
           </div>
 

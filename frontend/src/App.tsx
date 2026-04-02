@@ -6,6 +6,7 @@ import Card from './components/Card';
 import Modal from './components/Modal';
 import WordForm from './components/WordForm';
 import WordImport from './components/WordImport';
+import WelcomePage from './views/guide/WelcomePage';
 import Library from './views/Library';
 import StudyMode from './views/StudyMode';
 import ProfilePage from './views/profile/ProfilePage';
@@ -74,6 +75,21 @@ function App() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
   const [createWord] = useCreateWordMutation();
   const [importWords, { isLoading: isImporting }] = useImportWordsMutation();
+
+  // Redirect new users to full-screen guide
+  useEffect(() => {
+    if (isAuthenticated && isInitialized && user) {
+      const storageKey = `hasSeenGuide_${user.id ?? user._id ?? user.email ?? 'unknown'}`;
+      const locallySeen = localStorage.getItem(storageKey) === 'true';
+      
+      const rawSettings = user.settings || {};
+      const remotelySeen = rawSettings.preferences?.hasSeenGuide === true || rawSettings.hasSeenGuide === true;
+      
+      if (!locallySeen && !remotelySeen && location.pathname !== '/welcome') {
+        navigate('/welcome', { replace: true });
+      }
+    }
+  }, [isAuthenticated, isInitialized, user, navigate, location.pathname]);
 
   // Reset entirely UI state on Logout so the next person gets a clean slate 
   useEffect(() => {
@@ -150,10 +166,11 @@ function App() {
       <div className="decoration floating-2">🥕</div>
       <div className="decoration floating-3">✨</div>
 
-      <Navbar />
+      {location.pathname !== '/welcome' && <Navbar />}
       
       <main className="main-content">
         <Routes>
+          <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/profile" element={<ProfilePage onBack={() => navigate('/dashboard')} />} />
           <Route path="/settings" element={<SettingsPage onBack={() => navigate('/dashboard')} />} />
           <Route path="/settings/language" element={<LanguageSettingsPage onBack={() => navigate('/settings')} />} />

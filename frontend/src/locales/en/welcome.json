@@ -1,0 +1,27 @@
+{
+  "skip": "Skip",
+  "prev": "Back",
+  "next": "Next",
+  "start": "Start Now",
+  "processing": "Loading...",
+  "slide1": {
+    "tag": "👋 Hello there!",
+    "title": "Welcome to LexiNote",
+    "description": "A highly personalized flashcard platform with a super cute interface. Collect, manage, and memorize anything you want effortlessly."
+  },
+  "slide2": {
+    "tag": "📚 Database",
+    "title": "Build Your Library",
+    "description": "Quickly add flashcards with images manually, or bulk import thousands of words from Excel & JSON files in just one click."
+  },
+  "slide3": {
+    "tag": "🧠 SM-2 Algorithm",
+    "title": "Smart Spaced Repetition",
+    "description": "Spaced Repetition technology automatically predicts your memory curve, reminding you to review words exactly when you are about to forget them."
+  },
+  "slide4": {
+    "tag": "🎮 Entertainment",
+    "title": "Learn & Play",
+    "description": "Blow away boredom with our card-flipping Match Game system. Engrave vocabulary into your subconscious and collect achievements!"
+  }
+}
