@@ -1,38 +1,98 @@
 {
   "name": "backend",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
   "private": true,
-  "version": "0.0.0",
-  "description": "a Sails application",
-  "keywords": [],
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "npx nest build",
+    "build:prod": "npx prisma db push && npx nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "start:debug": "nest start --debug --watch",
+    "start:prod": "node dist/main.js",
+    "db:push": "npx prisma db push",
+    "db:push-live": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-db.ps1 push",
+    "db:pull-live": "powershell -ExecutionPolicy Bypass -File ./scripts/sync-db.ps1 pull",
+    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
   "dependencies": {
-    "@sailshq/lodash": "^3.10.6",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/static": "^9.0.0",
+    "@nestjs/cli": "^11.0.0",
+    "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.3",
+    "@nestjs/core": "^11.0.1",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/platform-fastify": "^11.1.17",
+    "@nestjs/swagger": "^11.2.6",
+    "@nestjs/throttler": "^6.5.0",
+    "@prisma/adapter-pg": "^7.5.0",
+    "@prisma/client": "^7.5.0",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/pg": "^8.20.0",
     "bcryptjs": "^3.0.3",
-    "dotenv": "^17.3.1",
-    "jsonwebtoken": "^9.0.3",
-    "nodemailer": "^8.0.3",
-    "resend": "^6.9.4",
-    "sails": "^1.5.16",
-    "sails-hook-orm": "^4.0.3",
-    "sails-hook-sockets": "^3.0.0",
-    "sails-postgresql": "^5.0.1"
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.4",
+    "fastify": "^5.8.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "pg": "^8.20.0",
+    "prisma": "^7.5.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
-    "eslint": "5.16.0"
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.18.0",
+    "@nestjs/schematics": "^11.0.0",
+    "@nestjs/testing": "^11.0.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^22.10.7",
+    "@types/passport-local": "^1.0.38",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.18.0",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-prettier": "^5.2.2",
+    "globals": "^16.0.0",
+    "jest": "^30.0.0",
+    "passport-local": "^1.0.0",
+    "prettier": "^3.4.2",
+    "source-map-support": "^0.5.21",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
+    "ts-loader": "^9.5.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0"
   },
-  "scripts": {
-    "start": "NODE_ENV=production node app.js",
-    "test": "npm run lint && npm run custom-tests && echo 'Done.'",
-    "lint": "./node_modules/eslint/bin/eslint.js . --max-warnings=0 --report-unused-disable-directives && echo '✔  Your .js files look good.'",
-    "custom-tests": "echo \"(No other custom tests yet.)\" && echo"
-  },
-  "main": "app.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/anonymous node/sails user/backend.git"
-  },
-  "author": "anonymous node/sails user",
-  "license": "",
-  "engines": {
-    "node": "^22.14"
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
   }
 }

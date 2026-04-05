@@ -1,0 +1,41 @@
+name: LexiNote CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_and_lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js 22.x
+      uses: actions/setup-node@v3
+      with:
+        node-version: 22.x
+        cache: 'yarn'
+        cache-dependency-path: '*/yarn.lock'
+
+    - name: Install Frontend Dependencies
+      working-directory: ./frontend
+      run: yarn install --frozen-lockfile
+
+    - name: Build Frontend
+      working-directory: ./frontend
+      run: yarn build
+
+    - name: Install Backend Dependencies
+      working-directory: ./backend
+      run: yarn install --frozen-lockfile
+
+    - name: Prisma Generate
+      working-directory: ./backend
+      run: npx prisma generate
+
+    - name: Build Backend
+      working-directory: ./backend
+      run: yarn build
