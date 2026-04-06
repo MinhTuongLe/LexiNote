@@ -54,14 +54,18 @@ async function bootstrap() {
   
   app.enableCors({
     origin: (origin, callback) => {
-      // Allow all in dev if no origins specified, or if origin matches
-      if (!isProd) {
-        if (!origin || allowedOrigins.length === 0 || allowedOrigins.indexOf(origin) !== -1) {
-          return callback(null, true);
-        }
+      // 1. Allow if no Origin header (e.g. Render Health Check, cURL, Postman)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // 2. Allow all in dev if no constraints provided
+      if (!isProd && allowedOrigins.length === 0) {
+        return callback(null, true);
       }
       
-      if (origin && allowedOrigins.indexOf(origin) !== -1) {
+      // 3. Strict check against allowed whitelist
+      if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         const error = new Error(`Origin ${origin} not allowed by CORS`);
