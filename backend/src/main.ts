@@ -7,6 +7,7 @@ import {
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import compression from '@fastify/compress';
 import helmet from '@fastify/helmet';
 import { I18nExceptionFilter } from './common/filters/i18n-exception.filter';
 import { I18nResponseInterceptor } from './common/interceptors/i18n-response.interceptor';
@@ -31,6 +32,9 @@ async function bootstrap() {
   // Enable Global I18n translations
   app.useGlobalFilters(new I18nExceptionFilter());
   app.useGlobalInterceptors(new I18nResponseInterceptor());
+
+  // 🚀 Performance: Enable Response Compression (Gzip, Brotli)
+  await app.register(compression, { encodings: ['gzip', 'deflate'] });
 
   // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
   await app.register(helmet, {

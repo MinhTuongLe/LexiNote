@@ -270,51 +270,58 @@ export class WordService {
   }
 
   async importBulk(userId: number, words: any[]) {
-    const createdWords = [];
+    // Process in chunks to avoid overwhelming the database connection pool
+    const chunkSize = 50;
+    let importedCount = 0;
+    const validTypes = await this.getValidTypes(userId);
 
-    for (const data of words) {
-      const { word, meaningVi, example, type } = data;
+    for (let i = 0; i < words.length; i += chunkSize) {
+      const chunk = words.slice(i, i + chunkSize);
+      
+      const chunkPromises = chunk.map(async (data) => {
+        const { word, meaningVi, example, type } = data;
 
-      // Simple duplicate check by word for THIS user
-      const existing = await this.prisma.word.findFirst({
-        where: { word, ownerId: userId },
-      });
-      if (existing) continue;
-
-      const validTypes = await this.getValidTypes(userId);
-      let normalizedType = (type || 'other').toLowerCase().trim();
-      if (normalizedType.includes('/') || normalizedType.includes(',')) {
-        normalizedType = normalizedType.split(/[/,]/)[0].trim();
-      }
-      if (!validTypes.includes(normalizedType)) normalizedType = 'other';
-
-      const newWord = await this.prisma.$transaction(async (tx) => {
-        const nw = await tx.word.create({
-          data: {
-            word,
-            meaningVi,
-            example: example || '',
-            type: normalizedType,
-            ownerId: userId,
-          },
+        // Simple duplicate check by word for THIS user
+        const existing = await this.prisma.word.findFirst({
+          where: { word, ownerId: userId },
         });
+        if (existing) return null;
 
-        await tx.review.create({
-          data: {
-            wordId: nw.id,
-            nextReview: BigInt(Date.now()),
-            interval: 0,
-            easeFactor: 2.5,
-          },
+        let normalizedType = (type || 'other').toLowerCase().trim();
+        if (normalizedType.includes('/') || normalizedType.includes(',')) {
+          normalizedType = normalizedType.split(/[/,]/)[0].trim();
+        }
+        if (!validTypes.includes(normalizedType)) normalizedType = 'other';
+
+        return this.prisma.$transaction(async (tx) => {
+          const nw = await tx.word.create({
+            data: {
+              word,
+              meaningVi,
+              example: example || '',
+              type: normalizedType,
+              ownerId: userId,
+            },
+          });
+
+          await tx.review.create({
+            data: {
+              wordId: nw.id,
+              nextReview: BigInt(Date.now()),
+              interval: 0,
+              easeFactor: 2.5,
+            },
+          });
+
+          return nw;
         });
-
-        return nw;
       });
 
-      createdWords.push(newWord);
+      const results = await Promise.all(chunkPromises);
+      importedCount += results.filter(Boolean).length;
     }
 
-    return { imported: createdWords.length };
+    return { imported: importedCount };
   }
 
   async getDashboardStats(userId: number) {

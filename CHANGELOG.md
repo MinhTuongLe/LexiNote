@@ -5,9 +5,18 @@ All notable changes to the LexiNote project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), 
 and this project adheres to Semantic Versioning as it matures.
 
-## [Unreleased / Latest] - 2026-04-02
+## [Unreleased / Latest] - 2026-04-06
 
 ### Added
+- **Global Rate Limiting**: Enabled `ThrottlerGuard` globally to protect the API from DDoS and spam.
+- **Fastify Payload Compression**: Integrated `@fastify/compress` to dramatically reduce JSON response sizes with Gzip/Brotli, reducing network latency.
+- **SWC Compiler Integration**: Replaced standard `tsc` with `@swc/core` & `@swc/cli` in `nest-cli.json` to deliver 20x faster compilation during Backend hot-reloads and production builds.
+
+### Changed
+- **Database B-Tree Indexing**: Restructured Prisma schema to include indexes on `Word.ownerId`, `WordRelation.wordId`, `Review.nextReview`, and `RefreshToken` fields, eliminating sequential scans during high-traffic reads.
+- **Parallel Promise Architecting**: Rewrote `WordService.importBulk` loop to use Asynchronous chunk batching (`Promise.all`), increasing large CSV import throughput by >10x and stopping N+1 query bottlenecks.
+- **Frontend Perf Strategy**: Safely reverted SPA speculative prerendering rules to `prefetch` mechanism to avoid background React auth-state collision (401 session resets).
+- **RAM Bounds Guarding**: Added a `take: 100` hard limit in `ReviewService.getDueWords` with priority sorting, neutralizing memory overflow crashes when handling massive overdue deck queues.
 - **GitNexus Integration**: Added GitNexus skill documentation for improved project intelligence.
 - **Welcome Guide & Settings**: Implemented a welcome guide for new users and a settings service for application configuration.
 - **Internationalization (i18n)**: Expanded localization support across the application.

@@ -16,6 +16,10 @@ export class ReviewService {
       include: {
         word: true,
       },
+      orderBy: {
+        nextReview: 'asc', // Priority to oldest overdue
+      },
+      take: 100, // Hard limit to prevent RAM exhaustion and payload blowout on massive backlogs
     });
 
     return reviews.map(r => this.formatReview(r));
