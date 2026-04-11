@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { Word, Prisma } from '@prisma/client';
 import { SettingsService } from '../settings/settings.service';
 
@@ -178,15 +178,18 @@ export class WordService {
       if (!validTypes.includes(normalizedType)) normalizedType = 'other';
     }
 
+    const updateData: any = {
+      updatedAt: BigInt(Date.now()),
+    };
+    if (word !== undefined) updateData.word = word;
+    if (meaningVi !== undefined) updateData.meaningVi = meaningVi;
+    if (example !== undefined) updateData.example = example;
+    if (normalizedType !== undefined) updateData.type = normalizedType;
+
     return this.prisma.$transaction(async (tx) => {
       const updatedWord = await tx.word.updateMany({
         where: { id, ownerId: userId },
-        data: {
-          word,
-          meaningVi,
-          example,
-          type: normalizedType,
-        },
+        data: updateData,
       });
 
       if (updatedWord.count === 0) throw new NotFoundException('error.word.not_found');

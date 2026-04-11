@@ -6,7 +6,9 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { 
+  User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff
+} from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
 
@@ -19,7 +21,7 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const { user } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { showAlert } = useCuteDialog();
 
   // Profile edit
@@ -85,6 +87,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
       showAlert('Error! 😿', err.data?.message || 'Failed to change password.', 'error');
     }
   };
+
 
   return (
     <div className="profile-page">
@@ -158,7 +161,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         )}
       </Card>
 
-      {/* Settings section has been moved to /settings */}
 
       {/* Change Password Modal */}
       <Modal

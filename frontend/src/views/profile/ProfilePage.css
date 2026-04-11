@@ -304,3 +304,39 @@
     align-self: flex-start;
   }
 }
+.profile-settings-card {
+  padding: 32px 24px !important;
+}
+
+.setting-profile-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.profile-cute-select {
+  min-width: 180px;
+  width: auto !important; 
+  flex-shrink: 0;
+}
+
+.danger-group {
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px dashed #ff7675;
+  background: rgba(255,118,117,0.03);
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+  .setting-profile-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .profile-cute-select {
+    align-self: stretch;
+  }
+}

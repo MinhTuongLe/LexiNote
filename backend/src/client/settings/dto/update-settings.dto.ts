@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsArray } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateSettingsDto {
@@ -26,4 +26,8 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   hasSeenGuide?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  wordTypes?: any[];
 }

@@ -17,25 +17,24 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
-  const { data: settingsData } = useGetSettingsQuery();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { showAlert, showConfirm } = useCuteDialog();
+  const { data: settingsData } = useGetSettingsQuery();
   const [updateSettings] = useUpdateSettingsMutation();
+  const { showAlert, showConfirm } = useCuteDialog();
 
-  // Settings state from user profile or defaults
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-
-  const language = i18n.language || 'en';
+  const currentLang = i18n?.language || 'en';
 
   useEffect(() => {
-    if (settingsData) {
-      if (settingsData.preferences?.darkTheme !== undefined) setIsDarkTheme(settingsData.preferences.darkTheme);
+    if (settingsData?.preferences?.darkTheme !== undefined) {
+      setIsDarkTheme(settingsData.preferences.darkTheme);
     }
   }, [settingsData]);
 
   const handleLanguageChange = (lng: string) => {
-    i18n.changeLanguage(lng);
+    i18n?.changeLanguage(lng);
+    handleSaveSetting('language', lng);
   };
 
   const handleSaveSetting = async (key: string, value: any) => {
@@ -64,8 +63,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
           <div className="settings-icon-large">
             <SettingsIcon size={40} />
           </div>
-          <h2>{t('profile.title')}</h2>
-          <p>{t('profile.app_preferences')}</p>
+          <h2>{t('settings.title')}</h2>
+          <p>{t('settings.language_settings_desc') || 'Manage app specific settings'}</p>
         </div>
 
         <div className="settings-list">
@@ -101,7 +100,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 </div>
                 <CuteSelect 
                   options={langOptions} 
-                  value={language} 
+                  value={currentLang} 
                   onChange={handleLanguageChange} 
                   className="settings-cute-select" 
                 />
@@ -111,7 +110,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
           <div className="settings-divider"></div>
 
-          {/* New: Language & Study Link */}
+          {/* Language & Study Link */}
           <div className="settings-group clickable-group" onClick={() => navigate('/settings/language')}>
             <div className="settings-header">
               <Languages className="settings-icon" size={20} />
@@ -120,20 +119,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             </div>
             <div className="settings-content">
               <p className="group-desc">{t('settings.language_study_desc') || 'Manage word categories and flashcard preferences'}</p>
-            </div>
-          </div>
-
-          <div className="settings-divider"></div>
-
-          {/* Guide / Onboarding Replay */}
-          <div className="settings-group clickable-group" onClick={() => navigate('/welcome')}>
-            <div className="settings-header">
-              <Sparkles className="settings-icon" size={20} color="#feca57" />
-              <h4>{t('settings.replay_guide') || 'Xem lại hướng dẫn từ đầu'}</h4>
-              <ChevronRight className="group-arrow" size={20} />
-            </div>
-            <div className="settings-content">
-              <p className="group-desc">{t('settings.replay_guide_desc') || 'Mở lại các trang giới thiệu cơ bản về tính năng của LexiNote dành cho người dùng mới'}</p>
             </div>
           </div>
 

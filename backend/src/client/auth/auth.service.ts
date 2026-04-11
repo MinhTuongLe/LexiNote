@@ -7,7 +7,7 @@ import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 import { VALID_WORD_TYPES } from '../word/word.constants';
 
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
