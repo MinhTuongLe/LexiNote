@@ -6,12 +6,19 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Role {
+  MEMBER
+  ADMIN
+}
+
 model User {
   id                       Int      @id @default(autoincrement())
   email                    String   @unique
   password                 String
   fullName                 String   @map("full_name")
   avatar                   String?  @default("🐰")
+  role                     Role     @default(MEMBER)
+  isActive                 Boolean  @default(true) @map("is_active")
   resetPasswordToken       String?  @map("reset_password_token")
   resetPasswordExpires     BigInt?  @map("reset_password_expires")
   isEmailVerified          Boolean  @default(false) @map("is_email_verified")

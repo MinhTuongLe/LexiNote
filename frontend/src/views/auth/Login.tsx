@@ -42,7 +42,17 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
-      showAlert(t('auth.login_failed_title'), err.data?.message || t('auth.login_failed_msg'), 'error');
+      
+      if (err.data?.code === 'ACCOUNT_INACTIVE') {
+        showAlert(t('auth.login_failed_title'), t('auth.account_inactive_msg'), 'error');
+        return;
+      }
+
+      const errorMessage = err.data?.message?.startsWith('error.') 
+        ? t(err.data.message) 
+        : (err.data?.message || t('auth.login_failed_msg'));
+
+      showAlert(t('auth.login_failed_title'), errorMessage, 'error');
     }
   };
 

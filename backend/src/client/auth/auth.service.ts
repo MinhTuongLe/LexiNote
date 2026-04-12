@@ -34,6 +34,13 @@ export class AuthService {
   }
 
   async login(user: any, request?: any) {
+    if (!user.isActive) {
+      throw new ForbiddenException({
+        message: 'error.auth.account_inactive',
+        code: 'ACCOUNT_INACTIVE',
+      });
+    }
+
     if (!user.isEmailVerified) {
       throw new ForbiddenException({
         message: 'error.auth.unverified_email',
@@ -42,7 +49,7 @@ export class AuthService {
       });
     }
 
-    const payload = { id: user.id, email: user.email };
+    const payload = { id: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
     // Create a new session in DB
@@ -142,7 +149,11 @@ export class AuthService {
       throw new UnauthorizedException('error.auth.token_theft');
     }
 
-    const payload = { id: session.user.id, email: session.user.email };
+    if (!session.user.isActive) {
+      throw new UnauthorizedException('error.auth.account_inactive');
+    }
+
+    const payload = { id: session.user.id, email: session.user.email, role: session.user.role };
     const newAccessToken = this.jwtService.sign(payload);
     
     // Rotate refresh token
@@ -192,7 +203,7 @@ export class AuthService {
       emailVerificationExpires: null,
     });
 
-    const payload = { id: updatedUser.id, email: updatedUser.email };
+    const payload = { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role };
     const accessToken = this.jwtService.sign(payload);
     
     // Create new session upon verification
@@ -391,6 +402,8 @@ export class AuthService {
       fullName: user.fullName,
       avatar: user.avatar,
       isEmailVerified: user.isEmailVerified,
+      role: user.role,
+      isActive: user.isActive,
       settings: user.settings,
     };
   }

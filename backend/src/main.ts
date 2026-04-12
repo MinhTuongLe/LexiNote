@@ -1,5 +1,10 @@
 import 'dotenv/config'; // Add this at the top
 import { NestFactory } from '@nestjs/core';
+
+// Global BigInt serialization fix for Fastify/JSON.stringify
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
 import {
   FastifyAdapter,
   NestFastifyApplication,
