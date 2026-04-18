@@ -1,48 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
-  Users, 
-  BookOpen, 
-  Activity, 
-  TrendingUp,
-  ArrowUpRight,
   MoreVertical,
   Layers,
   Zap,
-  ShieldCheck
+  ShieldCheck,
+  ArrowUpRight
 } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const data = [
-  { name: 'Mon', words: 400, users: 240 },
-  { name: 'Tue', words: 300, users: 139 },
-  { name: 'Wed', words: 200, users: 980 },
-  { name: 'Thu', words: 278, users: 390 },
-  { name: 'Fri', words: 189, users: 480 },
-  { name: 'Sat', words: 239, users: 380 },
-  { name: 'Sun', words: 349, users: 430 },
-];
+import { useOverview } from './useOverview';
 
 const OverviewPage: React.FC = () => {
-  const [stats, setStats] = useState({ totalUsers: 0, totalWords: 0 });
-
-  useEffect(() => {
-    fetch('http://localhost:1337/api/v1/dashboard/analytics/stats')
-      .then(res => res.json())
-      .then(data => setStats(data))
-      .catch(err => console.error('Error fetching analytics:', err));
-  }, []);
-
-  const kpis = [
-    { label: 'Total Users', value: stats.totalUsers || '2,543', change: '+12.5%', icon: Users, theme: '#009ef7', bg: '#f1faff' },
-    { label: 'Word Count', value: stats.totalWords || '18,201', change: '+5.2%', icon: BookOpen, theme: '#50cd89', bg: '#e8fff3' },
-    { label: 'Active Sessions', value: '432', change: '-2.1%', icon: Activity, theme: '#7239ea', bg: '#f8f5ff' },
-    { label: 'Growth Rate', value: '24.8%', change: '+3.4%', icon: TrendingUp, theme: '#ffc700', bg: '#fff8dd' },
-  ];
+  const { kpis, chartData, isLoading } = useOverview();
 
   return (
-    <div className="space-y-8 animate-in">
+    <div className="space-y-8 animate-in" id="overview-container">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-xl font-bold text-[#181c32]">System Overview</h1>
@@ -55,14 +28,14 @@ const OverviewPage: React.FC = () => {
       </div>
 
       {/* KPI Cards ReUI Style */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="kpi-grid">
         {kpis.map((item, i) => (
           <Card key={i} className="border-[#eff2f5] shadow-sm hover:translate-y-[-4px] transition-all cursor-pointer group">
             <CardContent className="p-6">
               <div className="flex justify-between items-start mb-6">
                 <div 
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-sm"
-                  style={{ backgroundColor: item.bg, color: item.theme }}
+                   className="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors shadow-sm"
+                   style={{ backgroundColor: item.bg, color: item.theme }}
                 >
                   <item.icon size={24} />
                 </div>
@@ -74,7 +47,9 @@ const OverviewPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-[11px] font-bold text-[#a1a5b7] uppercase tracking-widest">{item.label}</p>
-                <h3 className="text-2xl font-black text-[#181c32] mt-1 group-hover:text-[#009ef7] transition-colors">{item.value}</h3>
+                <h3 className="text-2xl font-black text-[#181c32] mt-1 group-hover:text-[#009ef7] transition-colors">
+                  {isLoading && item.label.includes('Total') ? '...' : item.value}
+                </h3>
               </div>
             </CardContent>
           </Card>
@@ -97,7 +72,7 @@ const OverviewPage: React.FC = () => {
             
             <div className="h-[350px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={data}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorPrimary" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#009ef7" stopOpacity={0.1}/>
@@ -126,7 +101,7 @@ const OverviewPage: React.FC = () => {
                    <div className="w-1 h-4 bg-[#7239ea] rounded-full"></div> Activity Stream
                 </h3>
                 <div className="space-y-6">
-                  {[
+                   {[
                     { m: 'New User Joined', s: 'jle@lexinote.ui', t: '2m', c: 'border-[#009ef7]' },
                     { m: 'Backup Sequence Alpha', s: 'Status: 200 OK', t: '15m', c: 'border-[#50cd89]' },
                     { m: 'Heavy API Payload', s: 'Threshold: 450ms', t: '40m', c: 'border-[#ffc700]' },

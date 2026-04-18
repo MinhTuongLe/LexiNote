@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
@@ -25,6 +26,7 @@ async function main() {
         password: hashedPassword,
         role: 'ADMIN',
         isActive: true,
+        isEmailVerified: true,
         fullName,
       },
       create: {

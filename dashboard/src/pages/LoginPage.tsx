@@ -11,29 +11,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { useAuth } from '../context/AuthContext';
+import { useLoginMutation } from '../store/api/authApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '../store/slices/authSlice';
 import { AlertCircle } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const [login, { isLoading }] = useLoginMutation();
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError(null);
     try {
-      await login(email, password);
+      const result = await login({ email, password }).unwrap();
+      dispatch(setCredentials({ user: result.user, token: result.token }));
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Login failed');
-    } finally {
-      setIsLoading(false);
+      setError(err?.data?.message || err?.message || 'Login failed');
     }
   };
 

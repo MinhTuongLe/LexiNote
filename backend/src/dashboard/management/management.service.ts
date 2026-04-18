@@ -84,6 +84,18 @@ export class ManagementService {
     });
   }
 
+  async createUser(data: any) {
+    // In a real app, hash password here
+    return this.prisma.user.create({
+      data: {
+        ...data,
+        password: 'hashed_password_placeholder', // Should be handled by AuthService
+        role: 'MEMBER',
+        isActive: true,
+      },
+    });
+  }
+
   async toggleStatus(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) return null;

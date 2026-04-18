@@ -12,16 +12,18 @@ import {
   Bell
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
-
-import { useAuth } from '../context/AuthContext';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../store';
+import { logout } from '../store/slices/authSlice';
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/login');
   };
 

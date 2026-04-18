@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { 
   Search, 
   Filter, 
   Eye, 
   ShieldCheck, 
-  UserX,
   ArrowUpDown,
   Download,
   Plus,
@@ -15,62 +14,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import api from '../services/api';
-
-interface UserData {
-  id: number;
-  fullName: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-  wordCount: number;
-  createdAt: string;
-}
+import { useUsers } from './useUsers';
 
 const UserManagementPage: React.FC = () => {
-  const [users, setUsers] = useState<UserData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalUsers, setTotalUsers] = useState(0);
+  const {
+    users,
+    isLoading,
+    search,
+    setSearch,
+    page,
+    setPage,
+    totalPages,
+    totalUsers,
+    handleToggleStatus,
+    handleCreateUser,
+    formatDate
+  } = useUsers();
 
-  const fetchUsers = async () => {
-    setIsLoading(true);
+  const onAddMember = async () => {
+    const fullName = prompt('Enter Full Name:');
+    if (!fullName) return;
+    const email = prompt('Enter Email:');
+    if (!email) return;
+    
     try {
-      const { data } = await api.get('/dashboard/management/users', {
-        params: { page, search, limit: 10 }
-      });
-      setUsers(data.data);
-      setTotalPages(data.meta.totalPages);
-      setTotalUsers(data.meta.total);
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    } finally {
-      setIsLoading(false);
+      await handleCreateUser({ fullName, email });
+      alert('Member provisioned successfully!');
+    } catch (err) {
+      alert('Failed to create member.');
     }
   };
 
-  useEffect(() => {
-    fetchUsers();
-  }, [page, search]);
-
-  const toggleUserStatus = async (id: number) => {
-    try {
-      await api.post(`/dashboard/management/users/${id}/toggle-status`);
-      fetchUsers();
-    } catch (error) {
-      console.error('Failed to toggle status:', error);
-    }
-  };
-
-  const formatDate = (epoch: any) => {
-    return new Date(Number(epoch)).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
   return (
     <div className="space-y-6 animate-in">
       <div className="flex justify-between items-center">
@@ -80,7 +54,7 @@ const UserManagementPage: React.FC = () => {
         </div>
         <div className="flex gap-2">
            <Button variant="secondary" className="bg-[#f5f8fa] text-[#7e8299] hover:bg-[#eff2f5]"><Download size={14} className="mr-1.5" /> Export CSV</Button>
-           <Button className="bg-[#009ef7] text-white hover:bg-[#0086d1]"><Plus size={16} className="mr-1.5" /> Add Member</Button>
+           <Button className="bg-[#009ef7] text-white hover:bg-[#0086d1]" onClick={onAddMember}><Plus size={16} className="mr-1.5" /> Add Member</Button>
         </div>
       </div>
 
@@ -196,7 +170,7 @@ const UserManagementPage: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => toggleUserStatus(user.id)}
+                          onClick={() => handleToggleStatus(user.id)}
                           className={`h-8 w-8 ${user.isActive ? 'hover:bg-[#fff5f8] hover:text-[#f1416c]' : 'hover:bg-[#e8fff3] hover:text-[#50cd89]'} text-[#a1a5b7]`}
                         >
                           <ShieldCheck size={16} />
@@ -217,7 +191,7 @@ const UserManagementPage: React.FC = () => {
             <div className="flex gap-2">
                 <Button 
                   variant="secondary" 
-                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  onClick={() => setPage((p: number) => Math.max(1, p - 1))}
                   disabled={page === 1}
                   className="h-8 px-3 font-bold bg-[#f5f8fa] text-[#7e8299] hover:bg-[#eff2f5]"
                 >
@@ -236,7 +210,7 @@ const UserManagementPage: React.FC = () => {
                 </div>
                 <Button 
                   variant="secondary" 
-                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
                   className="h-8 px-3 font-bold bg-[#f5f8fa] text-[#7e8299] hover:bg-[#eff2f5]"
                 >

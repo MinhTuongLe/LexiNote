@@ -28,6 +28,12 @@ export class ManagementController {
     );
   }
 
+  @Post('users')
+  @ApiOperation({ summary: 'Create new user' })
+  async createUser(@Body() body: any) {
+    return this.managementService.createUser(body);
+  }
+
   @Get('users/:id')
   @ApiOperation({ summary: 'Get user details' })
   async getUser(@Param('id', ParseIntPipe) id: number) {

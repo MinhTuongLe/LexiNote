@@ -10,7 +10,10 @@ import { MetaModule } from './meta/meta.module';
 import { SettingsModule } from './client/settings/settings.module';
 import { AnalyticsModule } from './dashboard/analytics/analytics.module';
 import { ManagementModule } from './dashboard/management/management.module';
+import { DashboardAuthModule } from './dashboard/auth/dashboard-auth.module';
+import { DashboardWordsModule } from './dashboard/words/words.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 
 @Module({
   imports: [
@@ -27,6 +30,9 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     // Dashboard
     AnalyticsModule,
     ManagementModule,
+    DashboardAuthModule,
+    DashboardWordsModule,
+    DashboardConfigModule,
     MetaModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
@@ -49,6 +55,9 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
         children: [
           { path: '/', module: AnalyticsModule },
           { path: '/', module: ManagementModule },
+          { path: '/', module: DashboardAuthModule },
+          { path: '/', module: DashboardWordsModule },
+          { path: '/', module: DashboardConfigModule },
         ],
       },
     ]),
