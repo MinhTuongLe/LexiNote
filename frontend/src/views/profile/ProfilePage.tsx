@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateUser } from '../../store/authSlice';
-import { useUpdateProfileMutation, useChangePasswordMutation } from '../../store/apiSlice';
+import { useNavigate } from 'react-router-dom';
+import { updateUser, logout } from '../../store/authSlice';
+import { useUpdateProfileMutation, useChangePasswordMutation, useDeactivateAccountMutation } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff, ShieldAlert, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
 
@@ -19,8 +20,10 @@ interface ProfilePageProps {
 const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const { user } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { t } = useTranslation();
-  const { showAlert } = useCuteDialog();
+  const { showAlert, showConfirm } = useCuteDialog();
+  const [deactivateAccount] = useDeactivateAccountMutation();
 
   // Profile edit
   const [isEditingProfile, setIsEditingProfile] = useState(false);
@@ -158,7 +161,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
         )}
       </Card>
 
-      {/* Settings section has been moved to /settings */}
+      <Card className="profile-card danger-zone-card" style={{ marginTop: '20px', borderColor: '#ffeaa7' }}>
+        <div className="settings-group account-danger-group">
+          <div className="settings-header">
+            <ShieldAlert className="settings-icon" size={20} color="#ff7675" />
+            <h4 style={{ color: '#ff7675', margin: 0 }}>{t('profile.danger_zone')}</h4>
+          </div>
+          <div className="settings-content">
+            <div className="setting-item delete-data-item" style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="setting-label">
+                <span style={{ color: '#d63031', fontWeight: 'bold' }}>{t('profile.delete_all_data')}</span>
+                <p style={{ margin: 0, fontSize: '0.9rem', color: '#636e72' }}>{t('profile.delete_all_data_desc')}</p>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => showConfirm(
+                  t('profile.delete_confirm_title'),
+                  t('profile.delete_confirm_msg'),
+                  async () => {
+                    try {
+                      await deactivateAccount().unwrap();
+                      showAlert(t('common.success'), t('profile.delete_success_msg') || 'Tài khoản của bạn đã được xóa và đăng xuất!', 'success');
+                      dispatch(logout());
+                      navigate('/login');
+                    } catch (err: any) {
+                      showAlert(t('common.error'), err.data?.message || 'Failed to delete data', 'error');
+                    }
+                  }
+                )} 
+                style={{ borderColor: '#ff7675', color: '#ff7675' }}
+              >
+                <Trash2 size={16} /> {t('common.delete')}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Card>
 
       {/* Change Password Modal */}
       <Modal

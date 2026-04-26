@@ -123,7 +123,7 @@ const Navbar: React.FC<NavbarProps> = () => {
                         setShowDropdown(false);
                       }}
                     >
-                      <Settings size={16} /> {t('profile.title')}
+                      <Settings size={16} /> {t('settings.title')}
                     </button>
                     <button 
                       className="dropdown-item danger" 

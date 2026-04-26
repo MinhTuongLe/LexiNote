@@ -1,5 +1,5 @@
 {
-  "title": "Settings",
+  "title": "Profile",
   "edit_profile": "Edit Profile",
   "change_password": "Change Password",
   "app_preferences": "App Preferences",
@@ -26,5 +26,6 @@
   "flashcard_en": "English Word",
   "flashcard_vi": "Vietnamese Meaning",
   "delete_confirm_title": "Delete Account? 😿",
-  "delete_confirm_msg": "Are you sure? This action is permanent and cannot be undone!"
+  "delete_confirm_msg": "Are you sure? This action is permanent and cannot be undone!",
+  "delete_success_msg": "Your account and data have been wiped. You are now logged out! 👋"
 }

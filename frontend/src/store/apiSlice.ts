@@ -264,6 +264,12 @@ export const apiSlice = createApi({
       query: () => '/settings',
       providesTags: ['User'],
     }),
+    deactivateAccount: builder.mutation<{ message: string }, void>({
+      query: () => ({
+        url: '/settings/deactivate',
+        method: 'PATCH',
+      }),
+    }),
   }),
 });
 
@@ -292,4 +298,5 @@ export const {
   useUpdateSRSMutation,
   useResetProgressMutation,
   useLazyGetWordsQuery,
+  useDeactivateAccountMutation,
 } = apiSlice;

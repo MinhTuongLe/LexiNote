@@ -1,5 +1,5 @@
 {
-  "title": "Hồ sơ & Cài đặt",
+  "title": "Hồ sơ",
   "edit_profile": "Chỉnh sửa hồ sơ",
   "change_password": "Đổi mật khẩu",
   "app_preferences": "Giao diện & Ứng dụng",
@@ -26,5 +26,6 @@
   "flashcard_en": "Từ vựng (Tiếng Anh)",
   "flashcard_vi": "Nghĩa (Tiếng Việt)",
   "delete_confirm_title": "Xóa tài khoản? 😿",
-  "delete_confirm_msg": "Thao tác này sẽ xóa vĩnh viễn toàn bộ từ vựng và tài khoản của bạn. Bạn chắc chứ?"
+  "delete_confirm_msg": "Thao tác này sẽ xóa vĩnh viễn toàn bộ từ vựng và tài khoản của bạn. Bạn chắc chứ?",
+  "delete_success_msg": "Tài khoản của bạn đã được xóa và đăng xuất thành công! 👋"
 }
