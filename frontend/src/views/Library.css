@@ -32,14 +32,14 @@
   gap: 12px;
 }
 
-@media (max-width: 650px) {
+@media (max-width: 850px) {
   .library-top-bar {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
   }
   .header-main-actions {
     width: 100%;
-    margin-top: 12px;
   }
   .header-main-actions button {
     flex: 1;
