@@ -94,7 +94,7 @@ function App() {
   // Reset entirely UI state on Logout so the next person gets a clean slate 
   useEffect(() => {
     if (!isAuthenticated && isInitialized) {
-      if (location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/forgot') {
+      if (location.pathname !== '/login' && location.pathname !== '/register' && location.pathname !== '/forgot' && location.pathname !== '/verify-email') {
         navigate('/login');
       }
     }
