@@ -13,21 +13,78 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Skeleton from '@/components/ui/Skeleton';
 import { useWords } from './useWords';
+import ReModal from '@/components/ui/ReModal';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/components/ui/Toast';
 
 const WordLibraryPage: React.FC = () => {
   const {
     words,
+    isLoading,
     search,
     setSearch,
     filter,
     setFilter,
-    handleDelete
+    page,
+    setPage,
+    totalPages,
+    handleDelete,
+    handleUpdate
   } = useWords();
 
-  const handleBatchImport = () => {
-    const data = prompt('Input comma-separated words:');
-    if (data) alert('Mock: System is processing ' + data.split(',').length + ' words.');
+  const { toast } = useToast();
+
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+  const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  
+  const [editingWord, setEditingWord] = React.useState<any>(null);
+  const [newMeaning, setNewMeaning] = React.useState('');
+  const [batchData, setBatchData] = React.useState('');
+  const [isProcessing, setIsProcessing] = React.useState(false);
+
+  const handleEditTrigger = (word: any) => {
+    setEditingWord(word);
+    setNewMeaning(word.meaningVi);
+    setIsEditModalOpen(true);
+  };
+
+  const onConfirmUpdate = async () => {
+    if (!editingWord || !newMeaning) return;
+    setIsProcessing(true);
+    try {
+      await handleUpdate(editingWord.id, { meaningVi: newMeaning });
+      setIsEditModalOpen(false);
+      toast({ type: 'success', title: 'Shard Updated', message: `Meaning for ${editingWord.word} has been revised.` });
+    } catch (e) {
+      toast({ type: 'error', title: 'Update Collision', message: 'Failed to synchronize lexical changes.' });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onConfirmDelete = async () => {
+    if (!editingWord) return;
+    setIsProcessing(true);
+    try {
+        await handleDelete(editingWord.id);
+        setIsDeleteModalOpen(false);
+        toast({ type: 'success', title: 'Entity Purged', message: `${editingWord.word} removed from registry.` });
+    } catch (e) {
+        toast({ type: 'error', title: 'Purge Failed', message: 'Registry constraint prevented removal.' });
+    } finally {
+        setIsProcessing(false);
+    }
+  };
+
+  const onConfirmBatch = () => {
+    if (!batchData) return;
+    const count = batchData.split(',').length;
+    toast({ type: 'info', title: 'Mass Injection', message: `Processing ${count} lexical shards...` });
+    setIsBatchModalOpen(false);
+    setBatchData('');
   };
 
   return (
@@ -37,8 +94,91 @@ const WordLibraryPage: React.FC = () => {
           <h1 className="text-xl font-bold text-[#181c32]">Registry Library</h1>
           <p className="text-xs font-semibold text-[#a1a5b7] mt-1">Audit and curate linguistic data blocks.</p>
         </div>
-        <Button className="bg-[#009ef7] hover:bg-[#0086d1] text-white" onClick={handleBatchImport}><Plus size={16} className="mr-1.5" /> Batch Node Import</Button>
+        <Button className="bg-[#009ef7] hover:bg-[#0086d1] text-white" onClick={() => setIsBatchModalOpen(true)}><Plus size={16} className="mr-1.5" /> Batch Node Import</Button>
       </div>
+
+      {/* Edit Word Modal */}
+      <ReModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        title={`Clarify Shard: ${editingWord?.word?.toUpperCase()}`}
+        description="Modify the semantic definition for this regional entry."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsEditModalOpen(false)}>Abort</Button>
+            <Button className="bg-[#009ef7] text-white" onClick={onConfirmUpdate} disabled={isProcessing}>
+              {isProcessing ? 'Synchronizing...' : 'Revise Shard'}
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+           <div className="space-y-2">
+              <label className="text-[10px] font-bold text-[#a1a5b7] uppercase tracking-widest">Semantic Meaning (VI)</label>
+              <Input 
+                value={newMeaning}
+                onChange={(e) => setNewMeaning(e.target.value)}
+                className="bg-[#f5f8fa] border-none h-11 font-bold"
+              />
+           </div>
+        </div>
+      </ReModal>
+
+      {/* Batch Import Modal */}
+      <ReModal
+        isOpen={isBatchModalOpen}
+        onClose={() => setIsBatchModalOpen(false)}
+        title="Mass Node Injection"
+        description="Inject multiple lexical entities into the global registry."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsBatchModalOpen(false)}>Cancel</Button>
+            <Button className="bg-[#009ef7] text-white" onClick={onConfirmBatch}>Begin Injection</Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+           <div className="space-y-2">
+              <label className="text-[10px] font-bold text-[#a1a5b7] uppercase tracking-widest">Raw Data Stream (Comma Separated)</label>
+              <Textarea 
+                placeholder="e.g. hello, world, computer..."
+                value={batchData}
+                onChange={(e) => setBatchData(e.target.value)}
+                className="bg-[#f5f8fa] border-none min-h-[150px] rounded-2xl p-4 font-mono text-xs"
+              />
+           </div>
+        </div>
+      </ReModal>
+
+      {/* Delete Confirmation Modal */}
+      <ReModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="Purge Lexical Shard"
+        description="Permanently decommission this word from the linguistic registry."
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
+            <Button 
+                className="bg-[#f1416c] text-white hover:bg-[#d9214e]" 
+                onClick={onConfirmDelete}
+                disabled={isProcessing}
+            >
+              {isProcessing ? 'Purging...' : 'Confirm Purge'}
+            </Button>
+          </>
+        }
+      >
+        <div className="p-6 bg-[#fff5f8] rounded-2xl border border-[#f1416c]/10 flex items-center gap-4">
+           <div className="w-12 h-12 rounded-full bg-[#f1416c]/10 flex items-center justify-center text-[#f1416c]">
+              <Trash2 size={24} />
+           </div>
+           <div>
+              <p className="text-sm font-bold text-[#181c32]">Warning: Node Removal</p>
+              <p className="text-xs font-semibold text-[#f1416c]">Entity: {editingWord?.word?.toUpperCase()}</p>
+           </div>
+        </div>
+      </ReModal>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sidebar Controls */}
@@ -95,7 +235,24 @@ const WordLibraryPage: React.FC = () => {
         {/* Word Grid View */}
         <div className="lg:col-span-3">
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {words.length === 0 ? (
+              {isLoading ? (
+                [1, 2, 3, 4].map((i) => (
+                  <Card key={i} className="border-[#eff2f5] shadow-sm flex flex-col p-6 space-y-4">
+                     <div className="flex justify-between">
+                        <div className="space-y-2 flex-1">
+                           <Skeleton className="h-5 w-1/2" />
+                           <Skeleton className="h-3 w-1/4" />
+                        </div>
+                        <Skeleton className="h-8 w-8 rounded-lg" />
+                     </div>
+                     <Skeleton className="h-20 w-full" />
+                     <div className="flex justify-between">
+                        <Skeleton className="h-6 w-24" />
+                        <Skeleton className="h-6 w-24" />
+                     </div>
+                  </Card>
+                ))
+              ) : words.length === 0 ? (
                 <div className="col-span-full h-32 flex items-center justify-center border-2 border-dashed border-[#eff2f5] rounded-xl text-xs font-bold text-[#a1a5b7] uppercase tracking-widest">
                   No Lexical Entities Found.
                 </div>
@@ -115,12 +272,23 @@ const WordLibraryPage: React.FC = () => {
                             </div>
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button variant="ghost" size="icon" className="h-8 w-8 bg-[#f5f8fa] text-[#7e8299] hover:bg-[#f1faff] hover:text-[#009ef7] rounded-lg transition-all"><Edit2 size={13}/></Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={(e) => { e.stopPropagation(); handleEditTrigger(word); }}
+                              className="h-8 w-8 bg-[#f5f8fa] text-[#7e8299] hover:bg-[#f1faff] hover:text-[#009ef7] rounded-lg transition-all"
+                            >
+                              <Edit2 size={13}/>
+                            </Button>
                             <Button 
                               variant="ghost" 
                               size="icon" 
                               className="h-8 w-8 bg-[#f5f8fa] text-[#7e8299] hover:bg-[#fff5f8] hover:text-[#f1416c] rounded-lg transition-all"
-                              onClick={(e) => { e.stopPropagation(); handleDelete(word.id); }}
+                              onClick={(e) => { 
+                                e.stopPropagation(); 
+                                setEditingWord(word);
+                                setIsDeleteModalOpen(true);
+                              }}
                             >
                               <Trash2 size={13}/>
                             </Button>

@@ -1,13 +1,18 @@
 import { useState } from 'react';
-import { useGetWordsQuery, useDeleteWordMutation } from '@/store/api/wordsApi';
+import { useGetWordsQuery, useDeleteWordMutation, useUpdateWordMutation } from '@/store/api/wordsApi';
 
 export function useWords() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('All');
 
-  const { data, isLoading } = useGetWordsQuery({ page, search });
+  const { data, isLoading } = useGetWordsQuery({ 
+    page, 
+    search, 
+    type: filter === 'All' ? undefined : filter.toLowerCase() 
+  });
   const [deleteWord] = useDeleteWordMutation();
+  const [updateWord] = useUpdateWordMutation();
 
   const words = data?.data || [];
   const meta = data?.meta || { totalPages: 1, total: 0 };
@@ -23,6 +28,10 @@ export function useWords() {
     }
   };
 
+  const handleUpdate = async (id: number, data: any) => {
+    return updateWord({ id, data }).unwrap();
+  };
+
   return {
     words,
     isLoading,
@@ -34,6 +43,7 @@ export function useWords() {
     setPage,
     totalPages: meta.totalPages,
     totalWords: meta.total,
-    handleDelete
+    handleDelete,
+    handleUpdate
   };
 }

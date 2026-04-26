@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class ManagementService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllUsers(page = 1, limit = 10, search?: string) {
+  async getAllUsers(page = 1, limit = 10, search?: string, isActive?: boolean) {
     const skip = (page - 1) * limit;
     const where: any = {
       role: 'MEMBER'
@@ -16,6 +16,10 @@ export class ManagementService {
         { email: { contains: search, mode: 'insensitive' } },
         { fullName: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    if (isActive !== undefined) {
+      where.isActive = isActive;
     }
 
     const [users, total] = await Promise.all([

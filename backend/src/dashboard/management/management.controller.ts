@@ -20,11 +20,13 @@ export class ManagementController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
+    @Query('isActive') isActive?: string,
   ) {
     return this.managementService.getAllUsers(
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 10,
       search,
+      isActive !== undefined ? isActive === 'true' : undefined,
     );
   }
 

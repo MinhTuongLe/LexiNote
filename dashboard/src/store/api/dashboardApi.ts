@@ -1,21 +1,37 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { logout } from '../slices/authSlice';
 
-// Define the base URL for the dashboard API
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:1337/api/v1/dashboard';
+
+const baseQuery = fetchBaseQuery({
+  baseUrl: BASE_URL,
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as any).auth?.token;
+    if (token) {
+      headers.set('authorization', `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  let result = await baseQuery(args, api, extraOptions);
+  
+  if (result.error && result.error.status === 401) {
+    // Session expired or invalid token
+    api.dispatch(logout());
+  }
+  return result;
+};
 
 export const dashboardApi = createApi({
   reducerPath: 'dashboardApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: BASE_URL,
-    prepareHeaders: (headers, { getState }) => {
-      // We will add auth token injection here later
-      const token = (getState() as any).auth?.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery: baseQueryWithReauth,
   tagTypes: ['Stats', 'Users', 'Words', 'Config', 'Admin'],
-  endpoints: () => ({}), // Split into multiple files later using injectEndpoints
+  endpoints: () => ({}),
 });

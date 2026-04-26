@@ -25,4 +25,10 @@ export class AnalyticsController {
   getChart() {
     return this.analyticsService.getTrafficStats();
   }
+
+  @Get('activity')
+  @ApiOperation({ summary: 'Get recent system activity' })
+  getActivity() {
+    return this.analyticsService.getRecentActivity();
+  }
 }

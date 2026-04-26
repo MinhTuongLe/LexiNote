@@ -9,7 +9,9 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Bell
+  Bell,
+  Menu,
+  X
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useSelector, useDispatch } from 'react-redux';
@@ -21,6 +23,7 @@ const AdminLayout: React.FC = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -36,14 +39,64 @@ const AdminLayout: React.FC = () => {
 
   const getBreadcrumbs = () => {
     const parts = location.pathname.split('/').filter(Boolean);
+    const mapping: Record<string, string> = {
+      dashboard: 'Overview',
+      users: 'Management',
+      words: 'Library',
+      config: 'Infrastructure',
+      profile: 'Account',
+      settings: 'Environment'
+    };
     return parts.map((part, i) => ({
-      name: part.charAt(0).toUpperCase() + part.slice(1).replace('-', ' '),
+      name: mapping[part] || (part.charAt(0).toUpperCase() + part.slice(1).replace('-', ' ')),
       path: '/' + parts.slice(0, i + 1).join('/')
     }));
   };
 
   return (
     <div className="flex min-h-screen bg-[#f5f8fa] text-slate-800 font-sans w-full selection:bg-blue-100 selection:text-blue-900">
+      {/* Mobile Sidebar Overlay */}
+      <div 
+        className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 transition-opacity lg:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setIsMobileMenuOpen(false)}
+      >
+         <aside 
+          className={`w-[280px] h-full bg-white shadow-2xl transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+          onClick={(e) => e.stopPropagation()}
+         >
+            <div className="p-8">
+              <div className="flex justify-between items-center mb-10">
+                <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
+                  <div className="w-8 h-8 bg-[#009ef7] rounded-lg flex items-center justify-center">
+                    <span className="text-white font-black">L</span>
+                  </div>
+                  <span className="text-base font-bold text-[#181c32]">LexiNote</span>
+                </Link>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="text-[#a1a5b7] hover:text-[#f1416c] transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+              <nav className="space-y-1">
+                {menuItems.map((item) => {
+                  const isActive = location.pathname === item.path;
+                  return (
+                    <button
+                      key={item.path}
+                      onClick={() => { navigate(item.path); setIsMobileMenuOpen(false); }}
+                      className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${
+                        isActive ? 'bg-[#f1faff] text-[#009ef7]' : 'text-[#7e8299]'
+                      }`}
+                    >
+                      <item.icon size={18} />
+                      <span className="text-sm font-semibold">{item.title}</span>
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
+         </aside>
+      </div>
+
       {/* Sidebar - ReUI/Metronic Style */}
       <aside className="w-[260px] border-r border-[#eff2f5] bg-white flex flex-col hidden lg:flex sticky top-0 h-screen z-30">
         <div className="p-8 pb-4">
@@ -110,7 +163,14 @@ const AdminLayout: React.FC = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header - Fixed & High Density */}
         <header className="h-[70px] border-b border-[#eff2f5] flex items-center justify-between px-8 bg-white/95 backdrop-blur-sm z-20 sticky top-0">
-           <div className="flex items-center gap-6 flex-1">
+           <div className="flex items-center gap-4 flex-1">
+              <button 
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-[#f5f8fa] text-[#3f4254]"
+              >
+                <Menu size={20} />
+              </button>
+
               {/* Breadcrumbs */}
               <div className="hidden md:flex items-center gap-2 text-xs font-semibold">
                 <Link to="/dashboard" className="text-[#a1a5b7] hover:text-[#009ef7] transition-colors">Home</Link>
@@ -135,12 +195,7 @@ const AdminLayout: React.FC = () => {
            </div>
            
            <div className="flex items-center gap-4">
-              <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#f5f8fa] hover:bg-[#eff2f5] text-[#3f4254] transition-all relative">
-                 <Bell size={20} />
-                 <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-[#f1416c] rounded-full border-2 border-white"></span>
-              </button>
-              
-              <div className="h-8 w-px bg-[#eff2f5]"></div>
+               <div className="h-8 w-px bg-[#eff2f5]"></div>
 
               <div className="flex items-center gap-3 pl-2">
                  <div className="flex flex-col items-end hidden sm:flex">

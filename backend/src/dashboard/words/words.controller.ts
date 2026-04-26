@@ -1,4 +1,4 @@
-import { Controller, Get, Delete, Param, Query, UseGuards, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Delete, Patch, Param, Query, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { DashboardWordsService } from './words.service';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -20,12 +20,23 @@ export class DashboardWordsController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('search') search?: string,
+    @Query('type') type?: string,
   ) {
     return this.wordsService.getAllWords(
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
       search,
+      type,
     );
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update word details' })
+  async updateWord(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: any,
+  ) {
+    return this.wordsService.updateWord(id, data);
   }
 
   @Delete(':id')

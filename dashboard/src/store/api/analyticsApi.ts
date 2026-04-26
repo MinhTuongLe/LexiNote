@@ -10,7 +10,15 @@ export const analyticsApi = dashboardApi.injectEndpoints({
       query: () => '/analytics/chart',
       providesTags: ['Stats'],
     }),
+    getRecentActivity: builder.query<any, void>({
+      query: () => '/analytics/activity',
+      providesTags: ['Stats'],
+    }),
   }),
 });
 
-export const { useGetSummaryQuery, useGetChartDataQuery } = analyticsApi;
+export const { 
+  useGetSummaryQuery, 
+  useGetChartDataQuery, 
+  useGetRecentActivityQuery 
+} = analyticsApi;

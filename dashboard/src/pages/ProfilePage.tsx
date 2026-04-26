@@ -52,7 +52,12 @@ const ProfilePage: React.FC = () => {
             </div>
             
             <div className="w-full mt-10 space-y-2">
-               <Button className="w-full bg-[#009ef7] hover:bg-[#0086d1] text-white">Edit Identity</Button>
+               <Button 
+                className="w-full bg-[#009ef7] hover:bg-[#0086d1] text-white"
+                onClick={() => alert(`Schematic modification for ${user?.fullName} initialization sequence started.`)}
+               >
+                 Edit Identity
+               </Button>
             </div>
           </CardContent>
         </Card>

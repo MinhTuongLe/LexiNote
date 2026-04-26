@@ -58,4 +58,35 @@ export class AnalyticsService {
 
     return chartData;
   }
+
+  async getRecentActivity() {
+    const recentUsers = await this.prisma.user.findMany({
+      take: 5,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        createdAt: true,
+      },
+    });
+
+    return recentUsers.map(user => ({
+      id: user.id,
+      message: `New Member: ${user.fullName}`,
+      sub: user.email,
+      time: this.getRelativeTime(user.createdAt),
+      color: 'border-[#009ef7]',
+      bg: 'bg-[#009ef7]'
+    }));
+  }
+
+  private getRelativeTime(epoch: bigint) {
+    const diff = Date.now() - Number(epoch);
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h`;
+    return `${Math.floor(hours / 24)}d`;
+  }
 }

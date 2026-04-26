@@ -7,7 +7,7 @@ interface AuthState {
 }
 
 const initialState: AuthState = {
-  user: null,
+  user: JSON.parse(localStorage.getItem('admin_user') || 'null'),
   token: localStorage.getItem('admin_token'),
   isAuthenticated: !!localStorage.getItem('admin_token'),
 };
@@ -25,12 +25,14 @@ const authSlice = createSlice({
       state.token = token;
       state.isAuthenticated = true;
       localStorage.setItem('admin_token', token);
+      localStorage.setItem('admin_user', JSON.stringify(user));
     },
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
       localStorage.removeItem('admin_token');
+      localStorage.removeItem('admin_user');
     },
   },
 });

@@ -2,7 +2,7 @@ import { dashboardApi } from './dashboardApi';
 
 export const usersApi = dashboardApi.injectEndpoints({
   endpoints: (builder) => ({
-    getUsers: builder.query<any, { page?: number; limit?: number; search?: string }>({
+    getUsers: builder.query<any, { page?: number; limit?: number; search?: string; isActive?: boolean }>({
       query: (params) => ({
         url: '/management/users',
         params,
@@ -32,6 +32,13 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Users'],
     }),
+    deleteUser: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/management/users/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Users', 'Stats'],
+    }),
   }),
 });
 
@@ -39,5 +46,6 @@ export const {
   useGetUsersQuery, 
   useCreateUserMutation,
   useToggleUserStatusMutation, 
-  useUpdateUserMutation 
+  useUpdateUserMutation,
+  useDeleteUserMutation
 } = usersApi;

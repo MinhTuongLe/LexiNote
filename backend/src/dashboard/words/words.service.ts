@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class DashboardWordsService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllWords(page = 1, limit = 20, search?: string) {
+  async getAllWords(page = 1, limit = 20, search?: string, type?: string) {
     const skip = (page - 1) * limit;
     const where: any = {};
 
@@ -14,6 +14,10 @@ export class DashboardWordsService {
         { word: { contains: search, mode: 'insensitive' } },
         { meaningVi: { contains: search, mode: 'insensitive' } },
       ];
+    }
+
+    if (type) {
+      where.type = type;
     }
 
     const [words, total] = await Promise.all([
@@ -50,6 +54,16 @@ export class DashboardWordsService {
     // Audit trace should happen here in a real scenario
     return this.prisma.word.delete({
       where: { id },
+    });
+  }
+
+  async updateWord(id: number, data: any) {
+    return this.prisma.word.update({
+      where: { id },
+      data: {
+        meaningVi: data.meaningVi,
+        type: data.type,
+      },
     });
   }
 }
