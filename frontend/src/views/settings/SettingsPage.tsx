@@ -29,12 +29,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
   // Settings state from user profile or defaults
   const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
   const language = i18n.language?.startsWith('vi') ? 'vi' : 'en';
 
   useEffect(() => {
     if (settingsData) {
       if (settingsData.preferences?.darkTheme !== undefined) setIsDarkTheme(settingsData.preferences.darkTheme);
+      if (settingsData.preferences?.soundEnabled !== undefined) setIsSoundEnabled(settingsData.preferences.soundEnabled);
     }
   }, [settingsData]);
 
@@ -92,6 +94,24 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                     onChange={(e) => {
                       setIsDarkTheme(e.target.checked);
                       handleSaveSetting('darkTheme', e.target.checked);
+                    }} 
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>{t('profile.sound_effects') || t('profile.minigame_sounds')}</span>
+                  <p>{t('profile.sound_effects_desc') || t('profile.minigame_sounds_desc')}</p>
+                </div>
+                <label className="cute-switch">
+                  <input 
+                    type="checkbox" 
+                    checked={isSoundEnabled} 
+                    onChange={(e) => {
+                      setIsSoundEnabled(e.target.checked);
+                      handleSaveSetting('soundEnabled', e.target.checked);
                     }} 
                   />
                   <span className="slider"></span>

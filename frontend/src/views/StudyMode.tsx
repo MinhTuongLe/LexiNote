@@ -5,6 +5,7 @@ import { RotateCw, Check, AlertTriangle, Zap, X } from 'lucide-react';
 import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
 import { useTranslation } from 'react-i18next';
+import { useSound } from '../hooks/useSound';
 import './StudyMode.css';
 
 interface StudyModeProps {
@@ -13,6 +14,7 @@ interface StudyModeProps {
 
 const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
   const { data: dueReviews = [], isLoading } = useGetDueReviewsQuery();
+  const { playSound } = useSound();
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -82,6 +84,9 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
         color: ratingInfo.color
       }]);
 
+      if (quality >= 3) playSound('success');
+      else playSound('pop');
+
       await updateSRS({ reviewId: currentReview.id, quality }).unwrap();
       
       if (currentIndex < dueReviews.length - 1) {
@@ -111,7 +116,12 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
         </button>
       </div>
 
-      <div className={`flashcard-container ${isFlipped ? 'flipped' : ''}`} onClick={() => !isFlipped && setIsFlipped(true)}>
+      <div className={`flashcard-container ${isFlipped ? 'flipped' : ''}`} onClick={() => {
+        if (!isFlipped) {
+          setIsFlipped(true);
+          playSound('flip');
+        }
+      }}>
         <div className="flashcard-inner">
           {/* Front */}
           <div className="flashcard-face front-face">
@@ -156,7 +166,10 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
       </div>
 
       <div className="study-controls">
-        <Button variant="outline" onClick={() => setIsFlipped(!isFlipped)}>
+        <Button variant="outline" onClick={() => {
+          setIsFlipped(!isFlipped);
+          playSound('flip');
+        }}>
           <RotateCw size={20} /> {t('study.flip_card')}
         </Button>
       </div>
