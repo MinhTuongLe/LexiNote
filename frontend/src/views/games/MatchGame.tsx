@@ -4,6 +4,7 @@ import Button from '../../components/Button';
 import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react';
 import { useGetWordsQuery } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
+import { useSound } from '../../hooks/useSound';
 import './MatchGame.css';
 
 interface MatchGameProps {
@@ -21,6 +22,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 'all' });
   const words = wordsData?.data || [];
   const { t } = useTranslation();
+  const { playSound } = useSound();
 
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -58,6 +60,9 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const handleItemClick = (item: GameItem) => {
     if (matchedIds.has(item.wordId)) return; // Already matched
     if (errorIds) return; // Wait for error animation
+    
+    playSound('click');
+
     if (selectedId === item.id) {
       setSelectedId(null); // Deselect
       return;
@@ -76,10 +81,12 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
 
       // Check match
       if (selectedItem.wordId === item.wordId) {
+        playSound('success');
         setMatchedIds(prev => {
           const next = new Set(prev);
           next.add(item.wordId);
           if (next.size === items.length / 2) {
+            playSound('win');
             setTimeout(() => setGameCompleted(true), 500);
           }
           return next;
@@ -87,6 +94,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
         setSelectedId(null);
       } else {
         // Mismatch
+        playSound('error');
         setErrorIds([selectedId, item.id]);
         setTimeout(() => {
           setSelectedId(null);

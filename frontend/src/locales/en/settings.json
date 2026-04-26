@@ -1,4 +1,5 @@
 {
+  "title": "Settings",
   "word_types_manager": "Word Types Manager",
   "word_types_hint": "Add your own categories for words (e.g., Slang, Academic, Technical).",
   "default_types": "Default Types",

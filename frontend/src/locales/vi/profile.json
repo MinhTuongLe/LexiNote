@@ -1,5 +1,5 @@
 {
-  "title": "Hồ sơ & Cài đặt",
+  "title": "Hồ sơ",
   "edit_profile": "Chỉnh sửa hồ sơ",
   "change_password": "Đổi mật khẩu",
   "app_preferences": "Giao diện & Ứng dụng",
@@ -14,6 +14,8 @@
   "language_desc": "Ngôn ngữ giao diện ứng dụng.",
   "minigame_sounds": "Âm thanh trò chơi",
   "minigame_sounds_desc": "Phát hiệu ứng 'ting ting' khi chơi game.",
+  "sound_effects": "Âm thanh trò chơi",
+  "sound_effects_desc": "Bật/Tắt hiệu ứng âm thanh khi học tập và chơi game.",
   "flashcard_start": "Bắt đầu Flashcard",
   "flashcard_start_desc": "Mặt thẻ nào sẽ hiển thị trước.",
   "delete_all_data": "Xóa toàn bộ dữ liệu",
@@ -26,5 +28,6 @@
   "flashcard_en": "Từ vựng (Tiếng Anh)",
   "flashcard_vi": "Nghĩa (Tiếng Việt)",
   "delete_confirm_title": "Xóa tài khoản? 😿",
-  "delete_confirm_msg": "Thao tác này sẽ xóa vĩnh viễn toàn bộ từ vựng và tài khoản của bạn. Bạn chắc chứ?"
+  "delete_confirm_msg": "Thao tác này sẽ xóa vĩnh viễn toàn bộ từ vựng và tài khoản của bạn. Bạn chắc chứ?",
+  "delete_success_msg": "Tài khoản của bạn đã được xóa và đăng xuất thành công! 👋"
 }

@@ -48,7 +48,7 @@
 }
 
 /* Responsiveness: Adjust position to stay above mobile bottom-nav */
-@media (max-width: 768px) {
+@media (max-width: 992px) {
   .scroll-to-top {
     bottom: 110px; /* Above bottom nav */
     right: 24px;

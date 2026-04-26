@@ -293,7 +293,7 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .setting-item {
     flex-direction: column;
     align-items: flex-start;

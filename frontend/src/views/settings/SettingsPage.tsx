@@ -5,7 +5,9 @@ import {
   ArrowLeft, Moon, ShieldAlert, Trash2, 
   Settings as SettingsIcon, Languages, ChevronRight, Sparkles
 } from 'lucide-react';
-import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../store/authSlice';
+import { useUpdateSettingsMutation, useGetSettingsQuery, useDeactivateAccountMutation } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
@@ -20,17 +22,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const { data: settingsData } = useGetSettingsQuery();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { showAlert, showConfirm } = useCuteDialog();
   const [updateSettings] = useUpdateSettingsMutation();
+  const [deactivateAccount] = useDeactivateAccountMutation();
 
   // Settings state from user profile or defaults
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
+  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
-  const language = i18n.language || 'en';
+  const language = i18n.language?.startsWith('vi') ? 'vi' : 'en';
 
   useEffect(() => {
     if (settingsData) {
-      if (settingsData.preferences?.darkTheme !== undefined) setIsDarkTheme(settingsData.preferences.darkTheme);
+      if (settingsData.preferences?.soundEnabled !== undefined) setIsSoundEnabled(settingsData.preferences.soundEnabled);
     }
   }, [settingsData]);
 
@@ -64,7 +68,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
           <div className="settings-icon-large">
             <SettingsIcon size={40} />
           </div>
-          <h2>{t('profile.title')}</h2>
+          <h2>{t('settings.title')}</h2>
           <p>{t('profile.app_preferences')}</p>
         </div>
 
@@ -72,22 +76,22 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
           {/* App Preferences */}
           <div className="settings-group">
             <div className="settings-header">
-              <Moon className="settings-icon" size={20} />
+              <Sparkles className="settings-icon" size={20} />
               <h4>{t('profile.app_preferences')}</h4>
             </div>
             <div className="settings-content">
               <div className="setting-item">
                 <div className="setting-label">
-                  <span>{t('profile.dark_mode')}</span>
-                  <p>{t('profile.dark_mode_desc')}</p>
+                  <span>{t('profile.sound_effects') || t('profile.minigame_sounds')}</span>
+                  <p>{t('profile.sound_effects_desc') || t('profile.minigame_sounds_desc')}</p>
                 </div>
                 <label className="cute-switch">
                   <input 
                     type="checkbox" 
-                    checked={isDarkTheme} 
+                    checked={isSoundEnabled} 
                     onChange={(e) => {
-                      setIsDarkTheme(e.target.checked);
-                      handleSaveSetting('darkTheme', e.target.checked);
+                      setIsSoundEnabled(e.target.checked);
+                      handleSaveSetting('soundEnabled', e.target.checked);
                     }} 
                   />
                   <span className="slider"></span>
@@ -123,48 +127,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
             </div>
           </div>
 
-          <div className="settings-divider"></div>
-
-          {/* Guide / Onboarding Replay */}
-          <div className="settings-group clickable-group" onClick={() => navigate('/welcome')}>
-            <div className="settings-header">
-              <Sparkles className="settings-icon" size={20} color="#feca57" />
-              <h4>{t('settings.replay_guide') || 'Xem lại hướng dẫn từ đầu'}</h4>
-              <ChevronRight className="group-arrow" size={20} />
-            </div>
-            <div className="settings-content">
-              <p className="group-desc">{t('settings.replay_guide_desc') || 'Mở lại các trang giới thiệu cơ bản về tính năng của LexiNote dành cho người dùng mới'}</p>
-            </div>
-          </div>
-
-          <div className="settings-divider"></div>
-
-          {/* Account & Data */}
-          <div className="settings-group account-danger-group">
-            <div className="settings-header">
-              <ShieldAlert className="settings-icon" size={20} color="#ff7675" />
-              <h4 style={{ color: '#ff7675' }}>{t('profile.danger_zone')}</h4>
-            </div>
-            <div className="settings-content">
-              <div className="setting-item delete-data-item" style={{ marginTop: '8px' }}>
-                <div className="setting-label">
-                  <span style={{ color: '#d63031', fontWeight: 'bold' }}>{t('profile.delete_all_data')}</span>
-                  <p>{t('profile.delete_all_data_desc')}</p>
-                </div>
-                <Button 
-                  variant="outline" 
-                  onClick={() => showConfirm(
-                    t('profile.delete_confirm_title'),
-                    t('profile.delete_confirm_msg'),
-                    () => showAlert(t('common.success'), 'This would delete all your data.', 'success')
-                  )} 
-                  style={{ borderColor: '#ff7675', color: '#ff7675' }}
-                >
-                  <Trash2 size={16} /> {t('common.delete')}
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       </Card>
     </div>

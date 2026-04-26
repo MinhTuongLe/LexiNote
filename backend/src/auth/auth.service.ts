@@ -29,6 +29,10 @@ export class AuthService {
       throw new UnauthorizedException('error.auth.wrong_password');
     }
 
+    if (user.status !== 'active') {
+      throw new UnauthorizedException('error.auth.account_deactivated');
+    }
+
     const { password, ...result } = user;
     return result;
   }

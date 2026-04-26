@@ -61,4 +61,29 @@ export class SettingsService {
     const customTypes = settings?.wordTypes?.map((t: any) => t.value) || [];
     return [...VALID_WORD_TYPES, ...customTypes];
   }
+
+  async deactivateAccount(userId: number) {
+    // 1. Delete all user data
+    await this.prisma.$transaction([
+      this.prisma.refreshToken.deleteMany({ where: { userId } }),
+      // Delete child records first to avoid foreign key constraint errors
+      this.prisma.review.deleteMany({ where: { word: { ownerId: userId } } }),
+      this.prisma.wordRelation.deleteMany({ where: { word: { ownerId: userId } } }),
+      // Now delete words
+      this.prisma.word.deleteMany({ where: { ownerId: userId } }),
+      // Update user status
+      this.prisma.user.update({
+        where: { id: userId },
+        data: { 
+          status: 'deleted',
+          settings: {},
+          fullName: 'Deleted User',
+          email: `deleted_${userId}_${Date.now()}@lexinote.internal`, // Free up original email
+          password: 'DEACTIVATED_ACCOUNT', // Scramble password
+        },
+      }),
+    ]);
+
+    return { message: 'Account deactivated and data wiped successfully! 👋' };
+  }
 }

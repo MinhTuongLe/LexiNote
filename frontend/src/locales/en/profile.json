@@ -1,5 +1,5 @@
 {
-  "title": "Settings",
+  "title": "Profile",
   "edit_profile": "Edit Profile",
   "change_password": "Change Password",
   "app_preferences": "App Preferences",
@@ -14,6 +14,8 @@
   "language_desc": "App interface language.",
   "minigame_sounds": "Minigame Sounds",
   "minigame_sounds_desc": "Play 'ting ting' effects in games.",
+  "sound_effects": "Sound Effects",
+  "sound_effects_desc": "Enable cute sounds during study and games.",
   "flashcard_start": "Flashcard Start",
   "flashcard_start_desc": "Which side to show first.",
   "delete_all_data": "Delete All Data",
@@ -26,5 +28,6 @@
   "flashcard_en": "English Word",
   "flashcard_vi": "Vietnamese Meaning",
   "delete_confirm_title": "Delete Account? 😿",
-  "delete_confirm_msg": "Are you sure? This action is permanent and cannot be undone!"
+  "delete_confirm_msg": "Are you sure? This action is permanent and cannot be undone!",
+  "delete_success_msg": "Your account and data have been wiped. You are now logged out! 👋"
 }

@@ -22,4 +22,10 @@ export class SettingsController {
   async updateSettings(@Request() req: any, @Body() body: UpdateSettingsDto) {
     return this.settingsService.updateSettings(req.user.userId, body);
   }
+
+  @Patch('deactivate')
+  @ApiOperation({ summary: 'Deactivate account and wipe all data' })
+  async deactivateAccount(@Request() req: any) {
+    return this.settingsService.deactivateAccount(req.user.userId);
+  }
 }
