@@ -28,14 +28,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const [deactivateAccount] = useDeactivateAccountMutation();
 
   // Settings state from user profile or defaults
-  const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
 
   const language = i18n.language?.startsWith('vi') ? 'vi' : 'en';
 
   useEffect(() => {
     if (settingsData) {
-      if (settingsData.preferences?.darkTheme !== undefined) setIsDarkTheme(settingsData.preferences.darkTheme);
       if (settingsData.preferences?.soundEnabled !== undefined) setIsSoundEnabled(settingsData.preferences.soundEnabled);
     }
   }, [settingsData]);
@@ -78,28 +76,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
           {/* App Preferences */}
           <div className="settings-group">
             <div className="settings-header">
-              <Moon className="settings-icon" size={20} />
+              <Sparkles className="settings-icon" size={20} />
               <h4>{t('profile.app_preferences')}</h4>
             </div>
             <div className="settings-content">
-              <div className="setting-item">
-                <div className="setting-label">
-                  <span>{t('profile.dark_mode')}</span>
-                  <p>{t('profile.dark_mode_desc')}</p>
-                </div>
-                <label className="cute-switch">
-                  <input 
-                    type="checkbox" 
-                    checked={isDarkTheme} 
-                    onChange={(e) => {
-                      setIsDarkTheme(e.target.checked);
-                      handleSaveSetting('darkTheme', e.target.checked);
-                    }} 
-                  />
-                  <span className="slider"></span>
-                </label>
-              </div>
-
               <div className="setting-item">
                 <div className="setting-label">
                   <span>{t('profile.sound_effects') || t('profile.minigame_sounds')}</span>

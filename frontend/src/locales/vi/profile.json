@@ -14,6 +14,8 @@
   "language_desc": "Ngôn ngữ giao diện ứng dụng.",
   "minigame_sounds": "Âm thanh trò chơi",
   "minigame_sounds_desc": "Phát hiệu ứng 'ting ting' khi chơi game.",
+  "sound_effects": "Âm thanh trò chơi",
+  "sound_effects_desc": "Bật/Tắt hiệu ứng âm thanh khi học tập và chơi game.",
   "flashcard_start": "Bắt đầu Flashcard",
   "flashcard_start_desc": "Mặt thẻ nào sẽ hiển thị trước.",
   "delete_all_data": "Xóa toàn bộ dữ liệu",

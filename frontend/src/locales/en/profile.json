@@ -14,6 +14,8 @@
   "language_desc": "App interface language.",
   "minigame_sounds": "Minigame Sounds",
   "minigame_sounds_desc": "Play 'ting ting' effects in games.",
+  "sound_effects": "Sound Effects",
+  "sound_effects_desc": "Enable cute sounds during study and games.",
   "flashcard_start": "Flashcard Start",
   "flashcard_start_desc": "Which side to show first.",
   "delete_all_data": "Delete All Data",
