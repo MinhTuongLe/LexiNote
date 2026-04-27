@@ -9,6 +9,7 @@ import './StatsPage.css';
 
 import StatsSkeleton from './StatsSkeleton';
 import { formatTimeSpent } from '../../utils/time';
+import i18n from '../../i18n';
 
 interface StatsPageProps {
   onBack: () => void;
@@ -127,8 +128,14 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
             {stats.weeklyActivity.map((day, i) => {
               const maxCount = Math.max(...stats.weeklyActivity.map(d => d.count), 1);
               const targetHeight = (day.count / maxCount) * 100;
-              const fullDateStr = new Date(day.date).toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' });
-              const dayName = new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' });
+              const [y, m, d] = day.date.split('-').map(Number);
+              const localDate = new Date(y, m - 1, d);
+              const fullDateStr = localDate.toLocaleDateString(i18n.language, { weekday: 'long', month: 'short', day: 'numeric' });
+              
+              // Backend guarantees array starts from Monday (i=0 -> Mon, i=1 -> Tue, etc.)
+              const weekDaysKeys = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+              const dayKey = weekDaysKeys[i % 7];
+              const dayLabelTranslated = t(`stats.weekdays_short.${dayKey}`, dayKey);
               
               return (
                 <div key={i} className="chart-column">
@@ -139,7 +146,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
                       <span className="tt-count">{t('stats.reviewed_label', 'Đã học:')} <strong>{day.count}</strong> {t('stats.words', 'từ')}</span>
                     </div>
                   </div>
-                  <span className="day-label">{dayName}</span>
+                  <span className="day-label">{dayLabelTranslated}</span>
                 </div>
               );
             })}

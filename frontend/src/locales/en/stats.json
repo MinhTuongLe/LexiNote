@@ -12,8 +12,22 @@
   "weekly_activity": "Weekly Activity",
   "type_breakdown": "Word Type Breakdown",
   "average_ease": "Average Ease",
+  "time_spent": "Time Spent",
+  "progress": "Learning Progress",
+  "weakest_words": "Words to Improve",
+  "misses": "misses",
+  "no_weak_words": "You are doing great! No weak words yet.",
   "words": "words",
   "days": "days",
   "no_data": "No study data yet. Start studying to see your stats! 🚀",
-  "reviewed_label": "Reviewed"
+  "reviewed_label": "Reviewed",
+  "weekdays_short": {
+    "Mon": "Mon",
+    "Tue": "Tue",
+    "Wed": "Wed",
+    "Thu": "Thu",
+    "Fri": "Fri",
+    "Sat": "Sat",
+    "Sun": "Sun"
+  }
 }

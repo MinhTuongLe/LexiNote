@@ -214,11 +214,26 @@
 }
 
 .tracker-day.active {
-  background: white;
+  background: linear-gradient(135deg, #ffffff 0%, #fff5f7 100%);
   color: #FF8BA7;
-  transform: translateY(-5px) rotate(3deg);
-  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.2);
   border-color: white;
+  box-shadow: 0 8px 15px rgba(255, 139, 167, 0.3), inset 0 -3px 0 rgba(0, 0, 0, 0.08); /* Premium 3D button effect */
+  position: relative;
+  z-index: 2;
+}
+
+.tracker-day.active:nth-child(odd) {
+  transform: translateY(-6px) rotate(-6deg) scale(1.05);
+}
+
+.tracker-day.active:nth-child(even) {
+  transform: translateY(-6px) rotate(6deg) scale(1.05);
+}
+
+.tracker-day.active:hover {
+  transform: translateY(-10px) scale(1.15) rotate(0deg); /* Straightens out and pops up on hover */
+  box-shadow: 0 12px 20px rgba(255, 139, 167, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.04);
+  z-index: 10;
 }
 
 .tracker-day.today {
@@ -234,14 +249,23 @@
 }
 
 .tracker-day.active.today {
-  background: white;
+  background: white !important;
   color: #FF8BA7;
+  border: 2px solid white;
 }
 
 .check-mark {
   font-size: 16px;
   line-height: 1;
   filter: drop-shadow(1px 1px 0px rgba(0,0,0,0.1));
+  transition: all 0.3s ease;
+}
+
+.tracker-day.active .check-mark {
+  color: #FFC371; /* Golden/orange tick */
+  filter: drop-shadow(0 2px 5px rgba(255, 195, 113, 0.5));
+  font-size: 18px;
+  transform: scale(1.1);
 }
 
 .day-name {

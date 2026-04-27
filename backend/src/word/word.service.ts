@@ -389,15 +389,25 @@ export class WordService {
         dueReviewsCount: 5,
         recentWords: formattedRecentWords,
         streak: 12,
-        weeklyActivity: [
-          { date: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0], count: 15 },
-          { date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], count: 32 },
-          { date: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0], count: 8 },
-          { date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], count: 45 },
-          { date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], count: 20 },
-          { date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], count: 50 },
-          { date: new Date(Date.now()).toISOString().split('T')[0], count: 38 }
-        ],
+        weeklyActivity: (() => {
+          const now = new Date();
+          const dayOfWeek = now.getDay();
+          const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+          const monday = new Date(now);
+          monday.setDate(now.getDate() - diffToMon);
+          monday.setHours(0, 0, 0, 0);
+
+          return Array.from({ length: 7 }).map((_, i) => {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            const counts = [15, 32, 8, 45, 20, 50, 38];
+            const isPastOrToday = d <= now;
+            return {
+              date: d.toISOString().split('T')[0],
+              count: isPastOrToday ? counts[i % counts.length] : 0
+            };
+          });
+        })(),
       };
     }
 

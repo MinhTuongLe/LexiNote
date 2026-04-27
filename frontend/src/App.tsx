@@ -226,11 +226,14 @@ function App() {
                     currentDay.setDate(monday.getDate() + i);
                     const dateStr = currentDay.toISOString().split('T')[0];
                     
-                    const activity = stats?.weeklyActivity?.find((a: any) => a.date === dateStr);
+                    // Backend guarantees weeklyActivity array is strictly Mon-Sun (indexes 0-6)
+                    const activity = stats?.weeklyActivity ? stats.weeklyActivity[i] : null;
                     const isStudied = activity && activity.count > 0;
                     const dayLabel = currentDay.toLocaleDateString(undefined, { weekday: 'narrow' });
-                    const isToday = dateStr === new Date().toISOString().split('T')[0];
-                    const isPast = currentDay <= now;
+                    
+                    // diffToMon corresponds directly to the index of "Today" in a Mon-Sun array!
+                    const isToday = i === diffToMon;
+                    const isPast = i <= diffToMon;
 
                     return (
                       <div key={i} className={`tracker-day ${isStudied ? 'active' : ''} ${isToday ? 'today' : ''} ${!isPast ? 'future' : ''}`}>

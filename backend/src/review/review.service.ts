@@ -200,15 +200,26 @@ export class ReviewService {
     if (totalReviewed === 0) {
       return {
         streak: 12,
-        weeklyActivity: [
-          { date: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0], count: 15 },
-          { date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], count: 32 },
-          { date: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0], count: 8 },
-          { date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], count: 45 },
-          { date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], count: 20 },
-          { date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], count: 50 },
-          { date: new Date(Date.now()).toISOString().split('T')[0], count: 38 }
-        ],
+        weeklyActivity: (() => {
+          const now = new Date();
+          const dayOfWeek = now.getDay();
+          const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+          const monday = new Date(now);
+          monday.setDate(now.getDate() - diffToMon);
+          monday.setHours(0, 0, 0, 0);
+
+          return Array.from({ length: 7 }).map((_, i) => {
+            const d = new Date(monday);
+            d.setDate(monday.getDate() + i);
+            const counts = [15, 32, 8, 45, 20, 50, 38];
+            // Only show count for days that are past or today
+            const isPastOrToday = d <= now;
+            return {
+              date: d.toISOString().split('T')[0],
+              count: isPastOrToday ? counts[i % counts.length] : 0
+            };
+          });
+        })(),
         totalReviewed: 208,
         masteredCount: 120,
         learningCount: 65,
@@ -287,13 +298,21 @@ export class ReviewService {
   }
 
   async getWeeklyActivity(userId: number): Promise<{ date: string, count: number }[]> {
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-    }).reverse();
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0-6 (Sun-Sat)
+    const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+    
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diffToMon);
+    monday.setHours(0, 0, 0, 0);
 
-    const activity = await Promise.all(last7Days.map(async (dayMidnight) => {
+    const currentWeekDays = Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return d;
+    });
+
+    const activity = await Promise.all(currentWeekDays.map(async (dayMidnight) => {
       const nextDayMidnight = new Date(dayMidnight.getTime() + 86400000);
       
       const count = await this.prisma.review.count({
