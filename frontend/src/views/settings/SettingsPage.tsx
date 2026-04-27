@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, Moon, ShieldAlert, Trash2, 
+  ArrowLeft, 
   Settings as SettingsIcon, Languages, ChevronRight, Sparkles
 } from 'lucide-react';
-import { useDispatch } from 'react-redux';
-import { logout } from '../../store/authSlice';
-import { useUpdateSettingsMutation, useGetSettingsQuery, useDeactivateAccountMutation } from '../../store/apiSlice';
+
+import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
@@ -22,10 +21,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const { data: settingsData } = useGetSettingsQuery();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { showAlert, showConfirm } = useCuteDialog();
+  const { showAlert } = useCuteDialog();
   const [updateSettings] = useUpdateSettingsMutation();
-  const [deactivateAccount] = useDeactivateAccountMutation();
 
   // Settings state from user profile or defaults
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);

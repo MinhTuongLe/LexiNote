@@ -7,9 +7,10 @@ interface CardProps {
   className?: string;
   delay?: number;
   onClick?: () => void;
+  style?: React.CSSProperties;
 }
 
-const Card: React.FC<CardProps> = ({ children, className = '', delay = 0, onClick }) => {
+const Card: React.FC<CardProps> = ({ children, className = '', delay = 0, onClick, style }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -17,6 +18,7 @@ const Card: React.FC<CardProps> = ({ children, className = '', delay = 0, onClic
       transition={{ duration: 0.5, delay }}
       className={`cute-card ${className} ${onClick ? 'clickable' : ''}`}
       onClick={onClick}
+      style={style}
     >
       {children}
     </motion.div>
