@@ -33,6 +33,7 @@ import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
 import type { CreateWordDTO } from './types';
+import CountUp from './components/CountUp';
 import './components/Skeleton.css';
 import './App.css';
 
@@ -201,7 +202,9 @@ function App() {
                   <div className="stat-icon">🔥</div>
                   <div className="streak-info">
                     <div className="streak-count">
-                      <span className="number">{stats?.streak || 0}</span>
+                      <span className="number">
+                        {statsLoading ? 0 : <CountUp end={stats?.streak || 0} />}
+                      </span>
                       <span className="label">{t('dashboard.day_streak')}</span>
                     </div>
                     <p>{t('dashboard.keep_going')}</p>
@@ -209,14 +212,28 @@ function App() {
                 </div>
 
                 <div className="streak-tracker">
-                  {stats?.weeklyActivity?.map((day: any, i: number) => {
-                    const isStudied = day.count > 0;
-                    const date = new Date(day.date);
-                    const dayLabel = date.toLocaleDateString(undefined, { weekday: 'narrow' }); // Single letter (M, T, W...)
-                    const isToday = day.date === new Date().toISOString().split('T')[0];
+                  {Array.from({ length: 7 }).map((_, i) => {
+                    // Monday is index 0 in our UI, but Date.getDay() has Sunday as 0.
+                    // We want: Mon(0), Tue(1), Wed(2), Thu(3), Fri(4), Sat(5), Sun(6)
+                    const now = new Date();
+                    const dayOfWeek = now.getDay(); // 0-6 (Sun-Sat)
+                    const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+                    
+                    const monday = new Date(now);
+                    monday.setDate(now.getDate() - diffToMon);
+                    
+                    const currentDay = new Date(monday);
+                    currentDay.setDate(monday.getDate() + i);
+                    const dateStr = currentDay.toISOString().split('T')[0];
+                    
+                    const activity = stats?.weeklyActivity?.find((a: any) => a.date === dateStr);
+                    const isStudied = activity && activity.count > 0;
+                    const dayLabel = currentDay.toLocaleDateString(undefined, { weekday: 'narrow' });
+                    const isToday = dateStr === new Date().toISOString().split('T')[0];
+                    const isPast = currentDay <= now;
 
                     return (
-                      <div key={i} className={`tracker-day ${isStudied ? 'active' : ''} ${isToday ? 'today' : ''}`}>
+                      <div key={i} className={`tracker-day ${isStudied ? 'active' : ''} ${isToday ? 'today' : ''} ${!isPast ? 'future' : ''}`}>
                         <span className="day-name">{dayLabel}</span>
                         {isStudied && <div className="check-mark">✓</div>}
                       </div>

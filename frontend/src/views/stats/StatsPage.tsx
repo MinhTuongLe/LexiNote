@@ -4,6 +4,7 @@ import { useGetStudyStatsQuery } from '../../store/apiSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { ArrowLeft, TrendingUp, Target, Award, BarChart2, PieChart } from 'lucide-react';
+import CountUp from '../../components/CountUp';
 import './StatsPage.css';
 
 interface StatsPageProps {
@@ -55,12 +56,12 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
           <div className="streak-content">
             <span className="streak-label">{t('stats.streak', 'Day Streak')}</span>
             <div className="streak-value">
-              <span className="number">{stats.streak}</span>
+              <span className="number"><CountUp end={mounted ? stats.streak : 0} /></span>
               <span className="unit">{t('stats.days', 'days')}</span>
             </div>
             <div className="streak-fire">
               {Array.from({ length: Math.min(stats.streak, 5) }).map((_, i) => (
-                <span key={i} className="fire-emoji" style={{ animationDelay: `${i * 0.1}s` }}>🔥</span>
+                <span key={i} className="fire-emoji" style={{ animationDelay: `${i * 0.1}s`, opacity: mounted ? 1 : 0 }}>🔥</span>
               ))}
             </div>
             <p className="streak-desc">{t('stats.streak_desc', 'Keep it up! Review every day to grow your streak.')}</p>
@@ -72,15 +73,22 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
             <div className="meter-circle-svg-container">
               <svg viewBox="0 0 100 100" className="circular-chart">
                 <path className="circle-bg"
+                  fill="none"
+                  stroke="#f1f2f6"
+                  strokeWidth="8"
                   d={`M50 10 a ${circleRadius} ${circleRadius} 0 0 1 0 ${circleRadius * 2} a ${circleRadius} ${circleRadius} 0 0 1 0 -${circleRadius * 2}`} />
                 <path className="circle-progress"
+                  fill="none"
+                  stroke="var(--primary)"
+                  strokeWidth="8"
+                  strokeLinecap="round"
                   strokeDasharray={circleCircumference}
                   strokeDashoffset={strokeDashoffset}
                   d={`M50 10 a ${circleRadius} ${circleRadius} 0 0 1 0 ${circleRadius * 2} a ${circleRadius} ${circleRadius} 0 0 1 0 -${circleRadius * 2}`} />
               </svg>
               <div className="meter-inner">
                 <Target size={24} />
-                <span className="accuracy-value">{mounted ? stats.accuracy : 0}%</span>
+                <span className="accuracy-value"><CountUp end={mounted ? stats.accuracy : 0} />%</span>
                 <span className="accuracy-label">{t('stats.accuracy', 'Accuracy')}</span>
               </div>
             </div>
@@ -88,15 +96,15 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
           <div className="quick-info">
             <div className="info-row">
               <div className="info-item">
-                <span className="info-val">{stats.totalReviewed}</span>
+                <span className="info-val"><CountUp end={mounted ? stats.totalReviewed : 0} /></span>
                 <span className="info-lab">{t('stats.total_reviewed', 'Total Reviewed')}</span>
               </div>
               <div className="info-item">
-                <span className="info-val">{Math.round(stats.averageEaseFactor * 10) / 10}</span>
+                <span className="info-val"><CountUp end={mounted ? stats.averageEaseFactor : 0} decimals={1} /></span>
                 <span className="info-lab">{t('stats.average_ease', 'Average Ease')}</span>
               </div>
               <div className="info-item">
-                <span className="info-val">{stats.totalTimeSpentMinutes}m</span>
+                <span className="info-val"><CountUp end={mounted ? stats.totalTimeSpentMinutes : 0} />m</span>
                 <span className="info-lab">{t('stats.time_spent', 'Time Spent')}</span>
               </div>
             </div>

@@ -381,6 +381,26 @@ export class WordService {
       };
     });
 
+    // --- MOCK FALLBACK FOR UI DEMONSTRATION ---
+    const reviewCount = await this.prisma.review.count({ where: { word: { ownerId: userId }, lastReviewed: { not: null } } });
+    if (reviewCount === 0) {
+      return {
+        totalWords: 30,
+        dueReviewsCount: 5,
+        recentWords: formattedRecentWords,
+        streak: 12,
+        weeklyActivity: [
+          { date: new Date(Date.now() - 6 * 86400000).toISOString().split('T')[0], count: 15 },
+          { date: new Date(Date.now() - 5 * 86400000).toISOString().split('T')[0], count: 32 },
+          { date: new Date(Date.now() - 4 * 86400000).toISOString().split('T')[0], count: 8 },
+          { date: new Date(Date.now() - 3 * 86400000).toISOString().split('T')[0], count: 45 },
+          { date: new Date(Date.now() - 2 * 86400000).toISOString().split('T')[0], count: 20 },
+          { date: new Date(Date.now() - 1 * 86400000).toISOString().split('T')[0], count: 50 },
+          { date: new Date(Date.now()).toISOString().split('T')[0], count: 38 }
+        ],
+      };
+    }
+
     return {
       totalWords,
       dueReviewsCount,

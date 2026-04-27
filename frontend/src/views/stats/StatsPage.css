@@ -55,16 +55,34 @@
 
 /* Stats Grid Top */
 .stats-grid-top {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
   gap: 24px;
   margin-bottom: 24px;
+  flex-wrap: wrap;
 }
 
 .streak-stats-card {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-  color: #fff;
-  border: none;
+  flex: 1;
+  min-width: 300px;
+  background: linear-gradient(135deg, #FF8BA7 0%, #FFC371 100%) !important;
+  color: white;
+}
+
+.overview-stats-card {
+  flex: 2;
+  min-width: 450px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  padding: 24px !important;
+}
+
+@media (max-width: 900px) {
+  .overview-stats-card {
+    flex-direction: column;
+    min-width: 100%;
+    gap: 20px;
+  }
 }
 
 .streak-content {
@@ -128,13 +146,6 @@
   opacity: 0.9;
   max-width: 200px;
   margin: 0 auto;
-}
-
-.overview-stats-card {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  padding: 24px;
 }
 
 .accuracy-meter {
