@@ -7,6 +7,9 @@ import { ArrowLeft, TrendingUp, Target, Award, BarChart2, PieChart } from 'lucid
 import CountUp from '../../components/CountUp';
 import './StatsPage.css';
 
+import StatsSkeleton from './StatsSkeleton';
+import { formatTimeSpent } from '../../utils/time';
+
 interface StatsPageProps {
   onBack: () => void;
 }
@@ -25,11 +28,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
   }, [stats]);
 
   if (isLoading) {
-    return (
-      <div className="stats-page loading">
-        <div className="cute-loader"><span>📊</span></div>
-      </div>
-    );
+    return <StatsSkeleton />;
   }
 
   if (!stats) {
@@ -104,7 +103,13 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack }) => {
                 <span className="info-lab">{t('stats.average_ease', 'Average Ease')}</span>
               </div>
               <div className="info-item">
-                <span className="info-val"><CountUp end={mounted ? stats.totalTimeSpentMinutes : 0} />m</span>
+                <span className="info-val">
+                  <CountUp 
+                    end={mounted ? formatTimeSpent(stats.totalTimeSpentMinutes).value : 0} 
+                    decimals={formatTimeSpent(stats.totalTimeSpentMinutes).decimals}
+                  />
+                  {formatTimeSpent(stats.totalTimeSpentMinutes).unit}
+                </span>
                 <span className="info-lab">{t('stats.time_spent', 'Time Spent')}</span>
               </div>
             </div>
