@@ -27,4 +27,10 @@ export class ReviewController {
   async resetBulk(@Request() req: any, @Body() body: any) {
     return this.reviewService.resetBulk(req.user.userId, body.wordIds);
   }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get study statistics and streak' })
+  async getStats(@Request() req: any) {
+    return this.reviewService.getStudyStats(req.user.userId);
+  }
 }

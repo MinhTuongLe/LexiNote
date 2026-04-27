@@ -46,8 +46,32 @@ export interface PaginatedResponse<T> {
   };
 }
 
+export interface StudyStats {
+  streak: number;
+  weeklyActivity: { date: string; count: number }[];
+  totalReviewed: number;
+  masteredCount: number;
+  learningCount: number;
+  newCount: number;
+  typesBreakdown: TypeBreakdown[];
+  averageEaseFactor: number;
+  accuracy: number;
+  totalTimeSpentMinutes: number;
+  weakestWords: { word: string; meaning: string; wrongCount: number }[];
+}
+
+export interface TypeBreakdown {
+  type: string;
+  total: number;
+  mastered: number;
+  learning: number;
+  new: number;
+}
+
 export interface DashboardStats {
   totalWords: number;
   dueReviewsCount: number;
-  recentWords: Word[];
+  recentWords: (Word & { progress: number })[];
+  streak: number;
+  weeklyActivity: { date: string; count: number }[];
 }

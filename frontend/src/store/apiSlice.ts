@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 import i18n from '../i18n';
@@ -172,6 +172,10 @@ export const apiSlice = createApi({
       query: () => '/dashboard',
       providesTags: ['Words', 'Reviews'],
     }),
+    getStudyStats: builder.query<StudyStats, void>({
+      query: () => '/reviews/stats',
+      providesTags: ['Reviews'],
+    }),
 
     // Words
     getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string } | void>({
@@ -270,6 +274,13 @@ export const apiSlice = createApi({
         method: 'PATCH',
       }),
     }),
+    seedStats: builder.mutation<{ success: boolean; message: string }, void>({
+      query: () => ({
+        url: '/seed-stats',
+        method: 'GET',
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
   }),
 });
 
@@ -288,6 +299,7 @@ export const {
   useUpdateSettingsMutation,
   useGetSettingsQuery,
   useGetDashboardStatsQuery,
+  useGetStudyStatsQuery,
   useGetWordsQuery,
   useCreateWordMutation,
   useUpdateWordMutation,
@@ -299,4 +311,5 @@ export const {
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,
+  useSeedStatsMutation,
 } = apiSlice;

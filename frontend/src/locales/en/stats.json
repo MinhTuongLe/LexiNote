@@ -1,4 +1,19 @@
 {
+  "title": "Study Statistics",
   "coming_soon": "Coming Soon! 📈",
-  "subtitle": "We're working on statistics and progress tracking."
+  "subtitle": "We're working on statistics and progress tracking.",
+  "streak": "Day Streak",
+  "streak_desc": "Keep it up! Review every day to grow your streak.",
+  "total_reviewed": "Total Reviewed",
+  "mastered": "Mastered",
+  "learning": "Learning",
+  "new": "New",
+  "accuracy": "Accuracy",
+  "weekly_activity": "Weekly Activity",
+  "type_breakdown": "Word Type Breakdown",
+  "average_ease": "Average Ease",
+  "words": "words",
+  "days": "days",
+  "no_data": "No study data yet. Start studying to see your stats! 🚀",
+  "reviewed_label": "Reviewed"
 }

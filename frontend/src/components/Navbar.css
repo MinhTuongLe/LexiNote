@@ -79,6 +79,13 @@
   transform: translateY(-2px);
 }
 
+.mobile-bottom-nav .nav-link.active {
+  background: var(--background);
+  color: var(--primary);
+  border-top: 3px solid var(--primary);
+  border-radius: 0;
+}
+
 @media (min-width: 992px) {
   .nav-link {
     flex-direction: row;
@@ -86,12 +93,34 @@
     font-size: 0.95rem;
     padding: 8px 16px;
     flex: initial;
+    border: 3px solid transparent;
   }
   
-  .nav-link:hover, .nav-link.active {
-    background: var(--accent);
-    color: var(--text);
+  .nav-link:hover {
+    color: var(--primary);
   }
+
+  .nav-link.active {
+    color: var(--primary);
+    position: relative;
+  }
+
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 16px;
+    right: 16px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 2px;
+    animation: navSlideIn 0.3s ease;
+  }
+}
+
+@keyframes navSlideIn {
+  from { transform: scaleX(0); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
 }
 
 .navbar-actions {

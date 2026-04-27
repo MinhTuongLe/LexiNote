@@ -21,4 +21,11 @@ export class MetaController {
   async getDashboardStats(@Request() req: any) {
     return this.wordService.getDashboardStats(req.user.userId);
   }
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Get('seed-stats')
+  @ApiOperation({ summary: 'Seed fake stats data for user' })
+  async seedStats(@Request() req: any) {
+    return this.wordService.seedStatsData(req.user.userId);
+  }
 }

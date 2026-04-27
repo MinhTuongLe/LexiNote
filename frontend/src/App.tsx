@@ -14,6 +14,7 @@ import SettingsPage from './views/settings/SettingsPage';
 import LanguageSettingsPage from './views/settings/LanguageSettingsPage';
 import ForgotPassword from './views/auth/ForgotPassword';
 import MatchGame from './views/games/MatchGame';
+import StatsPage from './views/stats/StatsPage';
 import ScrollToTop from './components/ScrollToTop';
 import SkeletonWordCard from './components/SkeletonWordCard';
 import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
@@ -195,7 +196,36 @@ function App() {
               </div>
             </header>
 
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+              <Card className="streak-hero-card clickable" onClick={() => navigate('/stats')}>
+                <div className="streak-main">
+                  <div className="stat-icon">🔥</div>
+                  <div className="streak-info">
+                    <div className="streak-count">
+                      <span className="number">{stats?.streak || 0}</span>
+                      <span className="label">{t('dashboard.day_streak')}</span>
+                    </div>
+                    <p>{t('dashboard.keep_going')}</p>
+                  </div>
+                </div>
+
+                <div className="streak-tracker">
+                  {stats?.weeklyActivity?.map((day: any, i: number) => {
+                    const isStudied = day.count > 0;
+                    const date = new Date(day.date);
+                    const dayLabel = date.toLocaleDateString(undefined, { weekday: 'narrow' }); // Single letter (M, T, W...)
+                    const isToday = day.date === new Date().toISOString().split('T')[0];
+
+                    return (
+                      <div key={i} className={`tracker-day ${isStudied ? 'active' : ''} ${isToday ? 'today' : ''}`}>
+                        <span className="day-name">{dayLabel}</span>
+                        {isStudied && <div className="check-mark">✓</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+
+            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
               <Card className="stat-card pink clickable" onClick={() => navigate('/study')}>
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
@@ -244,11 +274,9 @@ function App() {
                       </div>
                       <p className="meaning">{word.meaningVi}</p>
                       <div className="card-footer">
-                        <span className="level">{t('dashboard.progress', { percent: 60 })}</span>
-                        <div className="dots">
-                          <span className="dot active"></span>
-                          <span className="dot active"></span>
-                          <span className="dot"></span>
+                        <span className="level">{t('dashboard.progress', { percent: word.progress || 0 })}</span>
+                        <div className="progress-bar-mini">
+                          <div className="progress-fill-mini" style={{ width: `${word.progress || 0}%` }}></div>
                         </div>
                       </div>
                     </Card>
@@ -261,17 +289,7 @@ function App() {
 
           <Route path="/library" element={<Library />} />
           
-          <Route path="/stats" element={
-            <div className="coming-soon">
-              <Card>
-                <div style={{ textAlign: 'center', padding: '40px' }}>
-                  <TrendingUp size={48} style={{ color: 'var(--primary)', marginBottom: '16px' }} />
-                  <h2>{t('stats.coming_soon')}</h2>
-                  <p>{t('stats.subtitle')}</p>
-                </div>
-              </Card>
-            </div>
-          } />
+          <Route path="/stats" element={<StatsPage onBack={() => navigate('/dashboard')} />} />
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

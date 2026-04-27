@@ -1,4 +1,19 @@
 {
+  "title": "Thống kê học tập",
   "coming_soon": "Sắp ra mắt! 📈",
-  "subtitle": "Chúng mình đang hoàn thiện trang thống kê tiến độ."
+  "subtitle": "Chúng tôi đang hoàn thiện phần thống kê và theo dõi tiến độ.",
+  "streak": "Chuỗi ngày",
+  "streak_desc": "Cố lên! Hãy ôn tập mỗi ngày để duy trì chuỗi nhé.",
+  "total_reviewed": "Tổng số từ đã học",
+  "mastered": "Đã thuộc",
+  "learning": "Đang học",
+  "new": "Từ mới",
+  "accuracy": "Độ chính xác",
+  "weekly_activity": "Hoạt động trong tuần",
+  "type_breakdown": "Phân loại từ vựng",
+  "average_ease": "Độ dễ trung bình",
+  "words": "từ",
+  "days": "ngày",
+  "no_data": "Chưa có dữ liệu học tập. Hãy bắt đầu học để xem thống kê nhé! 🚀",
+  "reviewed_label": "Đã học"
 }
