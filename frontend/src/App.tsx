@@ -310,6 +310,11 @@ function App() {
           <Route path="/library" element={<Library />} />
           
           <Route path="/stats" element={<StatsPage onBack={() => navigate('/dashboard')} />} />
+          <Route path="/stats/activity" element={<StatsPage onBack={() => navigate('/stats')} detail="activity" />} />
+          <Route path="/stats/performance" element={<StatsPage onBack={() => navigate('/stats')} detail="performance" />} />
+          <Route path="/stats/mastery" element={<StatsPage onBack={() => navigate('/stats')} detail="mastery" />} />
+          <Route path="/stats/focus" element={<StatsPage onBack={() => navigate('/stats')} detail="focus" />} />
+          <Route path="/stats/types" element={<StatsPage onBack={() => navigate('/stats')} detail="types" />} />
           
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

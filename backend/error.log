@@ -212,3 +212,185 @@ UnauthorizedException: Unauthorized
     at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
     at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
     at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T14:41:39.874Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T14:41:39.879Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T14:58:48.318Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T14:58:48.320Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:17:10.518Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:17:10.520Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:40:34.439Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:40:34.442Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:57:17.908Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T15:57:17.910Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T16:16:36.117Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T16:16:36.119Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T16:31:45.137Z] /api/auth/me
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-04-29T16:31:45.138Z] /api/dashboard
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
