@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGetStudyStatsQuery } from '../../store/apiSlice';
-import Button from '../../components/Button';
+import BackButton from '../../components/BackButton';
 import Card from '../../components/Card';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './StatsPage.css';
 
@@ -89,10 +89,10 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack, detail }) => {
 
     return (
       <div className="stats-page detail-mode">
+        <div className="page-back-wrapper" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+          <BackButton onClick={onBack} />
+        </div>
         <header className="stats-header">
-          <Button variant="ghost" className="back-btn" onClick={onBack}>
-            <ArrowLeft size={24} />
-          </Button>
           <h1>{title}</h1>
         </header>
         {content}

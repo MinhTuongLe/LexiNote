@@ -74,4 +74,6 @@ export interface DashboardStats {
   recentWords: (Word & { progress: number })[];
   streak: number;
   weeklyActivity: { date: string; count: number }[];
+  accuracy: number;
+  totalTimeSpentMinutes: number;
 }

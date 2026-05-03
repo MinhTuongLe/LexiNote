@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from '../../../../components/Card';
+import { getTypeLabel } from '../../../../utils/wordUtils';
 
 interface TypesDetailProps {
   stats: any;
@@ -38,7 +39,7 @@ const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
            <p>{t('stats.category_summary', { count: sortedTypes.length })}</p>
            <div className="top-category-highlight">
               <span>{t('stats.top_strength')}:</span>
-              <strong>{t(`stats.type_${sortedTypes[0].type.toLowerCase()}`)}</strong>
+              <strong>{getTypeLabel(sortedTypes[0].type, t)}</strong>
            </div>
         </Card>
       </div>
@@ -58,7 +59,7 @@ const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
                       {typeIcons[type.type.toLowerCase()] || '📚'}
                    </div>
                    <div className="type-name-info">
-                      <h4>{t(`stats.type_${type.type.toLowerCase()}`)}</h4>
+                      <h4>{getTypeLabel(type.type, t)}</h4>
                       <span>{type.total} {t('stats.total_words')}</span>
                    </div>
                    {isMaster && (

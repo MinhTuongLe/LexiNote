@@ -7,7 +7,8 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff, ShieldAlert, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Pencil, Check, Eye, EyeOff, ShieldAlert, Trash2 } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
 
@@ -92,9 +93,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   return (
     <div className="profile-page">
       <div className="profile-back">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft size={18} /> {t('common.back')}
-        </Button>
+        <BackButton onClick={onBack} variant="outline" />
       </div>
 
       <Card className="profile-card">

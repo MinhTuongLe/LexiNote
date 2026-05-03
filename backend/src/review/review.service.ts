@@ -22,7 +22,7 @@ export class ReviewService {
       take: 100, // Hard limit to prevent RAM exhaustion and payload blowout on massive backlogs
     });
 
-    return reviews.map(r => this.formatReview(r));
+    return reviews.map((r: any) => this.formatReview(r));
   }
 
   private formatReview(review: any) {
@@ -130,22 +130,16 @@ export class ReviewService {
     });
   }
 
-  async getStudyStats(userId: number) {
+  async getStudyStats(userId: number, year?: number, month?: number) {
     const wordCount = await this.prisma.word.count({ where: { ownerId: userId } });
-    if (wordCount === 0) {
-      // Small trick: We just return a default empty stats if no words, 
-      // but if we want to auto-seed, we'd need WordService. 
-      // To avoid circular dependency, let Dashboard auto-seed handle it, 
-      // or we just let it return 0s here.
-    }
-
+    
     const reviews = await this.prisma.review.findMany({
       where: { word: { ownerId: userId } },
       include: { word: true },
     });
 
     const streak = await this.getStreak(userId);
-    const weeklyActivity = await this.getWeeklyActivity(userId);
+    const weeklyActivity = await this.getActivityData(userId, year, month);
     
     let masteredCount = 0;
     let learningCount = 0;
@@ -156,7 +150,7 @@ export class ReviewService {
     
     const typesMap = new Map<string, any>();
 
-    reviews.forEach(r => {
+    reviews.forEach((r: any) => {
       const type = r.word.type || 'other';
       if (!typesMap.has(type)) {
         typesMap.set(type, { type, total: 0, mastered: 0, learning: 0, new: 0 });
@@ -180,7 +174,7 @@ export class ReviewService {
       totalEaseFactor += r.easeFactor;
     });
 
-    const totalReviewed = reviews.filter(r => r.lastReviewed !== null).length;
+    const totalReviewed = reviews.filter((r: any) => r.lastReviewed !== null).length;
     const accuracy = (totalCorrect + totalWrong) > 0 
       ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) 
       : 0;
@@ -192,34 +186,13 @@ export class ReviewService {
       .filter(r => r.wrongCount > 0)
       .sort((a, b) => b.wrongCount - a.wrongCount)
       .slice(0, 5)
-      .map(r => ({ word: r.word.word, meaning: r.word.meaningVi, wrongCount: r.wrongCount }));
+      .map((r: any) => ({ word: r.word.word, meaning: r.word.meaningVi, wrongCount: r.wrongCount }));
 
-    // --- MOCK FALLBACK FOR UI DEMONSTRATION ---
-    // If the database is completely empty (0 words), we return a beautifully populated mock object
-    // so the frontend can render all charts and lists for structure validation.
-    if (totalReviewed === 0) {
+    // Mock fallback remains the same for UI demo
+    if (totalReviewed === 0 && wordCount === 0) {
       return {
         streak: 12,
-        weeklyActivity: (() => {
-          const now = new Date();
-          const dayOfWeek = now.getDay();
-          const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
-          const monday = new Date(now);
-          monday.setDate(now.getDate() - diffToMon);
-          monday.setHours(0, 0, 0, 0);
-
-          return Array.from({ length: 7 }).map((_, i) => {
-            const d = new Date(monday);
-            d.setDate(monday.getDate() + i);
-            const counts = [15, 32, 8, 45, 20, 50, 38];
-            // Only show count for days that are past or today
-            const isPastOrToday = d <= now;
-            return {
-              date: d.toISOString().split('T')[0],
-              count: isPastOrToday ? counts[i % counts.length] : 0
-            };
-          });
-        })(),
+        weeklyActivity: weeklyActivity, // Use the generated activity
         totalReviewed: 208,
         masteredCount: 120,
         learningCount: 65,
@@ -297,40 +270,60 @@ export class ReviewService {
     return streak;
   }
 
-  async getWeeklyActivity(userId: number): Promise<{ date: string, count: number }[]> {
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0-6 (Sun-Sat)
-    const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+  async getActivityData(userId: number, year?: number, month?: number): Promise<{ date: string, count: number }[]> {
+    const targetDate = (year !== undefined && month !== undefined) 
+      ? new Date(year, month, 1) 
+      : new Date();
     
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - diffToMon);
-    monday.setHours(0, 0, 0, 0);
+    let startDate: Date;
+    let endDate: Date;
 
-    const currentWeekDays = Array.from({ length: 7 }).map((_, i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
+    if (year !== undefined && month !== undefined) {
+      // Return full month
+      startDate = new Date(year, month, 1);
+      endDate = new Date(year, month + 1, 1);
+    } else {
+      // Default: Current Week (Monday to Sunday)
+      const dayOfWeek = targetDate.getDay();
+      const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+      startDate = new Date(targetDate);
+      startDate.setDate(targetDate.getDate() - diffToMon);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate.getTime() + 7 * 86400000);
+    }
+
+    const daysCount = Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+    const activityDays = Array.from({ length: daysCount }).map((_, i) => {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
       return d;
     });
 
-    const activity = await Promise.all(currentWeekDays.map(async (dayMidnight) => {
-      const nextDayMidnight = new Date(dayMidnight.getTime() + 86400000);
-      
-      const count = await this.prisma.review.count({
-        where: {
-          word: { ownerId: userId },
-          lastReviewed: {
-            gte: BigInt(dayMidnight.getTime()),
-            lt: BigInt(nextDayMidnight.getTime()),
-          }
+    // Optimization: Fetch all reviews in range and group them manually
+    // This is much faster than N queries
+    const reviewsInRange = await this.prisma.review.findMany({
+      where: {
+        word: { ownerId: userId },
+        lastReviewed: {
+          gte: BigInt(startDate.getTime()),
+          lt: BigInt(endDate.getTime()),
         }
-      });
+      },
+      select: { lastReviewed: true }
+    });
 
+    const countsMap = new Map<string, number>();
+    reviewsInRange.forEach((r: any) => {
+      const dateStr = new Date(Number(r.lastReviewed)).toISOString().split('T')[0];
+      countsMap.set(dateStr, (countsMap.get(dateStr) || 0) + 1);
+    });
+
+    return activityDays.map((d: Date) => {
+      const dateStr = d.toISOString().split('T')[0];
       return {
-        date: dayMidnight.toISOString().split('T')[0],
-        count
+        date: dateStr,
+        count: countsMap.get(dateStr) || 0
       };
-    }));
-
-    return activity;
+    });
   }
 }

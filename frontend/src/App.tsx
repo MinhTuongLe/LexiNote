@@ -34,6 +34,7 @@ import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
 import type { CreateWordDTO } from './types';
 import CountUp from './components/CountUp';
+import { getTypeLabel } from './utils/wordUtils';
 import './components/Skeleton.css';
 import './App.css';
 
@@ -118,11 +119,8 @@ function App() {
     );
   }
 
-  const getTypeLabel = (typeValue: string) => {
-    const defaultType = WORD_TYPES.find(t => t.value === typeValue);
-    if (defaultType) return t(`library.word_types.${typeValue}`);
-    const customType = user?.settings?.wordTypes?.find((t: any) => t.value === typeValue);
-    return customType ? customType.label : typeValue;
+  const handleGetTypeLabel = (typeValue: string) => {
+    return getTypeLabel(typeValue, t, user?.settings);
   };
 
   if (!isAuthenticated) {
@@ -245,12 +243,12 @@ function App() {
                 </div>
               </Card>
 
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+            <div className="stats-grid main-actions">
               <Card className="stat-card pink clickable" onClick={() => navigate('/study')}>
                 <div className="stat-icon"><Play size={32} /></div>
                 <div className="stat-info">
                   <h3>{t('dashboard.start_study')}</h3>
-                  <p>{stats?.dueReviewsCount ? t('dashboard.words_due', { count: stats.dueReviewsCount }) : t('dashboard.words_due_zero')}</p>
+                  <p>{statsLoading ? '...' : (stats?.dueReviewsCount ? t('dashboard.words_due', { count: stats.dueReviewsCount }) : t('dashboard.words_due_zero'))}</p>
                 </div>
               </Card>
 
@@ -258,15 +256,37 @@ function App() {
                 <div className="stat-icon"><Book size={32} /></div>
                 <div className="stat-info">
                   <h3>{t('dashboard.library')}</h3>
-                  <p>{stats?.totalWords ? t('dashboard.words_count', { count: stats.totalWords }) : t('dashboard.words_count_zero')}</p>
+                  <p>{statsLoading ? '...' : (stats?.totalWords ? t('dashboard.words_count', { count: stats.totalWords }) : t('dashboard.words_count_zero'))}</p>
                 </div>
               </Card>
 
-              <Card className="stat-card purple clickable" onClick={() => navigate('/match-game')}>
+              <Card className="stat-card green clickable" onClick={() => navigate('/match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
                   <h3>{t('dashboard.minigame')}</h3>
                   <p>{t('dashboard.word_match')}</p>
+                </div>
+              </Card>
+            </div>
+
+            <div className="stats-grid secondary-metrics">
+              <Card className="stat-card purple clickable" onClick={() => navigate('/stats')}>
+                <div className="stat-icon"><TrendingUp size={28} /></div>
+                <div className="stat-info">
+                  <h3>{t('stats.accuracy')}</h3>
+                  <p className="metric-value">
+                    {statsLoading ? '0%' : <><CountUp end={stats?.accuracy || 0} />%</>}
+                  </p>
+                </div>
+              </Card>
+
+              <Card className="stat-card blue clickable" onClick={() => navigate('/stats')}>
+                <div className="stat-icon">⏰</div>
+                <div className="stat-info">
+                  <h3>{t('stats.total_time')}</h3>
+                  <p className="metric-value">
+                    {statsLoading ? '0' : <><CountUp end={stats?.totalTimeSpentMinutes || 0} /> {t('stats.minutes')}</>}
+                  </p>
                 </div>
               </Card>
             </div>
@@ -290,7 +310,7 @@ function App() {
                     <Card key={word.id} className="word-item">
                       <div className="word-header">
                         <h3>{word.word}</h3>
-                        <span className="type-tag">{getTypeLabel(word.type)}</span>
+                        <span className="type-tag">{handleGetTypeLabel(word.type)}</span>
                       </div>
                       <p className="meaning">{word.meaningVi}</p>
                       <div className="card-footer">

@@ -4,6 +4,7 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
 
@@ -106,8 +107,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
               </Button>
             </form>
 
-            <div className="auth-footer">
-              <span onClick={onBack}><ArrowLeft size={14} /> {t('auth.back_to_login')}</span>
+            <div className="auth-footer" style={{ justifyContent: 'flex-start' }}>
+              <BackButton onClick={onBack} />
             </div>
           </>
         )}
@@ -186,9 +187,9 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                   {countdown > 0 ? t('auth.resend_timer', { count: countdown }) : t('auth.resend_code')}
                 </Button>
               )}
-              <span onClick={() => { setStep('email'); setCountdown(0); }} style={{ cursor: 'pointer', marginTop: 24 }}>
-                <ArrowLeft size={14} /> {t('auth.try_another_email')}
-              </span>
+              <div style={{ marginTop: 24, display: 'flex' }}>
+                <BackButton onClick={() => { setStep('email'); setCountdown(0); }} />
+              </div>
             </div>
           </>
         )}

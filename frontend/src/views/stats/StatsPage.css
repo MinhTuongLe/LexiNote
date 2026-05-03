@@ -1342,6 +1342,12 @@
   gap: 8px; /* Slightly more gap for better look on full width */
   width: 100%; /* Fit the container */
   margin: 0;
+  transition: opacity 0.3s ease;
+}
+
+.calendar-v2-grid.fetching {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .calendar-v2-day {
@@ -2631,3 +2637,241 @@
   font-weight: 700;
   color: #4ade80;
 }
+
+/* Activity Detail View (Calendar v2) */
+.activity-diary {
+  padding-bottom: 40px;
+}
+
+.activity-main-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 992px) {
+  .activity-main-grid {
+    grid-template-columns: 1.8fr 1fr;
+  }
+}
+
+.activity-side-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Goal Card v2 */
+.goal-card-v2 {
+  padding: 24px !important;
+  background: white !important;
+  border: 4px solid var(--border) !important;
+  box-shadow: 6px 6px 0px var(--border) !important;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.goal-header h4 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-color);
+}
+
+.goal-badges-mini {
+  font-size: 1.5rem;
+}
+
+.goal-visual-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.goal-progress-wrapper {
+  height: 24px;
+  background: var(--background);
+  border: 3px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+
+.goal-track {
+  width: 100%;
+  height: 100%;
+}
+
+.goal-fill-v2 {
+  height: 100%;
+  background: linear-gradient(90deg, #FF8BA7 0%, #FFC371 100%);
+  border-radius: 8px;
+  position: relative;
+}
+
+.goal-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.goal-stats-v2 {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  justify-content: center;
+}
+
+.goal-stats-v2 .current {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #FF8BA7;
+}
+
+.goal-stats-v2 .total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.goal-stats-v2 .unit {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.goal-hint {
+  text-align: center;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Fun Stat Cards */
+.fun-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px !important;
+}
+
+.fun-stat-card.yellow { background: #fffbeb; border: 3px solid #fde68a; }
+.fun-stat-card.purple { background: #f5f3ff; border: 3px solid #ddd6fe; }
+
+.fun-stat-card .icon {
+  font-size: 1.8rem;
+}
+
+.fun-stat-card .text {
+  display: flex;
+  flex-direction: column;
+}
+
+.fun-stat-card .val {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.fun-stat-card .lab {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* History/Activity List */
+.activity-log-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+
+.log-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--background);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.log-text strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.log-text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Tips Card */
+.daily-tip-card {
+  background: #fdf2f8 !important;
+  border-color: #fbcfe8 !important;
+  display: flex;
+  gap: 16px;
+  padding: 16px !important;
+}
+
+.tip-icon {
+  font-size: 2rem;
+}
+
+.tip-content h5 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.tip-content p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.activity-top-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+@media (min-width: 768px) {
+  .activity-top-row {
+    grid-template-columns: 1.5fr 1fr;
+  }
+}
+
+.header-goal {
+  margin: 0 !important;
+}
+

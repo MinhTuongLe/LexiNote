@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
-import { ArrowLeft, Trophy, RefreshCw } from 'lucide-react';
+import { Trophy, RefreshCw } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 import { useGetWordsQuery } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../../hooks/useSound';
@@ -117,9 +118,9 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   if (words.length < 5) {
     return (
       <div className="match-game empty">
-        <Button variant="outline" onClick={onBack} className="back-btn">
-          <ArrowLeft size={16} /> {t('common.back')}
-        </Button>
+        <div className="page-back-wrapper" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px', width: '100%' }}>
+          <BackButton onClick={onBack} />
+        </div>
         <Card className="game-over-card">
           <h2>{t('games.not_enough_words')}</h2>
           <p>{t('games.not_enough_words_desc')}</p>
@@ -151,10 +152,10 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
 
   return (
     <div className="match-game">
+      <div className="page-back-wrapper" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
+        <BackButton onClick={onBack} />
+      </div>
       <div className="match-header">
-        <Button variant="outline" onClick={onBack} className="back-btn">
-          <ArrowLeft size={16} /> {t('common.back')}
-        </Button>
         <div className="match-title">
           <Trophy size={20} className="trophy-icon" />
           <h2>{t('games.match_game_title')}</h2>

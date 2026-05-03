@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -30,7 +30,13 @@ export class ReviewController {
 
   @Get('stats')
   @ApiOperation({ summary: 'Get study statistics and streak' })
-  async getStats(@Request() req: any) {
-    return this.reviewService.getStudyStats(req.user.userId);
+  async getStats(
+    @Request() req: any,
+    @Query('year') year?: string,
+    @Query('month') month?: string,
+  ) {
+    const y = year ? parseInt(year, 10) : undefined;
+    const m = month ? parseInt(month, 10) : undefined;
+    return this.reviewService.getStudyStats(req.user.userId, y, m);
   }
 }

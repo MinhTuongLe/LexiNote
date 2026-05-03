@@ -5,14 +5,25 @@ import Card from '../../../../components/Card';
 import Button from '../../../../components/Button';
 import i18n from '../../../../i18n';
 
+import { useGetStudyStatsQuery } from '../../../../store/apiSlice';
+
 interface ActivityDetailProps {
   stats: any;
 }
 
-const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
+const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) => {
   const { t } = useTranslation();
   const [viewDate, setViewDate] = React.useState(new Date());
   const [showMonthPicker, setShowMonthPicker] = React.useState(false);
+
+  // Fetch monthly data for the calendar
+  const { data: monthlyStats, isFetching } = useGetStudyStatsQuery({
+    year: viewDate.getFullYear(),
+    month: viewDate.getMonth()
+  });
+
+  // Use monthly data if available, fallback to initial stats
+  const activeStats = monthlyStats || initialStats;
 
   const handlePrevMonth = () => {
     setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
@@ -40,7 +51,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
   const yearNum = viewDate.getFullYear();
   const isCurrentMonth = viewDate.getMonth() === new Date().getMonth() && viewDate.getFullYear() === new Date().getFullYear();
 
-  const studiedDaysCount = stats.weeklyActivity.filter((d: any) => d.count > 0).length;
+  const studiedDaysCount = activeStats.weeklyActivity.filter((d: any) => d.count > 0).length;
   const goalDays = 20;
   const goalPercent = Math.min((studiedDaysCount / goalDays) * 100, 100);
 
@@ -55,7 +66,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
           </div>
         </Card>
 
-        <Card className="goal-card-v2">
+        <Card className="goal-card-v2 header-goal">
            <div className="goal-header">
               <h4>{t('stats.monthly_goal')}</h4>
               <div className="goal-badges-mini">✨</div>
@@ -63,11 +74,6 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
            <div className="goal-visual-container">
               <div className="goal-progress-wrapper">
                  <div className="goal-track">
-                    {[0, 25, 50, 75, 100].map(m => (
-                      <div key={m} className="goal-marker" style={{ left: `${m}%` }}>
-                         <span className="marker-label">{m}%</span>
-                      </div>
-                    ))}
                     <div className="goal-fill-v2" style={{ width: `${goalPercent}%` }}>
                        <div className="goal-shimmer"></div>
                     </div>
@@ -80,11 +86,6 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
                  <span className="unit">{t('stats.days')}</span>
               </div>
            </div>
-           <p className="goal-hint">
-              {studiedDaysCount >= goalDays 
-                ? t('stats.goal_hint_success') 
-                : t('stats.goal_hint_progress', { count: goalDays - studiedDaysCount })}
-           </p>
         </Card>
       </div>
 
@@ -128,27 +129,28 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
                </div>
             </div>
 
-            <div className="calendar-v2-grid">
-              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(dayKey => (
-                <div key={dayKey} className="day-name-label">{t(`stats.weekdays_short.${dayKey}`)}</div>
-              ))}
-              {Array.from({ length: startOffset }).map((_, i) => (
-                <div key={`empty-${i}`} className="calendar-v2-day empty"></div>
-              ))}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const dayNum = i + 1;
-                const isStudied = isCurrentMonth && stats.weeklyActivity.some((d: any) => {
-                  const date = new Date(d.date);
-                  return date.getDate() === dayNum && d.count > 0;
-                });
-                const isToday = isCurrentMonth && dayNum === new Date().getDate();
-                return (
-                  <div key={i} className={`calendar-v2-day ${isStudied ? 'is-studied' : ''} ${isToday ? 'is-today' : ''}`}>
-                    <span className="day-num-text">{dayNum}</span>
-                    {isStudied && <div className="studied-dot">🌟</div>}
-                  </div>
-                );
-              })}
+            <div className={`calendar-v2-grid ${isFetching ? 'fetching' : ''}`}>
+               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(dayKey => (
+                 <div key={dayKey} className="day-name-label">{t(`stats.weekdays_short.${dayKey}`)}</div>
+               ))}
+               {Array.from({ length: startOffset }).map((_, i) => (
+                 <div key={`empty-${i}`} className="calendar-v2-day empty"></div>
+               ))}
+               {Array.from({ length: daysInMonth }).map((_, i) => {
+                 const dayNum = i + 1;
+                 const dateString = `${yearNum}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                 
+                 const activityForDay = activeStats.weeklyActivity.find((d: any) => d.date === dateString);
+                 const isStudied = activityForDay && activityForDay.count > 0;
+                 const isToday = isCurrentMonth && dayNum === new Date().getDate();
+                 
+                 return (
+                   <div key={dayNum} className={`calendar-v2-day ${isStudied ? 'is-studied' : ''} ${isToday ? 'is-today' : ''}`}>
+                     <span className="day-num-text">{dayNum}</span>
+                     {isStudied && <div className="studied-dot">🌟</div>}
+                   </div>
+                 );
+               })}
             </div>
             <div className="calendar-v2-legend">
                <div className="legend-item"><span className="indicator studied"></span> {t('stats.legend_studied')}</div>
@@ -157,18 +159,19 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
          </Card>
 
          <div className="activity-side-stats">
+
             <div className="stats-mini-grid">
               <Card className="fun-stat-card yellow">
                 <div className="icon">🔥</div>
                 <div className="text">
-                    <span className="val">{stats.streak} {t('stats.days')}</span>
+                    <span className="val">{activeStats.streak} {t('stats.days')}</span>
                     <span className="lab">{t('stats.best_streak')}</span>
                 </div>
               </Card>
               <Card className="fun-stat-card purple">
                 <div className="icon">⏰</div>
                 <div className="text">
-                    <span className="val">{Math.round(stats.totalTimeSpentMinutes)} {t('stats.minutes')}</span>
+                    <span className="val">{Math.round(activeStats.totalTimeSpentMinutes)} {t('stats.minutes')}</span>
                     <span className="lab">{t('stats.total_time')}</span>
                 </div>
               </Card>
@@ -181,7 +184,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
                      <div className="badge-icon">🏅</div>
                      <span>{t('stats.badge_diligent')}</span>
                   </div>
-                  <div className={`badge-item ${stats.streak >= 7 ? 'earned' : 'locked'}`}>
+                  <div className={`badge-item ${activeStats.streak >= 7 ? 'earned' : 'locked'}`}>
                      <div className="badge-icon">👑</div>
                      <span>{t('stats.badge_persistent')}</span>
                   </div>
@@ -192,18 +195,20 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats }) => {
                </div>
             </Card>
             
-            <div className="recent-activity-list">
-               <h4>{t('stats.recent_events')}</h4>
-               {stats.weeklyActivity.filter((d: any) => d.count > 0).slice(-2).reverse().map((day: any, i: number) => (
-                  <div key={i} className="activity-log-item">
-                     <div className="log-icon">✨</div>
-                     <div className="log-text">
-                        <strong>{new Date(day.date).toLocaleDateString(i18n.language, { weekday: 'long' })}</strong>
-                        <p>{t('stats.reviewed_text', { count: day.count })}</p>
-                     </div>
-                  </div>
-               ))}
-            </div>
+            {activeStats.weeklyActivity.some((d: any) => d.count > 0) && (
+              <div className="recent-activity-list">
+                <h4>{t('stats.recent_events')}</h4>
+                {activeStats.weeklyActivity.filter((d: any) => d.count > 0).slice(-3).reverse().map((day: any, i: number) => (
+                    <div key={i} className="activity-log-item">
+                      <div className="log-icon">✨</div>
+                      <div className="log-text">
+                          <strong>{new Date(day.date).toLocaleDateString(i18n.language, { weekday: 'long' })}</strong>
+                          <p>{t('stats.reviewed_text', { count: day.count })}</p>
+                      </div>
+                    </div>
+                ))}
+              </div>
+            )}
 
             <Card className="daily-tip-card">
                <div className="tip-icon">💡</div>

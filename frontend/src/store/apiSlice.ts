@@ -172,8 +172,11 @@ export const apiSlice = createApi({
       query: () => '/dashboard',
       providesTags: ['Words', 'Reviews'],
     }),
-    getStudyStats: builder.query<StudyStats, void>({
-      query: () => '/reviews/stats',
+    getStudyStats: builder.query<StudyStats, { year?: number; month?: number } | void>({
+      query: (params) => ({
+        url: '/reviews/stats',
+        params: params || {},
+      }),
       providesTags: ['Reviews'],
     }),
 
@@ -274,13 +277,6 @@ export const apiSlice = createApi({
         method: 'PATCH',
       }),
     }),
-    seedStats: builder.mutation<{ success: boolean; message: string }, void>({
-      query: () => ({
-        url: '/seed-stats',
-        method: 'GET',
-      }),
-      invalidatesTags: ['Words', 'Reviews'],
-    }),
   }),
 });
 
@@ -311,5 +307,4 @@ export const {
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,
-  useSeedStatsMutation,
 } = apiSlice;
