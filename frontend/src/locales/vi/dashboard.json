@@ -18,5 +18,8 @@
   "add_success": "Đã thêm từ mới vào thư viện! ✨",
   "add_error": "Lỗi khi thêm từ vựng. 😿",
   "import_success": "Đã nhập {{count}} từ vựng! 🎉",
-  "import_error": "Lỗi khi nhập từ từ file. 😿"
+  "import_error": "Lỗi khi nhập từ từ file. 😿",
+  "day_streak": "Chuỗi ngày học 🔥",
+  "keep_going": "Hãy tiếp tục phát huy nhé!",
+  "word_match": "Nối từ ✨"
 }

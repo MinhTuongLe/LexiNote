@@ -12,7 +12,7 @@
   "slide2": {
     "tag": "📚 Database",
     "title": "Build Your Library",
-    "description": "Quickly add flashcards with images manually, or bulk import thousands of words from Excel & JSON files in just one click."
+    "description": "Quickly add flashcards with images manually, or bulk import thousands of words from Excel files in just one click."
   },
   "slide3": {
     "tag": "🧠 SM-2 Algorithm",
@@ -22,6 +22,6 @@
   "slide4": {
     "tag": "🎮 Entertainment",
     "title": "Learn & Play",
-    "description": "Blow away boredom with our card-flipping Match Game system. Engrave vocabulary into your subconscious and collect achievements!"
+    "description": "Blow away boredom with our interactive Match Game system. Engrave vocabulary into your subconscious and collect achievements!"
   }
 }

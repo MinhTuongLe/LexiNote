@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 import i18n from '../i18n';
@@ -172,6 +172,13 @@ export const apiSlice = createApi({
       query: () => '/dashboard',
       providesTags: ['Words', 'Reviews'],
     }),
+    getStudyStats: builder.query<StudyStats, { year?: number; month?: number } | void>({
+      query: (params) => ({
+        url: '/reviews/stats',
+        params: params || {},
+      }),
+      providesTags: ['Reviews'],
+    }),
 
     // Words
     getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string } | void>({
@@ -235,6 +242,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
+    recordGameSession: builder.mutation<{ count: number }, number[]>({
+      query: (wordIds) => ({
+        url: '/reviews/game-session',
+        method: 'POST',
+        body: { wordIds },
+      }),
+      invalidatesTags: ['Reviews', 'Words'],
+    }),
     resetProgress: builder.mutation<{ success: boolean; count: number }, number[]>({
       query: (wordIds) => ({
         url: '/reviews/reset',
@@ -288,6 +303,7 @@ export const {
   useUpdateSettingsMutation,
   useGetSettingsQuery,
   useGetDashboardStatsQuery,
+  useGetStudyStatsQuery,
   useGetWordsQuery,
   useCreateWordMutation,
   useUpdateWordMutation,
@@ -296,6 +312,7 @@ export const {
   useImportWordsMutation,
   useGetDueReviewsQuery,
   useUpdateSRSMutation,
+  useRecordGameSessionMutation,
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,

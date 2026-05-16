@@ -26,4 +26,8 @@ export class UpdateSettingsDto {
   @IsOptional()
   @IsBoolean()
   hasSeenGuide?: boolean;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  wordTypes?: any[];
 }

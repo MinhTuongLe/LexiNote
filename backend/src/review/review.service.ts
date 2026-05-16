@@ -22,7 +22,7 @@ export class ReviewService {
       take: 100, // Hard limit to prevent RAM exhaustion and payload blowout on massive backlogs
     });
 
-    return reviews.map(r => this.formatReview(r));
+    return reviews.map((r: any) => this.formatReview(r));
   }
 
   private formatReview(review: any) {
@@ -47,6 +47,23 @@ export class ReviewService {
       };
     }
     return formatted;
+  }
+
+  async recordGameSession(userId: number, wordIds: number[]) {
+    const now = BigInt(Date.now());
+    
+    // For games, we update the activity timestamp and increment correctCount.
+    // We do NOT aggressively update the SRS interval to maintain spaced repetition integrity.
+    return this.prisma.review.updateMany({
+      where: {
+        wordId: { in: wordIds },
+        word: { ownerId: userId },
+      },
+      data: {
+        lastReviewed: now,
+        correctCount: { increment: 1 }
+      },
+    });
   }
 
   async updateSRS(userId: number, reviewId: number, quality: number) {
@@ -127,6 +144,181 @@ export class ReviewService {
       });
 
       return { success: true, count: verifiedIds.length };
+    });
+  }
+
+  async getStudyStats(userId: number, year?: number, month?: number) {
+    const wordCount = await this.prisma.word.count({ where: { ownerId: userId } });
+    
+    const reviews = await this.prisma.review.findMany({
+      where: { word: { ownerId: userId } },
+      include: { word: true },
+    });
+
+    const streak = await this.getStreak(userId);
+    const weeklyActivity = await this.getActivityData(userId, year, month);
+    
+    let masteredCount = 0;
+    let learningCount = 0;
+    let newCount = 0;
+    let totalCorrect = 0;
+    let totalWrong = 0;
+    let totalEaseFactor = 0;
+    
+    const typesMap = new Map<string, any>();
+
+    reviews.forEach((r: any) => {
+      const type = r.word.type || 'other';
+      if (!typesMap.has(type)) {
+        typesMap.set(type, { type, total: 0, mastered: 0, learning: 0, new: 0 });
+      }
+      const typeStats = typesMap.get(type);
+      typeStats.total++;
+
+      if (r.correctCount >= 4 && r.interval >= 14) {
+        masteredCount++;
+        typeStats.mastered++;
+      } else if (r.correctCount > 0) {
+        learningCount++;
+        typeStats.learning++;
+      } else {
+        newCount++;
+        typeStats.new++;
+      }
+
+      totalCorrect += r.correctCount;
+      totalWrong += r.wrongCount;
+      totalEaseFactor += r.easeFactor;
+    });
+
+    const reviewedWords = reviews.filter((r: any) => r.lastReviewed !== null);
+    const totalReviewed = reviewedWords.length;
+    const totalEaseFactorReviewed = reviewedWords.reduce((sum: number, r: any) => sum + r.easeFactor, 0);
+
+    const accuracy = (totalCorrect + totalWrong) > 0 
+      ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) 
+      : 0;
+    const averageEaseFactor = totalReviewed > 0 ? totalEaseFactorReviewed / totalReviewed : 0;
+
+    let totalTimeSpentMinutes = Math.round(((totalCorrect + totalWrong) * 5) / 60);
+
+    let weakestWords = [...reviews]
+      .filter(r => r.wrongCount > 0)
+      .sort((a, b) => b.wrongCount - a.wrongCount)
+      .slice(0, 5)
+      .map((r: any) => ({ word: r.word.word, meaning: r.word.meaningVi, wrongCount: r.wrongCount }));
+
+
+    return {
+      streak,
+      weeklyActivity,
+      totalReviewed,
+      masteredCount,
+      learningCount,
+      newCount,
+      typesBreakdown: Array.from(typesMap.values()),
+      averageEaseFactor,
+      accuracy,
+      totalTimeSpentMinutes,
+      weakestWords,
+      totalSessions: Math.ceil((totalCorrect + totalWrong) / 7), 
+    };
+  }
+
+  async getStreak(userId: number): Promise<number> {
+    const reviews = await this.prisma.review.findMany({
+      where: { 
+        word: { ownerId: userId },
+        lastReviewed: { not: null }
+      },
+      select: { lastReviewed: true },
+      orderBy: { lastReviewed: 'desc' }
+    });
+
+    if (reviews.length === 0) return 0;
+
+    const dates = reviews.map(r => {
+      const d = new Date(Number(r.lastReviewed));
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    });
+
+    const uniqueDates = Array.from(new Set(dates));
+    
+    const today = new Date();
+    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const yesterdayMidnight = todayMidnight - 86400000;
+
+    if (uniqueDates[0] < yesterdayMidnight) return 0;
+
+    let streak = 0;
+    let expectedDate = uniqueDates[0];
+
+    for (const date of uniqueDates) {
+      if (date === expectedDate) {
+        streak++;
+        expectedDate -= 86400000;
+      } else {
+        break;
+      }
+    }
+
+    return streak;
+  }
+
+  async getActivityData(userId: number, year?: number, month?: number): Promise<{ date: string, count: number }[]> {
+    const targetDate = (year !== undefined && month !== undefined) 
+      ? new Date(year, month, 1) 
+      : new Date();
+    
+    let startDate: Date;
+    let endDate: Date;
+
+    if (year !== undefined && month !== undefined) {
+      // Return full month
+      startDate = new Date(year, month, 1);
+      endDate = new Date(year, month + 1, 1);
+    } else {
+      // Default: Current Week (Monday to Sunday)
+      const dayOfWeek = targetDate.getDay();
+      const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+      startDate = new Date(targetDate);
+      startDate.setDate(targetDate.getDate() - diffToMon);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(startDate.getTime() + 7 * 86400000);
+    }
+
+    const daysCount = Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+    const activityDays = Array.from({ length: daysCount }).map((_, i) => {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      return d;
+    });
+
+    // Optimization: Fetch all reviews in range and group them manually
+    // This is much faster than N queries
+    const reviewsInRange = await this.prisma.review.findMany({
+      where: {
+        word: { ownerId: userId },
+        lastReviewed: {
+          gte: BigInt(startDate.getTime()),
+          lt: BigInt(endDate.getTime()),
+        }
+      },
+      select: { lastReviewed: true }
+    });
+
+    const countsMap = new Map<string, number>();
+    reviewsInRange.forEach((r: any) => {
+      const dateStr = new Date(Number(r.lastReviewed)).toISOString().split('T')[0];
+      countsMap.set(dateStr, (countsMap.get(dateStr) || 0) + 1);
+    });
+
+    return activityDays.map((d: Date) => {
+      const dateStr = d.toISOString().split('T')[0];
+      return {
+        date: dateStr,
+        count: countsMap.get(dateStr) || 0
+      };
     });
   }
 }

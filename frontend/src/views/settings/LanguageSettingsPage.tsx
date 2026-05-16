@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
-  ArrowLeft, Volume2, Languages, Plus, X, Tag
+  Volume2, Languages, Plus, X, Tag
 } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
@@ -96,9 +97,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
   return (
     <div className="settings-page">
       <div className="settings-back">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft size={18} /> {t('common.back')}
-        </Button>
+        <BackButton onClick={onBack} variant="outline" />
       </div>
 
       <Card className="settings-main-card">

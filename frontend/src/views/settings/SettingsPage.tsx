@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
-  ArrowLeft, 
   Settings as SettingsIcon, Languages, ChevronRight, Sparkles
 } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
@@ -55,9 +55,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   return (
     <div className="settings-page">
       <div className="settings-back">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft size={18} /> {t('common.back')}
-        </Button>
+        <BackButton onClick={onBack} variant="outline" />
       </div>
 
       <Card className="settings-main-card">
@@ -123,6 +121,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
               <p className="group-desc">{t('settings.language_study_desc') || 'Manage word categories and flashcard preferences'}</p>
             </div>
           </div>
+
+          <div className="settings-divider"></div>
+
 
         </div>
       </Card>

@@ -7,7 +7,8 @@ import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
-import { User, Mail, Lock, Pencil, Check, ArrowLeft, Eye, EyeOff, ShieldAlert, Trash2 } from 'lucide-react';
+import { User, Mail, Lock, Pencil, Check, Eye, EyeOff, ShieldAlert, Trash2 } from 'lucide-react';
+import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
 
@@ -92,9 +93,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   return (
     <div className="profile-page">
       <div className="profile-back">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft size={18} /> {t('common.back')}
-        </Button>
+        <BackButton onClick={onBack} variant="outline" />
       </div>
 
       <Card className="profile-card">
@@ -104,7 +103,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
           </div>
           <h2>{user?.fullName}</h2>
           <p className="profile-email">
-            <Mail size={16} /> {user?.email}
+            <Mail size={16} /> <span>{user?.email}</span>
           </p>
         </div>
 
@@ -168,7 +167,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
             <h4 style={{ color: '#ff7675', margin: 0 }}>{t('profile.danger_zone')}</h4>
           </div>
           <div className="settings-content">
-            <div className="setting-item delete-data-item" style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="setting-item delete-data-item">
               <div className="setting-label">
                 <span style={{ color: '#d63031', fontWeight: 'bold' }}>{t('profile.delete_all_data')}</span>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: '#636e72' }}>{t('profile.delete_all_data_desc')}</p>

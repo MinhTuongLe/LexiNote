@@ -24,11 +24,11 @@
 
 - 🧠 **Smart Spaced Repetition**: Intelligent algorithm that schedules reviews optimizing your memory retention.
 - 📦 **Bulk Imports**: Effortlessly import `.csv` or `.xlsx` files to bootstrap your vocabulary list.
-- 🔐 **Secure Authentication**: End-to-end user authentication with JWT, email verification, and secure password recovery.
-- 📊 **Insightful Analytics**: Real-time dashboard tracking daily goals, total words learned, and review accuracy rates.
+- 🔐 **Secure Auth & Account**: End-to-end security with JWT, avatar customization, password management, and secure account deactivation.
+- 📊 **Insightful Analytics**: Advanced dashboard tracking streaks, weekly activity heatmap, learning progress (Mastered/Learning/New), and weak word identification.
 - 🌍 **Internationalization (i18n)**: Out-of-the-box support for English and Vietnamese interfaces.
 - 🎮 **Gamified Learning**: Multiple study modes including standard flashcards, typing tests, and matching games.
-- 🌓 **Dynamic Theming**: Beautifully crafted Light/Dark UI built with TailwindCSS and Framer Motion.
+- 🌓 **Dynamic Theming**: Beautifully crafted Light/Dark UI built with CSS Modules and Framer Motion.
 
 ---
 
@@ -39,7 +39,7 @@ The project is structured as a monolithic repository (monorepo format) splitting
 ### Frontend
 - **Framework:** React 19 + TypeScript powered by Vite.
 - **State Management:** Redux Toolkit (RTK Query) for resilient API data fetching.
-- **Styling:** TailwindCSS + Framer Motion.
+- **Styling:** Vanilla CSS Modules + Framer Motion.
 - **i18n:** `i18next` for robust localization.
 
 ### Backend
@@ -99,8 +99,10 @@ Please refer to our [Contributing Guidelines](CONTRIBUTING.md) for standard comm
 ## 🗺️ Roadmap
 
 - [x] Integrate NestJS Backend Architecture.
-- [x] Initial React + Tailwind Frontend with RTK.
+- [x] Initial React + CSS Modules Frontend with RTK.
 - [x] Word imports and Spaced Repetition Logic.
+- [x] Advanced Analytics Dashboard & Streak Tracking.
+- [x] Enhanced Profile & Account Management.
 - [ ] Implement Audio Pronunciation integration (TTS).
 - [ ] Mobile companion app via React Native.
 - [ ] Open API exposure for 3rd-party community integrations.

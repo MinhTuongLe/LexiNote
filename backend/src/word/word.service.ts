@@ -2,12 +2,14 @@ import { Injectable, NotFoundException, BadRequestException } from '@nestjs/comm
 import { PrismaService } from '../prisma/prisma.service';
 import { Word, Prisma } from '@prisma/client';
 import { SettingsService } from '../settings/settings.service';
+import { ReviewService } from '../review/review.service';
 
 @Injectable()
 export class WordService {
   constructor(
     private prisma: PrismaService,
     private settingsService: SettingsService,
+    private reviewService: ReviewService,
   ) {}
 
   async create(userId: number, data: any) {
@@ -327,7 +329,7 @@ export class WordService {
   async getDashboardStats(userId: number) {
     const now = BigInt(Date.now() + 10 * 60 * 1000); // 10 min buffer for precision loss
     
-    const [totalWords, dueReviewsCount, recentWords] = await Promise.all([
+    const [totalWords, dueReviewsCount, recentWords, studyStats] = await Promise.all([
       this.prisma.word.count({ where: { ownerId: userId } }),
       this.prisma.review.count({
         where: {
@@ -346,30 +348,41 @@ export class WordService {
         },
         take: 3,
       }),
+      this.reviewService.getStudyStats(userId),
     ]);
 
-    const formattedRecentWords = recentWords.map(w => ({
-      ...w,
-      createdAt: Number(w.createdAt),
-      updatedAt: Number(w.updatedAt),
-      relations: w.relations.map(rel => ({
-        ...rel,
-        createdAt: Number(rel.createdAt),
-        updatedAt: Number(rel.updatedAt),
-      })),
-      reviews: w.reviews.map(rev => ({
-        ...rev,
-        createdAt: Number(rev.createdAt),
-        updatedAt: Number(rev.updatedAt),
-        lastReviewed: rev.lastReviewed ? Number(rev.lastReviewed) : null,
-        nextReview: rev.nextReview ? Number(rev.nextReview) : null,
-      })),
-    }));
+    const formattedRecentWords = recentWords.map((w: any) => {
+      const review = w.reviews[0]; 
+      const progress = review ? Math.min(Math.round((review.correctCount / 5) * 100), 100) : 0;
+
+      return {
+        ...w,
+        progress,
+        createdAt: Number(w.createdAt),
+        updatedAt: Number(w.updatedAt),
+        relations: w.relations.map((rel: any) => ({
+          ...rel,
+          createdAt: Number(rel.createdAt),
+          updatedAt: Number(rel.updatedAt),
+        })),
+        reviews: w.reviews.map((rev: any) => ({
+          ...rev,
+          createdAt: Number(rev.createdAt),
+          updatedAt: Number(rev.updatedAt),
+          lastReviewed: rev.lastReviewed ? Number(rev.lastReviewed) : null,
+          nextReview: rev.nextReview ? Number(rev.nextReview) : null,
+        })),
+      };
+    });
 
     return {
       totalWords,
       dueReviewsCount,
       recentWords: formattedRecentWords,
+      streak: studyStats.streak,
+      weeklyActivity: studyStats.weeklyActivity,
+      accuracy: studyStats.accuracy,
+      totalTimeSpentMinutes: studyStats.totalTimeSpentMinutes,
     };
   }
 

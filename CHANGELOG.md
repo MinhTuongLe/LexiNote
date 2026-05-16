@@ -7,7 +7,26 @@ and this project adheres to Semantic Versioning as it matures.
 
 ---
 
-## 🚀 [Released / Latest] — 2026-04-27
+## 🚀 [Released / Latest] — 2026-05-16
+
+### ✨ Added
+- **Comprehensive Statistics Dashboard** — A new analytics suite featuring streak tracking, weekly activity charts, learning progress segmentation (Mastered/Learning/New), category-specific insights, and deep-dive detail views for activity and mastery.
+- **Enhanced Profile & Security** — Refined Profile page with an emoji-based avatar picker, password change modal with validation, and a secure "Danger Zone" for account deactivation.
+- **Reusable UI Components** — Introduced a polished, animated `Modal` component and enhanced `Skeleton` loaders for a smoother UX.
+- **Analytics Engine** — Implemented backend logic for real-time calculation of learning accuracy, time spent, and automatic identification of "weak words" for targeted study.
+
+### 🔧 Changed
+- **SRS Algorithm Refinement** — Optimized the Sm-2 algorithm logic with better interval scaling and improved BigInt timestamp precision.
+- **Dashboard Evolution** — Upgraded the main dashboard with live progress cards and "Recently Added" word previews featuring visual progress bars.
+
+### 🐛 Fixed
+- **Data Integrity** — Resolved critical foreign key constraint issues in Word/Review services and improved bulk operation stability.
+- **Backend Stability** — Initialized centralized error logging and improved CORS handling for production environments.
+
+---
+
+## ⚡ [Spaced Repetition & Mini-Games] — 2026-04-27
+
 
 ### ✨ Added
 - **Match Game** — A new vocabulary matching mini-game with two-column layout, real-time score tracking, error/success animations, and sound effects.

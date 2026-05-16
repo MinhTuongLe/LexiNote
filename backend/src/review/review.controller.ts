@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -22,9 +22,27 @@ export class ReviewController {
     return this.reviewService.updateSRS(req.user.userId, body.reviewId, body.quality);
   }
 
+  @Post('game-session')
+  @ApiOperation({ summary: 'Record study activity from minigames' })
+  async recordGameSession(@Request() req: any, @Body() body: any) {
+    return this.reviewService.recordGameSession(req.user.userId, body.wordIds);
+  }
+
   @Post('reset')
   @ApiOperation({ summary: 'Reset progress for multiple words' })
   async resetBulk(@Request() req: any, @Body() body: any) {
     return this.reviewService.resetBulk(req.user.userId, body.wordIds);
+  }
+
+  @Get('stats')
+  @ApiOperation({ summary: 'Get study statistics and streak' })
+  async getStats(
+    @Request() req: any,
+    @Query('year') year?: string,
+    @Query('month') month?: string,
+  ) {
+    const y = year ? parseInt(year, 10) : undefined;
+    const m = month ? parseInt(month, 10) : undefined;
+    return this.reviewService.getStudyStats(req.user.userId, y, m);
   }
 }

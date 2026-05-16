@@ -18,5 +18,8 @@
   "add_success": "New word added to your library! ✨",
   "add_error": "Failed to add word. 😿",
   "import_success": "Imported {{count}} words! 🎉",
-  "import_error": "Failed to import words. 😿"
+  "import_error": "Failed to import words. 😿",
+  "day_streak": "Day Streak 🔥",
+  "keep_going": "Keep up the great work!",
+  "word_match": "Word Match ✨"
 }
