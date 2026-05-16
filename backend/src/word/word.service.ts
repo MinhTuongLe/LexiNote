@@ -327,11 +327,6 @@ export class WordService {
   }
 
   async getDashboardStats(userId: number) {
-    const initialCount = await this.prisma.word.count({ where: { ownerId: userId } });
-    if (initialCount < 30) {
-      await this.seedStatsData(userId);
-    }
-
     const now = BigInt(Date.now() + 10 * 60 * 1000); // 10 min buffer for precision loss
     
     const [totalWords, dueReviewsCount, recentWords, studyStats] = await Promise.all([
@@ -390,8 +385,6 @@ export class WordService {
       totalTimeSpentMinutes: studyStats.totalTimeSpentMinutes,
     };
   }
-
-
 
   private async getValidTypes(userId: number): Promise<string[]> {
     return this.settingsService.getValidTypes(userId);

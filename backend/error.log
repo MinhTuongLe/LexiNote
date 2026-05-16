@@ -459,3 +459,42 @@ UnauthorizedException: Unauthorized
     at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
     at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
     at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-05-16T03:35:39.355Z] /api/auth/login
+DriverAdapterError: (ENOTFOUND) tenant/user postgres.htrrsvagyxbvbmudgqgp not found
+    at PrismaPgAdapter.onError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:687:11)
+    at PrismaPgAdapter.performIO (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:682:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PrismaPgAdapter.queryRaw (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:602:30)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:186:26)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:213:41)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:272:41)
+    at async e.run (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:94:23)
+    at async e.execute (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\core\engines\client\LocalExecutor.ts:81:12)
+    at async jt.request (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\core\engines\client\ClientEngine.ts:492:22)
+
+[2026-05-16T03:37:04.975Z] /api/auth/login
+DriverAdapterError: (EAUTHQUERY) authentication query failed: connection to database not available
+    at PrismaPgAdapter.onError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:687:11)
+    at PrismaPgAdapter.performIO (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:682:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async PrismaPgAdapter.queryRaw (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\adapter-pg\dist\index.js:602:30)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:186:26)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:213:41)
+    at async e.interpretNode (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:272:41)
+    at async e.run (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client-engine-runtime\src\interpreter\query-interpreter.ts:94:23)
+    at async e.execute (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\core\engines\client\LocalExecutor.ts:81:12)
+    at async jt.request (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\core\engines\client\ClientEngine.ts:492:22)
+
+[2026-05-16T03:54:33.976Z] /api/reviews/stats?
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)

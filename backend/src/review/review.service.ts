@@ -188,32 +188,6 @@ export class ReviewService {
       .slice(0, 5)
       .map((r: any) => ({ word: r.word.word, meaning: r.word.meaningVi, wrongCount: r.wrongCount }));
 
-    // Mock fallback remains the same for UI demo
-    if (totalReviewed === 0 && wordCount === 0) {
-      return {
-        streak: 12,
-        weeklyActivity: weeklyActivity, // Use the generated activity
-        totalReviewed: 208,
-        masteredCount: 120,
-        learningCount: 65,
-        newCount: 23,
-        typesBreakdown: [
-          { type: 'noun', total: 100, mastered: 60, learning: 30, new: 10 },
-          { type: 'verb', total: 60, mastered: 40, learning: 15, new: 5 },
-          { type: 'adj', total: 48, mastered: 20, learning: 20, new: 8 }
-        ],
-        averageEaseFactor: 2.6,
-        accuracy: 88,
-        totalTimeSpentMinutes: 145,
-        weakestWords: [
-          { word: 'Labyrinth', meaning: 'Mê cung', wrongCount: 14 },
-          { word: 'Ephemeral', meaning: 'Phù du', wrongCount: 11 },
-          { word: 'Defenestration', meaning: 'Ném qua cửa sổ', wrongCount: 8 },
-          { word: 'Serendipity', meaning: 'May mắn bất ngờ', wrongCount: 5 },
-          { word: 'Oblivion', meaning: 'Sự quên lãng', wrongCount: 4 }
-        ]
-      };
-    }
 
     return {
       streak,
