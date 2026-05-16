@@ -49,6 +49,23 @@ export class ReviewService {
     return formatted;
   }
 
+  async recordGameSession(userId: number, wordIds: number[]) {
+    const now = BigInt(Date.now());
+    
+    // For games, we update the activity timestamp and increment correctCount.
+    // We do NOT aggressively update the SRS interval to maintain spaced repetition integrity.
+    return this.prisma.review.updateMany({
+      where: {
+        wordId: { in: wordIds },
+        word: { ownerId: userId },
+      },
+      data: {
+        lastReviewed: now,
+        correctCount: { increment: 1 }
+      },
+    });
+  }
+
   async updateSRS(userId: number, reviewId: number, quality: number) {
     const review = await this.prisma.review.findFirst({
       where: { id: reviewId, word: { ownerId: userId } },
@@ -158,7 +175,7 @@ export class ReviewService {
       const typeStats = typesMap.get(type);
       typeStats.total++;
 
-      if (r.correctCount >= 5 && r.interval >= 21) {
+      if (r.correctCount >= 4 && r.interval >= 14) {
         masteredCount++;
         typeStats.mastered++;
       } else if (r.correctCount > 0) {
@@ -174,11 +191,14 @@ export class ReviewService {
       totalEaseFactor += r.easeFactor;
     });
 
-    const totalReviewed = reviews.filter((r: any) => r.lastReviewed !== null).length;
+    const reviewedWords = reviews.filter((r: any) => r.lastReviewed !== null);
+    const totalReviewed = reviewedWords.length;
+    const totalEaseFactorReviewed = reviewedWords.reduce((sum: number, r: any) => sum + r.easeFactor, 0);
+
     const accuracy = (totalCorrect + totalWrong) > 0 
       ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) 
       : 0;
-    const averageEaseFactor = reviews.length > 0 ? totalEaseFactor / reviews.length : 2.5;
+    const averageEaseFactor = totalReviewed > 0 ? totalEaseFactorReviewed / totalReviewed : 0;
 
     let totalTimeSpentMinutes = Math.round(((totalCorrect + totalWrong) * 5) / 60);
 
@@ -201,6 +221,7 @@ export class ReviewService {
       accuracy,
       totalTimeSpentMinutes,
       weakestWords,
+      totalSessions: Math.ceil((totalCorrect + totalWrong) / 7), 
     };
   }
 

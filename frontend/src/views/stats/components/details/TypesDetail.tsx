@@ -37,10 +37,16 @@ const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
         </Card>
         <Card className="types-summary-card">
            <p>{t('stats.category_summary', { count: sortedTypes.length })}</p>
-           <div className="top-category-highlight">
-              <span>{t('stats.top_strength')}:</span>
-              <strong>{getTypeLabel(sortedTypes[0].type, t)}</strong>
-           </div>
+           {stats.masteredCount > 0 || stats.learningCount > 0 ? (
+             <div className="top-category-highlight">
+                <span>{t('stats.top_strength')}:</span>
+                <strong>{getTypeLabel(sortedTypes[0].type, t)}</strong>
+             </div>
+           ) : (
+             <div className="top-category-highlight">
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('stats.start_learning_for_analysis')}</span>
+             </div>
+           )}
         </Card>
       </div>
 

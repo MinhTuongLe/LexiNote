@@ -242,6 +242,14 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
+    recordGameSession: builder.mutation<{ count: number }, number[]>({
+      query: (wordIds) => ({
+        url: '/reviews/game-session',
+        method: 'POST',
+        body: { wordIds },
+      }),
+      invalidatesTags: ['Reviews', 'Words'],
+    }),
     resetProgress: builder.mutation<{ success: boolean; count: number }, number[]>({
       query: (wordIds) => ({
         url: '/reviews/reset',
@@ -304,6 +312,7 @@ export const {
   useImportWordsMutation,
   useGetDueReviewsQuery,
   useUpdateSRSMutation,
+  useRecordGameSessionMutation,
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,

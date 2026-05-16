@@ -52,7 +52,7 @@ const OverviewCard: React.FC<OverviewCardProps> = ({ stats, mounted, onClick }) 
             <span className="info-lab">{t('stats.total_reviewed', 'Total Reviewed')}</span>
           </div>
           <div className="info-item">
-            <span className="info-val"><CountUp end={mounted ? stats.averageEaseFactor : 0} decimals={1} /></span>
+            <span className="info-val"><CountUp end={mounted ? stats.averageEaseFactor : 0} decimals={2} /></span>
             <span className="info-lab">{t('stats.average_ease', 'Average Ease')}</span>
           </div>
           <div className="info-item">

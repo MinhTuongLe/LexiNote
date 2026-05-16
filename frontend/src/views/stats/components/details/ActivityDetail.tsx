@@ -61,8 +61,11 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
         <Card className="greeting-card pink-gradient">
           <div className="avatar-placeholder">🐰</div>
           <div className="greeting-text">
-              <h2>{t('stats.good_job')}</h2>
-              <p>{t('stats.activity_summary', { count: studiedDaysCount })}</p>
+              <h2>{studiedDaysCount > 0 ? t('stats.good_job') : t('stats.start_journey')}</h2>
+              <p>{studiedDaysCount > 0 
+                ? t('stats.activity_summary', { count: studiedDaysCount })
+                : t('stats.no_activity_this_month')}
+              </p>
           </div>
         </Card>
 

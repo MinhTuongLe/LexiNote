@@ -3,7 +3,7 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { Trophy, RefreshCw } from 'lucide-react';
 import BackButton from '../../components/BackButton';
-import { useGetWordsQuery } from '../../store/apiSlice';
+import { useGetWordsQuery, useRecordGameSessionMutation } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../../hooks/useSound';
 import './MatchGame.css';
@@ -24,6 +24,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const words = wordsData?.data || [];
   const { t } = useTranslation();
   const { playSound } = useSound();
+  const [recordGameSession] = useRecordGameSessionMutation();
 
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -88,6 +89,11 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
           next.add(item.wordId);
           if (next.size === items.length / 2) {
             playSound('win');
+            
+            // Record game session for all matched word IDs to update stats/streak
+            const wordIds = Array.from(next);
+            recordGameSession(wordIds);
+            
             setTimeout(() => setGameCompleted(true), 500);
           }
           return next;

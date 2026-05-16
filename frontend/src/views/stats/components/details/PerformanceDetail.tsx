@@ -8,9 +8,9 @@ interface PerformanceDetailProps {
 
 const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
   const { t } = useTranslation();
-  const accuracy = stats.accuracy || 85;
-  const ease = stats.averageEaseFactor || 2.5;
-  const totalSessions = 42; 
+  const accuracy = stats.accuracy || 0;
+  const ease = stats.averageEaseFactor || 0;
+  const totalSessions = stats.totalSessions || 0; 
   
   let feedback = t('stats.performance_feedback_keep_going');
   if (accuracy > 90) feedback = t('stats.performance_feedback_great');
@@ -32,10 +32,10 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
                </svg>
             </div>
             <div className="gauge-info">
-               <div className="accuracy-label-row">
-                  <h4>{t('stats.accuracy_score')}</h4>
-                  <span className="comparison-badge pos">+2% {t('stats.vs_last_week')}</span>
-               </div>
+                <div className="accuracy-label-row">
+                   <h4>{t('stats.accuracy_score')}</h4>
+                   {totalSessions > 0 && <span className="comparison-badge pos">+0% {t('stats.vs_last_week')}</span>}
+                </div>
                <p>{t('stats.accuracy_desc')}</p>
                
                <div className="accuracy-trend-mini">
@@ -116,7 +116,7 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
          <Card className="mini-info-card">
             <div className="icon">🧠</div>
             <div className="data">
-               <span className="val">{Math.round(stats.totalTimeSpentMinutes / totalSessions)}m</span>
+                <span className="val">{totalSessions > 0 ? Math.round(stats.totalTimeSpentMinutes / totalSessions) : 0}m</span>
                <span className="lab">{t('stats.focus_time')}</span>
             </div>
          </Card>

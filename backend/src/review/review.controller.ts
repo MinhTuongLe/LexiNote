@@ -22,6 +22,12 @@ export class ReviewController {
     return this.reviewService.updateSRS(req.user.userId, body.reviewId, body.quality);
   }
 
+  @Post('game-session')
+  @ApiOperation({ summary: 'Record study activity from minigames' })
+  async recordGameSession(@Request() req: any, @Body() body: any) {
+    return this.reviewService.recordGameSession(req.user.userId, body.wordIds);
+  }
+
   @Post('reset')
   @ApiOperation({ summary: 'Reset progress for multiple words' })
   async resetBulk(@Request() req: any, @Body() body: any) {
