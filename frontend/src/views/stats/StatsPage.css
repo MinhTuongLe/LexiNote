@@ -516,18 +516,51 @@
 .segment.learning { background: var(--primary); }
 .segment.new { background: #fbc531; }
 
+@media (max-width: 1024px) {
+  .stats-grid-top {
+    flex-direction: column;
+  }
+  
+  .overview-stats-card {
+    min-width: unset;
+  }
+}
+
 @media (max-width: 768px) {
-  .stats-grid-top, .stats-row {
+  .stats-row {
     grid-template-columns: 1fr;
   }
   
   .overview-stats-card {
     flex-direction: column;
     text-align: center;
+    padding: 30px 20px !important;
+  }
+
+  .meter-circle-svg-container {
+    width: 120px;
+    height: 120px;
+  }
+
+  .meter-inner {
+    width: 90px;
+    height: 90px;
+  }
+
+  .accuracy-value {
+    font-size: 20px;
   }
   
   .stats-header h1 {
-    font-size: 24px;
+    font-size: 22px;
+  }
+
+  .info-row {
+    gap: 10px;
+  }
+
+  .info-val {
+    font-size: 20px;
   }
 }
 
@@ -2858,20 +2891,255 @@
   100% { transform: translateX(100%); }
 }
 
-.activity-top-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
-}
+@media (max-width: 768px) {
+  .performance-hero-grid, 
+  .performance-stats-grid,
+  .performance-mini-row {
+    grid-template-columns: 1fr;
+  }
 
-@media (min-width: 768px) {
+  .gauge-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
+  .weak-word-card-v2 {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .card-actions-v2 {
+    justify-content: center;
+  }
+
   .activity-top-row {
-    grid-template-columns: 1.5fr 1fr;
+    grid-template-columns: 1fr;
+  }
+
+  .activity-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .garden-stages-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .types-top-row {
+    grid-template-columns: 1fr;
+  }
+
+  .types-insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .growth-path-svg {
+    display: none;
+  }
+  
+  .garden-actions-row {
+    flex-direction: column;
+  }
+  
+  .focus-hero-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+  
+  .focus-header-main {
+    flex-direction: column;
+  }
+
+  .word-main-info span {
+    word-break: break-word;
   }
 }
 
-.header-goal {
-  margin: 0 !important;
+@media (max-width: 480px) {
+  .calendar-v2-grid {
+    gap: 4px;
+  }
+  
+  .day-num-text {
+    font-size: clamp(10px, 3vw, 15px);
+  }
+
+  .goal-stats-v2 .current {
+    font-size: 32px;
+  }
+
+  .big-time-display .value {
+    font-size: 36px;
+  }
+  
+  .stats-header-icon {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .stats-header h1 {
+    font-size: 20px;
+  }
+}
+
+.stats-page {
+  padding: 0 16px 40px 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* Skeleton UI System */
+.skeleton-card {
+  background: rgba(0,0,0,0.05) !important;
+  border: none !important;
+  min-height: 200px;
+}
+
+.skeleton-content {
+  height: 100%;
+  width: 100%;
+  display: flex;
+}
+
+.streak-skeleton-content {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.overview-skeleton-content {
+  align-items: center;
+  gap: 30px;
+}
+
+.skeleton-info-grid {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  justify-content: space-around;
+}
+
+.skeleton-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.skeleton-circle {
+  background: rgba(0,0,0,0.08);
+  flex-shrink: 0;
+}
+
+.accuracy-skele {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+}
+
+.skeleton-badges-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.skeleton-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.08);
+}
+
+.skeleton-title-row {
+  height: 24px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 6px;
+  margin-bottom: 32px;
+  width: 200px;
+}
+
+.skeleton-title-row.small {
+  width: 150px;
+  margin-bottom: 24px;
+}
+
+.skeleton-chart-area {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 180px;
+  padding: 0 10px;
+}
+
+.skeleton-chart-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.skeleton-bar {
+  width: 40%;
+  background: rgba(0,0,0,0.08);
+  border-radius: 8px;
+}
+
+.skeleton-progress-list, .skeleton-types-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.skele-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.skeleton-bar-full, .skeleton-bar-mini {
+  background: rgba(0,0,0,0.08);
+  border-radius: 6px;
+}
+
+.skeleton-bar-full { height: 12px; width: 100%; }
+.skeleton-bar-mini { height: 8px; width: 100%; }
+
+.skeleton-list-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-list-item {
+  height: 60px;
+  background: rgba(0,0,0,0.03);
+  border-radius: 12px;
+}
+
+/* Skeleton Responsive Overrides */
+@media (max-width: 900px) {
+  .overview-skeleton-content {
+    flex-direction: column;
+    padding: 20px 0;
+  }
+  
+  .skeleton-info-grid {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .skeleton-card {
+    min-height: unset;
+    padding: 20px !important;
+  }
+  
+  .accuracy-skele {
+    width: 90px;
+    height: 90px;
+  }
 }
 

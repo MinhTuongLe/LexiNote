@@ -4,30 +4,30 @@ import '../../components/Skeleton.css';
 
 const StatsSkeleton: React.FC = () => {
   return (
-    <div className="stats-page">
+    <div className="stats-page skeleton-page">
       <div className="stats-grid-top">
         {/* Streak Card Skeleton */}
-        <Card className="skeleton streak-stats-card" style={{ height: '220px', border: 'none', background: 'rgba(0,0,0,0.05)' }}>
-          <div className="skeleton-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: '12px' }}>
-            <div className="skeleton-text short" style={{ height: '14px', marginBottom: '8px' }}></div>
-            <div className="skeleton-text medium" style={{ height: '60px', borderRadius: '12px', width: '120px' }}></div>
-            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+        <Card className="skeleton-card streak-stats-card">
+          <div className="skeleton-content streak-skeleton-content">
+            <div className="skeleton-text short title-skele"></div>
+            <div className="skeleton-text medium value-skele"></div>
+            <div className="skeleton-badges-row">
               {[1, 2, 3].map(i => (
-                <div key={i} className="skeleton-badge" style={{ width: '24px', height: '24px', borderRadius: '50%' }}></div>
+                <div key={i} className="skeleton-badge"></div>
               ))}
             </div>
           </div>
         </Card>
 
         {/* Overview Card Skeleton */}
-        <Card className="skeleton overview-stats-card" style={{ height: '220px', border: 'none', background: 'rgba(0,0,0,0.05)' }}>
-          <div className="skeleton-content" style={{ display: 'flex', alignItems: 'center', gap: '30px', width: '100%', height: '100%' }}>
-            <div className="skeleton-circle" style={{ width: '110px', height: '110px', borderRadius: '50%', background: 'rgba(0,0,0,0.1)', flexShrink: 0 }}></div>
-            <div className="skeleton-info" style={{ flex: 1, display: 'flex', gap: '16px' }}>
+        <Card className="skeleton-card overview-stats-card">
+          <div className="skeleton-content overview-skeleton-content">
+            <div className="skeleton-circle accuracy-skele"></div>
+            <div className="skeleton-info-grid">
               {[1, 2, 3].map(i => (
-                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                  <div className="skeleton-text short" style={{ height: '24px', width: '40px' }}></div>
-                  <div className="skeleton-text short" style={{ height: '12px', width: '60px' }}></div>
+                <div key={i} className="skeleton-info-item">
+                  <div className="skeleton-text short val-skele"></div>
+                  <div className="skeleton-text short lab-skele"></div>
                 </div>
               ))}
             </div>
@@ -37,58 +37,58 @@ const StatsSkeleton: React.FC = () => {
 
       <div className="stats-sections">
         {/* Weekly Activity Skeleton */}
-        <Card className="skeleton" style={{ height: '320px', border: 'none', background: 'rgba(0,0,0,0.05)', padding: '24px' }}>
-          <div className="skeleton-title" style={{ width: '200px', marginBottom: '40px' }}></div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', padding: '0 10px' }}>
+        <Card className="skeleton-card weekly-activity-skele">
+          <div className="skeleton-title-row"></div>
+          <div className="skeleton-chart-area">
             {[1, 2, 3, 4, 5, 6, 7].map(i => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', flex: 1 }}>
-                <div className="skeleton-text" style={{ width: '40%', height: `${Math.random() * 60 + 30}%`, margin: 0, borderRadius: '8px' }}></div>
-                <div className="skeleton-text short" style={{ height: '12px', width: '30px', margin: 0 }}></div>
+              <div key={i} className="skeleton-chart-col">
+                <div className="skeleton-bar" style={{ height: `${Math.random() * 60 + 30}%` }}></div>
+                <div className="skeleton-text short label-skele"></div>
               </div>
             ))}
           </div>
         </Card>
 
         <div className="stats-row">
-          <div className="stats-col-left" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="stats-col-left">
             {/* Learning Progress Skeleton */}
-            <Card className="skeleton" style={{ padding: '24px', border: 'none', background: 'rgba(0,0,0,0.05)' }}>
-              <div className="skeleton-title" style={{ width: '150px', marginBottom: '24px' }}></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <Card className="skeleton-card progress-skele">
+              <div className="skeleton-title-row small"></div>
+              <div className="skeleton-progress-list">
                 {[1, 2, 3].map(i => (
-                  <div key={i}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <div className="skeleton-text short" style={{ height: '12px', width: '80px' }}></div>
-                      <div className="skeleton-text short" style={{ height: '12px', width: '40px' }}></div>
+                  <div key={i} className="skeleton-progress-item">
+                    <div className="skele-label-row">
+                      <div className="skeleton-text short"></div>
+                      <div className="skeleton-text short"></div>
                     </div>
-                    <div className="skeleton-text" style={{ height: '12px', width: '100%', borderRadius: '6px' }}></div>
+                    <div className="skeleton-bar-full"></div>
                   </div>
                 ))}
               </div>
             </Card>
 
             {/* Weak Words Skeleton */}
-            <Card className="skeleton" style={{ padding: '24px', border: 'none', background: 'rgba(0,0,0,0.05)' }}>
-              <div className="skeleton-title" style={{ width: '180px', marginBottom: '24px' }}></div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <Card className="skeleton-card weak-words-skele">
+              <div className="skeleton-title-row small"></div>
+              <div className="skeleton-list-vertical">
                 {[1, 2, 3].map(i => (
-                  <div key={i} style={{ height: '60px', background: 'rgba(0,0,0,0.03)', borderRadius: '12px' }}></div>
+                  <div key={i} className="skeleton-list-item"></div>
                 ))}
               </div>
             </Card>
           </div>
 
           {/* Word Types Skeleton */}
-          <Card className="skeleton" style={{ padding: '24px', border: 'none', background: 'rgba(0,0,0,0.05)' }}>
-            <div className="skeleton-title" style={{ width: '180px', marginBottom: '24px' }}></div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <Card className="skeleton-card types-skele">
+            <div className="skeleton-title-row small"></div>
+            <div className="skeleton-types-list">
               {[1, 2, 3, 4].map(i => (
-                <div key={i}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div className="skeleton-text short" style={{ height: '14px', width: '60px' }}></div>
-                    <div className="skeleton-text short" style={{ height: '14px', width: '30px' }}></div>
+                <div key={i} className="skeleton-type-item">
+                  <div className="skele-label-row">
+                    <div className="skeleton-text short"></div>
+                    <div className="skeleton-text short"></div>
                   </div>
-                  <div className="skeleton-text" style={{ height: '8px', width: '100%', borderRadius: '4px' }}></div>
+                  <div className="skeleton-bar-mini"></div>
                 </div>
               ))}
             </div>

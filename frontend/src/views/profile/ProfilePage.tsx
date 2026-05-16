@@ -103,7 +103,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
           </div>
           <h2>{user?.fullName}</h2>
           <p className="profile-email">
-            <Mail size={16} /> {user?.email}
+            <Mail size={16} /> <span>{user?.email}</span>
           </p>
         </div>
 
@@ -167,7 +167,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
             <h4 style={{ color: '#ff7675', margin: 0 }}>{t('profile.danger_zone')}</h4>
           </div>
           <div className="settings-content">
-            <div className="setting-item delete-data-item" style={{ marginTop: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="setting-item delete-data-item">
               <div className="setting-label">
                 <span style={{ color: '#d63031', fontWeight: 'bold' }}>{t('profile.delete_all_data')}</span>
                 <p style={{ margin: 0, fontSize: '0.9rem', color: '#636e72' }}>{t('profile.delete_all_data_desc')}</p>

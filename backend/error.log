@@ -576,3 +576,26 @@ UnauthorizedException: Unauthorized
     at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
     at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
     at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-05-16T04:57:41.774Z] /api/reviews/stats?
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-05-16T05:06:06.924Z] /api/settings
+BadRequestException: Bad Request Exception
+    at ValidationPipe.exceptionFactory (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\common\pipes\validation.pipe.js:112:20)
+    at ValidationPipe.transform (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\common\pipes\validation.pipe.js:79:30)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async resolveParamValue (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:148:23)
+    at async Promise.all (index 0)
+    at async pipesFn (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:151:13)
+    at async D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:37:30

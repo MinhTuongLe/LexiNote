@@ -43,3 +43,26 @@
 .dialog-actions button {
   min-width: 120px;
 }
+
+@media (max-width: 480px) {
+  .dialog-icon {
+    font-size: 3rem;
+  }
+
+  .dialog-title {
+    font-size: 1.5rem;
+  }
+
+  .dialog-message {
+    font-size: 1rem;
+    max-width: 100%;
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+  }
+
+  .dialog-actions button {
+    width: 100%;
+  }
+}

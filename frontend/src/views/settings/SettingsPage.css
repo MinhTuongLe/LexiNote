@@ -40,6 +40,10 @@
   font-size: 2rem;
   margin: 0;
   color: var(--text);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .settings-hero p {
@@ -396,9 +400,33 @@
   padding-left: 32px;
 }
 
+@media (max-width: 768px) {
+  .settings-main-card { padding: 24px 20px !important; }
+  
+  .setting-item {
+    padding: 8px 0;
+  }
+  
+  .setting-label {
+    max-width: 60%;
+  }
+
+  .settings-cute-select {
+    min-width: 140px;
+    max-width: 150px;
+  }
+}
+
 @media (max-width: 500px) {
-  .form-inputs { grid-template-columns: 1fr; }
-  .settings-main-card { padding: 24px 16px !important; }
+  .form-inputs { 
+    grid-template-columns: 1fr; 
+    gap: 12px;
+  }
+  .settings-main-card { padding: 20px 16px !important; }
+  
+  .type-card-mini {
+    padding: 8px 10px;
+  }
 }
 
 @keyframes slideUp {
