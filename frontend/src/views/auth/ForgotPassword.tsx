@@ -3,7 +3,7 @@ import { useForgotPasswordMutation, useResetPasswordMutation } from '../../store
 import { useCuteDialog } from '../../context/DialogContext';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
-import { ArrowLeft, Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';

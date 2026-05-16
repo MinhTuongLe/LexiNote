@@ -8,7 +8,7 @@ import BackButton from '../../components/BackButton';
 
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
 import { useCuteDialog } from '../../context/DialogContext';
-import Button from '../../components/Button';
+
 import Card from '../../components/Card';
 import CuteSelect from '../../components/CuteSelect';
 import './SettingsPage.css';
