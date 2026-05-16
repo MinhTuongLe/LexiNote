@@ -22,7 +22,7 @@ const CategoryInsights: React.FC<CategoryInsightsProps> = ({ typesBreakdown, mou
         {typesBreakdown.map((type, i) => (
           <div key={i} className="type-stat-item" style={{ opacity: mounted ? 1 : 0, transition: `opacity 0.5s ease ${i * 0.1}s` }}>
             <div className="type-info">
-              <span className="type-name">{t(`library.word_types.${type.type}`, type.type)}</span>
+              <span className="type-name">{String(t(`library.word_types.${type.type}`, type.type))}</span>
               <span className="type-count">{type.total}</span>
             </div>
             <div className="type-progress-multi">

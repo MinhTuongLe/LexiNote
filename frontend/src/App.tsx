@@ -28,7 +28,7 @@ import { useCuteDialog } from './context/DialogContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized, logout } from './store/authSlice';
-import { WORD_TYPES } from './constants/wordTypes';
+
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
@@ -222,7 +222,7 @@ function App() {
                     
                     const currentDay = new Date(monday);
                     currentDay.setDate(monday.getDate() + i);
-                    const dateStr = currentDay.toISOString().split('T')[0];
+
                     
                     // Backend guarantees weeklyActivity array is strictly Mon-Sun (indexes 0-6)
                     const activity = stats?.weeklyActivity ? stats.weeklyActivity[i] : null;
