@@ -2,18 +2,6 @@
 # yarn lockfile v1
 
 
-"@angular-devkit/core@19.2.17":
-  version "19.2.17"
-  resolved "https://registry.npmjs.org/@angular-devkit/core/-/core-19.2.17.tgz"
-  integrity sha512-Ah008x2RJkd0F+NLKqIpA34/vUGwjlprRCkvddjDopAWRzYn6xCkz1Tqwuhn0nR1Dy47wTLKYD999TYl5ONOAQ==
-  dependencies:
-    ajv "8.17.1"
-    ajv-formats "3.0.1"
-    jsonc-parser "3.3.1"
-    picomatch "4.0.2"
-    rxjs "7.8.1"
-    source-map "0.7.4"
-
 "@angular-devkit/core@19.2.19":
   version "19.2.19"
   resolved "https://registry.npmjs.org/@angular-devkit/core/-/core-19.2.19.tgz"
@@ -23,6 +11,18 @@
     ajv-formats "3.0.1"
     jsonc-parser "3.3.1"
     picomatch "4.0.2"
+    rxjs "7.8.1"
+    source-map "0.7.4"
+
+"@angular-devkit/core@19.2.24":
+  version "19.2.24"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/core/-/core-19.2.24.tgz#1d0448679c0292d46310b260f26e5eff7344eca1"
+  integrity sha512-Kd49warf6U/EyWe5BszF/eebN3zQ3bk7tgfEljAw8q/rX95UUtriJubWvp6pgzHfzBA4jwq8f+QiNZB8eBEXPA==
+  dependencies:
+    ajv "8.18.0"
+    ajv-formats "3.0.1"
+    jsonc-parser "3.3.1"
+    picomatch "4.0.4"
     rxjs "7.8.1"
     source-map "0.7.4"
 
@@ -38,23 +38,23 @@
     symbol-observable "4.0.0"
     yargs-parser "21.1.1"
 
-"@angular-devkit/schematics@19.2.17":
-  version "19.2.17"
-  resolved "https://registry.npmjs.org/@angular-devkit/schematics/-/schematics-19.2.17.tgz"
-  integrity sha512-ADfbaBsrG8mBF6Mfs+crKA/2ykB8AJI50Cv9tKmZfwcUcyAdmTr+vVvhsBCfvUAEokigSsgqgpYxfkJVxhJYeg==
-  dependencies:
-    "@angular-devkit/core" "19.2.17"
-    jsonc-parser "3.3.1"
-    magic-string "0.30.17"
-    ora "5.4.1"
-    rxjs "7.8.1"
-
 "@angular-devkit/schematics@19.2.19":
   version "19.2.19"
   resolved "https://registry.npmjs.org/@angular-devkit/schematics/-/schematics-19.2.19.tgz"
   integrity sha512-J4Jarr0SohdrHcb40gTL4wGPCQ952IMWF1G/MSAQfBAPvA9ZKApYhpxcY7PmehVePve+ujpus1dGsJ7dPxz8Kg==
   dependencies:
     "@angular-devkit/core" "19.2.19"
+    jsonc-parser "3.3.1"
+    magic-string "0.30.17"
+    ora "5.4.1"
+    rxjs "7.8.1"
+
+"@angular-devkit/schematics@19.2.24":
+  version "19.2.24"
+  resolved "https://registry.yarnpkg.com/@angular-devkit/schematics/-/schematics-19.2.24.tgz#71d461410d7bebe03f30edc2c50f6ac7b115b281"
+  integrity sha512-lnw+ZM1Io+cJAkReC0NPDjqObL8NtKzKIkdgEEKC8CUmkhurYhedbicN8Y8NYHgG1uLd2GozW3+/QqPRZaN+Lw==
+  dependencies:
+    "@angular-devkit/core" "19.2.24"
     jsonc-parser "3.3.1"
     magic-string "0.30.17"
     ora "5.4.1"
@@ -1310,14 +1310,14 @@
     reusify "1.1.0"
     tslib "2.8.1"
 
-"@nestjs/schematics@^11.0.0", "@nestjs/schematics@^11.0.1":
-  version "11.0.9"
-  resolved "https://registry.npmjs.org/@nestjs/schematics/-/schematics-11.0.9.tgz"
-  integrity sha512-0NfPbPlEaGwIT8/TCThxLzrlz3yzDNkfRNpbL7FiplKq3w4qXpJg0JYwqgMEJnLQZm3L/L/5XjoyfJHUO3qX9g==
+"@nestjs/schematics@^11.0.1", "@nestjs/schematics@^11.1.0":
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/@nestjs/schematics/-/schematics-11.1.0.tgz#aa9bc77218e04696031db6efc4510c8eacb0a20c"
+  integrity sha512-lVxGZ46tcdItFMoXr6vyKWlnOsm1SZm/GUqAEDvy2RL4Q4O+3bkziAhrO7Y8JLssFUUvNFEGqAizI52WAxhjDw==
   dependencies:
-    "@angular-devkit/core" "19.2.17"
-    "@angular-devkit/schematics" "19.2.17"
-    comment-json "4.4.1"
+    "@angular-devkit/core" "19.2.24"
+    "@angular-devkit/schematics" "19.2.24"
+    comment-json "5.0.0"
     jsonc-parser "3.3.1"
     pluralize "8.0.0"
 
@@ -2481,6 +2481,16 @@ ajv@8.17.1:
     json-schema-traverse "^1.0.0"
     require-from-string "^2.0.2"
 
+ajv@8.18.0, ajv@^8.0.0, ajv@^8.12.0, ajv@^8.9.0:
+  version "8.18.0"
+  resolved "https://registry.npmjs.org/ajv/-/ajv-8.18.0.tgz"
+  integrity sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==
+  dependencies:
+    fast-deep-equal "^3.1.3"
+    fast-uri "^3.0.1"
+    json-schema-traverse "^1.0.0"
+    require-from-string "^2.0.2"
+
 ajv@^6.12.5, ajv@^6.14.0:
   version "6.14.0"
   resolved "https://registry.npmjs.org/ajv/-/ajv-6.14.0.tgz"
@@ -2490,16 +2500,6 @@ ajv@^6.12.5, ajv@^6.14.0:
     fast-json-stable-stringify "^2.0.0"
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
-
-ajv@^8.0.0, ajv@^8.12.0, ajv@^8.9.0:
-  version "8.18.0"
-  resolved "https://registry.npmjs.org/ajv/-/ajv-8.18.0.tgz"
-  integrity sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==
-  dependencies:
-    fast-deep-equal "^3.1.3"
-    fast-uri "^3.0.1"
-    json-schema-traverse "^1.0.0"
-    require-from-string "^2.0.2"
 
 ansi-colors@4.1.3:
   version "4.1.3"
@@ -3123,13 +3123,12 @@ commander@^8.3.0:
   resolved "https://registry.npmjs.org/commander/-/commander-8.3.0.tgz"
   integrity sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==
 
-comment-json@4.4.1:
-  version "4.4.1"
-  resolved "https://registry.npmjs.org/comment-json/-/comment-json-4.4.1.tgz"
-  integrity sha512-r1To31BQD5060QdkC+Iheai7gHwoSZobzunqkf2/kQ6xIAfJyrKNAFUwdKvkK7Qgu7pVTKQEa7ok7Ed3ycAJgg==
+comment-json@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/comment-json/-/comment-json-5.0.0.tgz#3b0cba63da30b31f8b3ea8d75f4d79bfa8346896"
+  integrity sha512-uiqLcOiVDJtBP8WGkZHEP+FZIhTzP1dxvn59EfoYUi9gqupjrBWVQkO2atDrbnKPwLeotFYDsuNb26uBMqB+hw==
   dependencies:
     array-timsort "^1.0.3"
-    core-util-is "^1.0.3"
     esprima "^4.0.1"
 
 component-emitter@^1.3.1:
@@ -3204,7 +3203,7 @@ cookiejar@^2.1.4:
   resolved "https://registry.npmjs.org/cookiejar/-/cookiejar-2.1.4.tgz"
   integrity sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==
 
-core-util-is@^1.0.3, core-util-is@~1.0.0:
+core-util-is@~1.0.0:
   version "1.0.3"
   resolved "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.3.tgz"
   integrity sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==
@@ -5737,6 +5736,11 @@ picomatch@4.0.2:
   version "4.0.2"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.2.tgz"
   integrity sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==
+
+picomatch@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.4.tgz#fd6f5e00a143086e074dffe4c924b8fb293b0589"
+  integrity sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==
 
 picomatch@^2.0.4, picomatch@^2.3.1:
   version "2.3.1"
