@@ -50,3 +50,107 @@ UnauthorizedException: Unauthorized
     at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
     at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
     at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-09-15T16:40:30.405Z] /api/v1
+NotFoundException: Cannot GET /api/v1
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T16:40:30.420Z] /api/v1/auth/login
+NotFoundException: Cannot POST /api/v1/auth/login
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at onDone (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\content-type-parser.js:229:5)
+    at AsyncResource.runInAsyncScope (node:async_hooks:211:14)
+    at bound (node:async_hooks:242:16)
+
+[2026-09-15T16:40:30.425Z] /api/v1/auth/me
+NotFoundException: Cannot GET /api/v1/auth/me
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T16:40:30.430Z] /api/v1/words
+NotFoundException: Cannot POST /api/v1/words
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at onDone (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\content-type-parser.js:229:5)
+    at AsyncResource.runInAsyncScope (node:async_hooks:211:14)
+    at bound (node:async_hooks:242:16)
+
+[2026-09-15T16:40:30.432Z] /api/v1/dashboard
+NotFoundException: Cannot GET /api/v1/dashboard
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T16:40:30.434Z] /api/v1/reviews/due
+NotFoundException: Cannot GET /api/v1/reviews/due
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T16:40:30.436Z] /api/v1/reviews/due
+NotFoundException: Cannot GET /api/v1/reviews/due
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T16:40:30.439Z] /api/v1/reviews/stats
+NotFoundException: Cannot GET /api/v1/reviews/stats
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
