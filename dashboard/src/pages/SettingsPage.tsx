@@ -24,78 +24,98 @@ const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8 animate-in">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[#181c32]">Environment Settings</h1>
-        <p className="text-xs font-semibold text-[#a1a5b7] mt-1">Customize your local node and UX variables.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground">Environment Settings</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">Customize your local client and interface variables.</p>
       </div>
 
       <div className="max-w-2xl space-y-6">
-        <Card className="border-[#eff2f5] shadow-sm">
-          <div className="p-6 border-b border-[#eff2f5] flex items-center justify-between bg-[#f9fafb]/50 rounded-t-[inherit]">
-             <div className="flex items-center gap-3">
-                <Languages className="text-[#009ef7]" size={20} />
-                <h3 className="text-xs font-black text-[#181c32] uppercase tracking-[0.2em]">Localization Protocol</h3>
-             </div>
+        <Card className="border-border/60 bg-card shadow-xs overflow-hidden">
+          <div className="p-4 border-b border-border/60 flex items-center justify-between bg-muted/20">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center border border-primary/20">
+                <Languages size={17} />
+              </div>
+              <div>
+                <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Localization</h3>
+                <p className="text-[11px] text-muted-foreground">Select system interface language</p>
+              </div>
+            </div>
           </div>
-          <CardContent className="p-8">
-             <div className="flex gap-3">
-                 <Button 
-                  variant="outline" 
-                  onClick={() => setLang('VN')}
-                  className={`flex-1 py-6 border-2 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${
-                    lang === 'VN' 
-                    ? 'border-[#009ef7] bg-[#f1faff] text-[#009ef7]' 
-                    : 'border-[#eff2f5] bg-white text-[#a1a5b7] hover:border-[#009ef7]/20 hover:text-[#009ef7]'
-                  }`}
-                 >
-                   Vietnam [VN]
-                 </Button>
-                 <Button 
-                  variant="outline" 
-                  onClick={() => setLang('EN')}
-                  className={`flex-1 py-6 border-2 rounded-xl transition-all text-xs font-black uppercase tracking-widest ${
-                    lang === 'EN' 
-                    ? 'border-[#009ef7] bg-[#f1faff] text-[#009ef7]' 
-                    : 'border-[#eff2f5] bg-white text-[#a1a5b7] hover:border-[#009ef7]/20 hover:text-[#009ef7]'
-                  }`}
-                 >
-                   English [EN]
-                 </Button>
-             </div>
+          <CardContent className="p-6">
+            <div className="flex gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setLang('VN')}
+                className={`flex-1 h-12 rounded-xl transition-all text-xs font-semibold ${
+                  lang === 'VN' 
+                    ? 'border-primary bg-primary/10 text-primary shadow-2xs' 
+                    : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                Tiếng Việt (VN)
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setLang('EN')}
+                className={`flex-1 h-12 rounded-xl transition-all text-xs font-semibold ${
+                  lang === 'EN' 
+                    ? 'border-primary bg-primary/10 text-primary shadow-2xs' 
+                    : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                English (EN)
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden border-[#eff2f5] shadow-sm">
-          <div className="p-6 border-b border-[#eff2f5] flex items-center gap-3 bg-[#f9fafb]/50 rounded-t-[inherit]">
-             <Globe className="text-[#7239ea]" size={20} />
-             <h3 className="text-xs font-black text-[#181c32] uppercase tracking-[0.2em]">Interface Dynamics</h3>
+        <Card className="border-border/60 bg-card shadow-xs overflow-hidden">
+          <div className="p-4 border-b border-border/60 flex items-center gap-2.5 bg-muted/20">
+            <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-500/20">
+              <Globe size={17} />
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider">Interface Dynamics</h3>
+              <p className="text-[11px] text-muted-foreground">Display density and client performance</p>
+            </div>
           </div>
-          <CardContent className="p-8 space-y-8">
+          <CardContent className="p-6 space-y-5">
             {[
-              { id: 'density', label: 'Data Density Output', desc: 'Maximize information points per screen.' },
-              { id: 'sync', label: 'Real-time Shard Sync', desc: 'Automatically poll for backend data changes.' },
-              { id: 'acceleration', label: 'Hardware Acceleration', desc: 'Use GPU for complex graph rendering.' },
+              { id: 'density', label: 'High Density Layout', desc: 'Display more data points per screen table.' },
+              { id: 'sync', label: 'Real-time Live Sync', desc: 'Automatically poll for server updates.' },
+              { id: 'acceleration', label: 'GPU Acceleration', desc: 'Hardware rendering for chart animations.' },
             ].map((item) => (
               <div key={item.id} className="flex items-center justify-between group">
                 <div>
-                  <span className="text-xs font-bold text-[#3f4254] block group-hover:text-[#009ef7] transition-colors">{item.label}</span>
-                  <p className="text-[10px] font-bold text-[#a1a5b7] mt-0.5">{item.desc}</p>
+                  <span className="text-xs font-semibold text-foreground block group-hover:text-primary transition-colors">
+                    {item.label}
+                  </span>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
                 </div>
-                <div 
+                <button 
                   onClick={() => handleToggle(item.id as any)}
-                  className={`w-12 h-6 rounded-full relative cursor-pointer transition-colors ${toggles[item.id as keyof typeof toggles] ? 'bg-[#009ef7]' : 'bg-[#eff2f5]'}`}
+                  className={`w-10 h-6 rounded-full relative p-0.5 transition-colors ${
+                    toggles[item.id as keyof typeof toggles] ? 'bg-primary' : 'bg-muted-foreground/30'
+                  }`}
                 >
-                   <div className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${toggles[item.id as keyof typeof toggles] ? 'right-0.5' : 'left-0.5'}`}></div>
-                </div>
+                  <div className={`w-5 h-5 bg-white rounded-full shadow-xs transition-transform ${
+                    toggles[item.id as keyof typeof toggles] ? 'translate-x-4' : 'translate-x-0'
+                  }`}></div>
+                </button>
               </div>
             ))}
           </CardContent>
         </Card>
         
-        <div className="flex justify-end gap-3 mt-8">
-           <Button variant="secondary" className="px-6 bg-[#f5f8fa] text-[#7e8299] hover:bg-[#eff2f5]">Discard</Button>
-           <Button className="px-6 bg-[#009ef7] text-white hover:bg-[#0086d1]" onClick={handleSave}>Save Environment</Button>
+        <div className="flex justify-end gap-2.5 pt-2">
+          <Button variant="outline" size="sm" className="px-5 text-muted-foreground hover:text-foreground">
+            Discard
+          </Button>
+          <Button size="sm" className="px-5 font-medium shadow-xs" onClick={handleSave}>
+            Save Environment
+          </Button>
         </div>
       </div>
     </div>

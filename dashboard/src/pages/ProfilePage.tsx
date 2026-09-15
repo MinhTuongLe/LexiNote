@@ -1,13 +1,9 @@
 import React from 'react';
 import { 
   ShieldCheck, 
-  Calendar, 
   Key, 
   Mail, 
-  BadgeCheck,
-  CreditCard,
-  Bell,
-  ChevronRight
+  BadgeCheck
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,73 +14,80 @@ const ProfilePage: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
 
   return (
-    <div className="space-y-8 animate-in">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-[#181c32]">Account Details</h1>
-          <p className="text-xs font-semibold text-[#a1a5b7] mt-1">Manage your administrative identity and credentials.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Account Details</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">Manage your administrative identity and credentials.</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Profile Card */}
-        <Card className="border-[#eff2f5] shadow-sm flex flex-col items-center">
-          <CardContent className="p-10 flex flex-col items-center w-full">
+        <Card className="border-border/60 bg-card shadow-xs flex flex-col items-center">
+          <CardContent className="p-8 flex flex-col items-center w-full">
             <div className="relative group">
-              <div className="w-24 h-24 rounded-[2.5rem] bg-[#f1faff] flex items-center justify-center text-3xl font-black text-[#009ef7] border-4 border-white shadow-xl transition-transform group-hover:scale-105">
+              <div className="w-20 h-20 rounded-2xl bg-primary/10 text-primary border-2 border-primary/30 flex items-center justify-center text-2xl font-bold shadow-sm transition-transform group-hover:scale-105">
                 {user?.fullName?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'AD'}
               </div>
               {user?.isActive && (
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-[#50cd89] border-4 border-white rounded-full flex items-center justify-center shadow-md">
-                  <BadgeCheck size={16} className="text-white" />
+                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-card rounded-full flex items-center justify-center shadow-xs">
+                  <BadgeCheck size={14} className="text-white" />
                 </div>
               )}
             </div>
-            <div className="mt-8 text-center">
-              <h2 className="text-lg font-bold text-[#181c32]">{user?.fullName}</h2>
-              <p className="text-xs font-semibold text-[#a1a5b7] mt-1 italic">{user?.email}</p>
+            <div className="mt-5 text-center">
+              <h2 className="text-base font-bold text-foreground">{user?.fullName || 'Administrator'}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">{user?.email}</p>
             </div>
-            <div className="mt-6 flex gap-2">
-               <span className="bg-[#f1faff] text-[#009ef7] text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider">{user?.role}</span>
-               {user?.isEmailVerified && (
-                 <span className="bg-[#e8fff3] text-[#50cd89] text-[10px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider">Verified</span>
-               )}
+            <div className="mt-4 flex gap-1.5">
+              <span className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                {user?.role || 'Admin'}
+              </span>
+              {user?.isEmailVerified && (
+                <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                  Verified
+                </span>
+              )}
             </div>
             
-            <div className="w-full mt-10 space-y-2">
-               <Button 
-                className="w-full bg-[#009ef7] hover:bg-[#0086d1] text-white"
-                onClick={() => alert(`Schematic modification for ${user?.fullName} initialization sequence started.`)}
-               >
-                 Edit Identity
-               </Button>
+            <div className="w-full mt-6">
+              <Button 
+                size="sm"
+                className="w-full font-medium shadow-xs"
+                onClick={() => alert(`Profile update for ${user?.fullName} will be available in future releases.`)}
+              >
+                Edit Identity
+              </Button>
             </div>
           </CardContent>
         </Card>
 
         {/* Metadata & Stats */}
-        <div className="lg:col-span-2 space-y-8">
-          <Card className="border-[#eff2f5] shadow-sm">
-             <div className="p-6 border-b border-[#eff2f5] bg-[#f9fafb]/50 rounded-t-[inherit]">
-                <h3 className="text-xs font-black text-[#181c32] uppercase tracking-[0.2em] border-l-3 border-[#009ef7] pl-3">Vault Parameters</h3>
-             </div>
-             <CardContent className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                {[
-                  { label: 'Primary Mail', value: user?.email, icon: Mail, color: 'text-[#009ef7]' },
-                  { label: 'Role Context', value: user?.role === 'ADMIN' ? 'Root Access' : 'External Member', icon: ShieldCheck, color: 'text-[#7239ea]' },
-                  { label: 'UID Signature', value: `LEX_NODE_X${user?.id}_ALPHA`, icon: Key, color: 'text-[#ffc700]' },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-4 group">
-                    <div className="w-10 h-10 rounded-xl bg-[#f5f8fa] flex items-center justify-center transition-colors group-hover:bg-white group-hover:shadow-sm">
-                      <item.icon size={18} className={item.color} />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-black text-[#a1a5b7] uppercase tracking-widest">{item.label}</p>
-                      <p className="text-xs font-bold text-[#3f4254] mt-0.5">{item.value}</p>
-                    </div>
+        <div className="lg:col-span-2 space-y-6">
+          <Card className="border-border/60 bg-card shadow-xs overflow-hidden">
+            <div className="p-4 border-b border-border/60 bg-muted/20">
+              <h3 className="text-xs font-bold text-foreground uppercase tracking-wider border-l-2 border-primary pl-2.5">
+                Account Attributes
+              </h3>
+            </div>
+            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { label: 'Primary Email', value: user?.email, icon: Mail, color: 'text-primary' },
+                { label: 'Role Context', value: user?.role === 'ADMIN' ? 'Root Administrator' : 'Standard Member', icon: ShieldCheck, color: 'text-violet-500' },
+                { label: 'Account Identifier', value: `UID-${user?.id || '001'}`, icon: Key, color: 'text-amber-500' },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3.5 group">
+                  <div className="w-9 h-9 rounded-lg bg-muted/60 border border-border/60 flex items-center justify-center transition-colors group-hover:bg-muted">
+                    <item.icon size={16} className={item.color} />
                   </div>
-                ))}
-             </CardContent>
+                  <div>
+                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                    <p className="text-xs font-semibold text-foreground mt-0.5">{item.value || 'N/A'}</p>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
           </Card>
         </div>
       </div>

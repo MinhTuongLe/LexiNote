@@ -23,9 +23,13 @@ export const translations: Record<string, Record<string, string>> = {
     'error.auth.current_new_password_required': 'Vui lòng nhập mật khẩu hiện tại và mật khẩu mới! 🔑',
     'error.auth.wrong_current_password': 'Mật khẩu hiện tại không chính xác! ❌',
     'error.auth.nothing_to_update': 'Không có thông tin nào để cập nhật! 🤔',
+    'error.auth.not_admin_access': 'Tài khoản không có quyền quản trị viên! 🚫',
+    'error.auth.account_deactivated': 'Tài khoản của bạn đã bị vô hiệu hóa! 🔒',
+    'error.auth.account_inactive': 'Tài khoản chưa được kích hoạt hoặc đang bị tạm khóa! 🔒',
+    'error.auth.unauthorized': 'Phiên đăng nhập không hợp lệ hoặc không có quyền truy cập! 🚫',
 
     'error.word.not_found': 'Không tìm thấy từ vựng',
-    'error.word.no_ids' : 'Không có ID từ vựng nào được cung cấp',
+    'error.word.no_ids': 'Không có ID từ vựng nào được cung cấp',
 
     'error.review.not_found': 'Không tìm thấy phiên ôn tập',
 
@@ -64,9 +68,13 @@ export const translations: Record<string, Record<string, string>> = {
     'error.auth.current_new_password_required': 'Current and new password required! 🔑',
     'error.auth.wrong_current_password': 'Current password is incorrect! ❌',
     'error.auth.nothing_to_update': 'Nothing to update! 🤔',
+    'error.auth.not_admin_access': 'Access denied. Administrator privileges required! 🚫',
+    'error.auth.account_deactivated': 'Your account has been deactivated! 🔒',
+    'error.auth.account_inactive': 'Account is inactive or has been suspended! 🔒',
+    'error.auth.unauthorized': 'Unauthorized access! 🚫',
 
     'error.word.not_found': 'Word not found',
-    'error.word.no_ids' : 'No word IDs provided',
+    'error.word.no_ids': 'No word IDs provided',
 
     'error.review.not_found': 'Review session not found',
 

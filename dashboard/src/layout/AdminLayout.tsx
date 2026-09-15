@@ -9,9 +9,11 @@ import {
   User,
   LogOut,
   ChevronRight,
-  Bell,
   Menu,
-  X
+  X,
+  Sun,
+  Moon,
+  Sparkles
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useSelector, useDispatch } from 'react-redux';
@@ -24,6 +26,24 @@ const AdminLayout: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
+  const [isDark, setIsDark] = React.useState(() => {
+    if (typeof window !== 'undefined') {
+      return document.documentElement.classList.contains('dark') || 
+        localStorage.getItem('lexinote-theme') === 'dark';
+    }
+    return false;
+  });
+
+  React.useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('lexinote-theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('lexinote-theme', 'light');
+    }
+  }, [isDark]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -41,11 +61,11 @@ const AdminLayout: React.FC = () => {
     const parts = location.pathname.split('/').filter(Boolean);
     const mapping: Record<string, string> = {
       dashboard: 'Overview',
-      users: 'Management',
-      words: 'Library',
-      config: 'Infrastructure',
-      profile: 'Account',
-      settings: 'Environment'
+      users: 'User Management',
+      words: 'Word Library',
+      config: 'System Config',
+      profile: 'Account Profile',
+      settings: 'Settings'
     };
     return parts.map((part, i) => ({
       name: mapping[part] || (part.charAt(0).toUpperCase() + part.slice(1).replace('-', ' ')),
@@ -54,170 +74,233 @@ const AdminLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#f5f8fa] text-slate-800 font-sans w-full selection:bg-blue-100 selection:text-blue-900">
+    <div className="flex min-h-screen bg-background text-foreground font-sans w-full selection:bg-primary/20 selection:text-primary">
       {/* Mobile Sidebar Overlay */}
       <div 
-        className={`fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 transition-opacity lg:hidden ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-50 transition-opacity lg:hidden ${
+          isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+        }`}
         onClick={() => setIsMobileMenuOpen(false)}
       >
-         <aside 
-          className={`w-[280px] h-full bg-white shadow-2xl transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        <aside 
+          className={`w-[280px] h-full bg-sidebar border-r border-border shadow-2xl transition-transform duration-300 ${
+            isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
           onClick={(e) => e.stopPropagation()}
-         >
-            <div className="p-8">
-              <div className="flex justify-between items-center mb-10">
-                <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
-                  <div className="w-8 h-8 bg-[#009ef7] rounded-lg flex items-center justify-center">
-                    <span className="text-white font-black">L</span>
-                  </div>
-                  <span className="text-base font-bold text-[#181c32]">LexiNote</span>
-                </Link>
-                <button onClick={() => setIsMobileMenuOpen(false)} className="text-[#a1a5b7] hover:text-[#f1416c] transition-colors">
-                  <X size={20} />
-                </button>
-              </div>
-              <nav className="space-y-1">
-                {menuItems.map((item) => {
-                  const isActive = location.pathname === item.path;
-                  return (
-                    <button
-                      key={item.path}
-                      onClick={() => { navigate(item.path); setIsMobileMenuOpen(false); }}
-                      className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all ${
-                        isActive ? 'bg-[#f1faff] text-[#009ef7]' : 'text-[#7e8299]'
-                      }`}
-                    >
-                      <item.icon size={18} />
-                      <span className="text-sm font-semibold">{item.title}</span>
-                    </button>
-                  );
-                })}
-              </nav>
+        >
+          <div className="p-6 flex flex-col h-full">
+            <div className="flex justify-between items-center mb-8">
+              <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm shadow-primary/30">
+                  <Sparkles className="text-primary-foreground" size={18} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Portal</span>
+                </div>
+              </Link>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X size={18} />
+              </button>
             </div>
-         </aside>
+
+            <nav className="space-y-1.5 flex-1">
+              <div className="px-3 py-1.5 text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wider">Navigation</div>
+              {menuItems.map((item) => {
+                const isActive = location.pathname === item.path;
+                return (
+                  <button
+                    key={item.path}
+                    onClick={() => { navigate(item.path); setIsMobileMenuOpen(false); }}
+                    className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                      isActive 
+                        ? 'bg-primary/10 text-primary font-semibold shadow-xs' 
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                    }`}
+                  >
+                    <item.icon size={18} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
+                    <span>{item.title}</span>
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="pt-4 mt-auto border-t border-border">
+              <button 
+                onClick={() => { navigate('/dashboard/profile'); setIsMobileMenuOpen(false); }}
+                className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-muted transition-colors text-left mb-2"
+              >
+                <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
+                  {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'A'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-foreground truncate">{user?.fullName || 'Administrator'}</p>
+                  <p className="text-[11px] text-muted-foreground truncate">{user?.role || 'Super Admin'}</p>
+                </div>
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors text-xs font-semibold"
+              >
+                <LogOut size={16} /> Đăng xuất
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* Sidebar - ReUI/Metronic Style */}
-      <aside className="w-[260px] border-r border-[#eff2f5] bg-white flex flex-col hidden lg:flex sticky top-0 h-screen z-30">
-        <div className="p-8 pb-4">
-          <Link to="/dashboard" className="flex items-center gap-3 mb-10 group">
-            <div className="w-9 h-9 bg-[#009ef7] rounded-xl flex items-center justify-center shadow-[0_4px_12px_rgba(0,158,247,0.3)] group-hover:scale-105 transition-transform">
-              <span className="text-white font-black text-lg">L</span>
+      {/* Desktop Sidebar */}
+      <aside className="w-[260px] border-r border-border bg-sidebar hidden lg:flex flex-col sticky top-0 h-screen z-30 select-none">
+        <div className="p-6 pb-4">
+          <Link to="/dashboard" className="flex items-center gap-3 mb-8 group">
+            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
+              <Sparkles className="text-primary-foreground" size={18} />
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-[#181c32]">LexiNote</span>
-              <span className="text-[10px] font-bold text-[#a1a5b7] uppercase tracking-widest">Enterprise</span>
+              <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Workspace</span>
             </div>
           </Link>
           
           <nav className="space-y-1">
-            <div className="px-4 py-2 text-[10px] font-bold text-[#a1a5b7] uppercase tracking-[0.2em] mb-2">Category</div>
+            <div className="px-3 py-2 text-[10px] font-bold text-muted-foreground/60 uppercase tracking-[0.15em] mb-1">Menu</div>
             {menuItems.map((item) => {
               const isActive = location.pathname === item.path;
               return (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className={`flex items-center gap-4 w-full px-4 py-3 rounded-xl transition-all group ${
+                  className={`flex items-center gap-3 w-full px-3.5 py-2.5 rounded-lg text-sm font-medium transition-all group ${
                     isActive 
-                      ? 'bg-[#f1faff] text-[#009ef7]' 
-                      : 'text-[#7e8299] hover:text-[#009ef7] hover:bg-[#f1faff]'
+                      ? 'bg-primary/10 text-primary font-semibold shadow-xs' 
+                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                   }`}
                 >
-                  <item.icon size={20} className={`${isActive ? 'text-[#009ef7]' : 'text-[#7e8299] group-hover:text-[#009ef7]'}`} />
-                  <span className="text-sm font-semibold">{item.title}</span>
+                  <item.icon 
+                    size={18} 
+                    className={`transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} 
+                  />
+                  <span>{item.title}</span>
                 </button>
               );
             })}
           </nav>
         </div>
 
-        <div className="mt-auto p-6 border-t border-[#eff2f5] bg-[#f9fafb]/50">
+        {/* Sidebar Footer */}
+        <div className="mt-auto p-4 border-t border-border bg-muted/20">
           <button 
             onClick={() => navigate('/dashboard/profile')}
-            className="flex items-center gap-3 w-full px-4 py-2 rounded-xl hover:bg-white hover:shadow-sm transition-all text-left mb-2"
+            className="flex items-center gap-3 w-full p-2.5 rounded-lg hover:bg-muted/60 transition-all text-left mb-1.5 group"
           >
-            <div className="w-8 h-8 rounded-full bg-[#f1faff] border border-[#d1edff] flex items-center justify-center shrink-0">
-               {user?.avatar ? (
-                 <span className="text-base">{user.avatar}</span>
-               ) : (
-                 <User size={16} className="text-[#009ef7]" />
-               )}
+            <div className="relative">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xs">
+                {user?.fullName ? user.fullName.charAt(0).toUpperCase() : 'A'}
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-sidebar"></span>
             </div>
             <div className="flex-1 overflow-hidden">
-               <p className="text-xs font-bold text-[#181c32] truncate">{user?.fullName || 'Super Admin'}</p>
-               <p className="text-[10px] text-[#a1a5b7] truncate">{user?.role || 'Administrator'}</p>
+              <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                {user?.fullName || 'Super Admin'}
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate">{user?.role || 'Administrator'}</p>
             </div>
           </button>
           
           <button 
-            className="flex items-center gap-3 w-full px-4 py-2 rounded-xl text-[#a1a5b7] hover:text-[#f1416c] hover:bg-[#fff5f8] transition-all text-xs font-bold uppercase tracking-wider"
+            className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors text-xs font-medium"
             onClick={handleLogout}
           >
-            <LogOut size={16} /> Sign out
+            <LogOut size={15} /> Sign out
           </button>
         </div>
       </aside>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Header - Fixed & High Density */}
-        <header className="h-[70px] border-b border-[#eff2f5] flex items-center justify-between px-8 bg-white/95 backdrop-blur-sm z-20 sticky top-0">
-           <div className="flex items-center gap-4 flex-1">
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden w-10 h-10 flex items-center justify-center rounded-xl bg-[#f5f8fa] text-[#3f4254]"
-              >
-                <Menu size={20} />
-              </button>
+        {/* Header - Glassmorphism */}
+        <header className="h-16 border-b border-border/60 flex items-center justify-between px-6 lg:px-8 bg-background/80 backdrop-blur-md z-20 sticky top-0">
+          <div className="flex items-center gap-4 flex-1">
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            >
+              <Menu size={18} />
+            </button>
 
-              {/* Breadcrumbs */}
-              <div className="hidden md:flex items-center gap-2 text-xs font-semibold">
-                <Link to="/dashboard" className="text-[#a1a5b7] hover:text-[#009ef7] transition-colors">Home</Link>
-                {getBreadcrumbs().map((crumb, i) => (
-                  <React.Fragment key={crumb.path}>
-                    <ChevronRight size={14} className="text-[#e1e3ea]" />
-                    <span className={i === getBreadcrumbs().length - 1 ? 'text-[#3f4254]' : 'text-[#a1a5b7]'}>
-                      {crumb.name}
-                    </span>
-                  </React.Fragment>
-                ))}
-              </div>
+            {/* Breadcrumbs */}
+            <nav className="hidden sm:flex items-center gap-1.5 text-xs font-medium">
+              <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Home</Link>
+              {getBreadcrumbs().map((crumb, i) => (
+                <React.Fragment key={crumb.path}>
+                  <ChevronRight size={14} className="text-muted-foreground/40" />
+                  <span className={i === getBreadcrumbs().length - 1 ? 'text-foreground font-semibold' : 'text-muted-foreground'}>
+                    {crumb.name}
+                  </span>
+                </React.Fragment>
+              ))}
+            </nav>
 
-              <div className="relative max-w-[400px] w-full group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[#a1a5b7] group-focus-within:text-[#009ef7] transition-colors" size={18} />
-                <Input 
-                  type="text" 
-                  placeholder="Quick Search..." 
-                  className="bg-[#f5f8fa] border-none rounded-lg h-9 pl-12 pr-4 text-xs font-medium focus-visible:ring-2 focus-visible:ring-[#009ef7] w-full transition-all text-[#3f4254] placeholder:text-[#a1a5b7]"
-                />
-              </div>
-           </div>
-           
-           <div className="flex items-center gap-4">
-               <div className="h-8 w-px bg-[#eff2f5]"></div>
+            {/* Quick Search */}
+            <div className="relative max-w-sm w-full hidden md:block">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
+              <Input 
+                type="text" 
+                placeholder="Search words, users, configs..." 
+                className="bg-muted/40 border-border/60 rounded-lg h-8 pl-9 pr-12 text-xs focus-visible:ring-1 focus-visible:ring-primary w-full transition-all placeholder:text-muted-foreground/70"
+              />
+              <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] font-mono font-medium text-muted-foreground/80 bg-background/80 border border-border px-1.5 py-0.5 rounded shadow-2xs">
+                ⌘K
+              </kbd>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-2.5">
+            {/* Theme Toggle (Dark / Light) */}
+            <button
+              onClick={() => setIsDark(!isDark)}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
+            </button>
 
-              <div className="flex items-center gap-3 pl-2">
-                 <div className="flex flex-col items-end hidden sm:flex">
-                    <span className="text-xs font-bold text-[#181c32]">{user?.fullName || 'Super Admin'}</span>
-                    <span className={`text-[10px] font-bold uppercase tracking-tighter ${user?.isActive ? 'text-[#50cd89]' : 'text-[#f1416c]'}`}>
-                      {user?.isActive ? 'Verified' : 'Inactive'}
-                    </span>
-                 </div>
-                 <button 
-                  onClick={() => navigate('/dashboard/settings')}
-                  className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#f5f8fa] border-2 border-transparent hover:border-[#009ef7] transition-all"
-                >
-                  <Settings size={20} className="text-[#7e8299]" />
-                </button>
+            {/* Settings Quick Access */}
+            <button 
+              onClick={() => navigate('/dashboard/settings')}
+              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
+              title="Settings"
+            >
+              <Settings size={17} />
+            </button>
+
+            <div className="h-5 w-px bg-border/80 mx-1 hidden sm:block"></div>
+
+            {/* Profile Pill */}
+            <button 
+              onClick={() => navigate('/dashboard/profile')}
+              className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-muted/60 transition-colors"
+            >
+              <div className="w-7 h-7 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-xs">
+                {user?.fullName ? user.fullName.charAt(0).toUpperCase() : <User size={14} />}
               </div>
-           </div>
+              <div className="flex flex-col items-start hidden sm:flex text-left">
+                <span className="text-xs font-semibold text-foreground leading-none">{user?.fullName || 'Super Admin'}</span>
+                <span className="text-[10px] text-muted-foreground mt-0.5 leading-none">
+                  {user?.role || 'Administrator'}
+                </span>
+              </div>
+            </button>
+          </div>
         </header>
 
         {/* Page Area */}
-        <main className="flex-1 overflow-y-auto p-8 lg:p-10 relative custom-scrollbar">
-          <div className="max-w-7xl mx-auto h-full re-animate">
-             <Outlet />
+        <main className="flex-1 overflow-y-auto p-6 lg:p-8 relative custom-scrollbar bg-background">
+          <div className="max-w-7xl mx-auto h-full animate-in fade-in-50 duration-200">
+            <Outlet />
           </div>
         </main>
       </div>

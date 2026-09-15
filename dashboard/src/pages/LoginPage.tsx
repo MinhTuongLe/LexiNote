@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Lock, 
   Mail, 
-  ArrowRight,
-  Eye,
-  EyeOff,
-  Zap
+  ArrowRight, 
+  Eye, 
+  EyeOff, 
+  Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { useLoginMutation } from '../store/api/authApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/slices/authSlice';
-import { AlertCircle } from 'lucide-react';
+
+import { getErrorMessage } from '../utils/errors';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,94 +35,90 @@ const LoginPage: React.FC = () => {
       dispatch(setCredentials({ user: result.user, token: result.token }));
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err?.data?.message || err?.message || 'Login failed');
+      setError(getErrorMessage(err, 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'));
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f8fa] flex items-center justify-center p-6 selection:bg-[#009ef7] selection:text-white">
-      <div className="w-full max-w-[450px] animate-in">
-        <div className="mb-12 flex flex-col items-center">
-          <div className="w-16 h-16 bg-[#009ef7] rounded-2xl flex items-center justify-center mb-6 shadow-[0_10px_30px_rgba(0,158,247,0.3)] hover:scale-105 transition-transform cursor-pointer">
-            <Zap className="text-white" size={32} />
+    <div className="min-h-screen bg-background flex items-center justify-center p-6 selection:bg-primary/20 selection:text-primary">
+      <div className="w-full max-w-md animate-in fade-in-50 duration-300">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
+            <Sparkles className="text-primary-foreground" size={24} />
           </div>
-          <h1 className="text-2xl font-black text-[#181c32] tracking-tighter uppercase italic">LexiNote.Admin</h1>
-          <p className="text-[11px] font-bold text-[#a1a5b7] uppercase tracking-[0.3em] mt-2">Enterprise Access Protocol</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">LexiNote Admin</h1>
+          <p className="text-xs text-muted-foreground mt-1">Sign in to manage your vocabulary platform</p>
         </div>
 
-        <Card className="rounded-[2rem] shadow-[0_15px_60px_-15px_rgba(0,0,0,0.05)] border-[#eff2f5]">
-           <CardHeader className="text-center pt-10 pb-2">
-             <CardTitle className="text-xl font-bold text-[#181c32]">Authentication Required</CardTitle>
-             <CardDescription className="text-xs font-semibold text-[#a1a5b7]">Input your credentials to access the node.</CardDescription>
-           </CardHeader>
-           <CardContent className="px-10 lg:px-12 pb-10 lg:pb-12 pt-6">
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-600 animate-in">
-                  <AlertCircle size={18} />
-                  <p className="text-xs font-bold uppercase tracking-wider">{error}</p>
+        <Card className="border-border/60 bg-card shadow-lg shadow-black/5 rounded-2xl overflow-hidden">
+          <CardHeader className="text-center pt-8 pb-3">
+            <CardTitle className="text-lg font-bold text-foreground">Welcome Back</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Enter your admin credentials to continue
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-8 pt-4">
+            {error && (
+              <div className="mb-5 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl flex items-center gap-2.5 text-destructive text-xs font-semibold">
+                <AlertCircle size={16} className="shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Address</label>
+                <div className="relative group">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={16} />
+                  <Input 
+                    type="email" 
+                    required
+                    placeholder="admin@lexinote.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="bg-muted/40 border-border/80 rounded-lg h-10 pl-10 pr-4 text-xs font-medium text-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                  />
                 </div>
-              )}
-              <form onSubmit={handleLogin} className="space-y-8">
-                <div className="space-y-6">
-                  <div>
-                    <label className="text-[10px] font-black text-[#a1a5b7] uppercase tracking-widest block mb-2 px-1">Identity Mail</label>
-                    <div className="relative group">
-                       <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#a1a5b7] group-focus-within:text-[#009ef7] transition-colors" size={16} />
-                       <Input 
-                        type="email" 
-                        required
-                        placeholder="admin@lexinote.ui"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        className="bg-[#f5f8fa] border-none rounded-xl h-12 pl-12 pr-4 text-xs font-bold text-[#3f4254] focus-visible:ring-2 focus-visible:ring-[#009ef7] transition-all"
-                       />
-                    </div>
-                  </div>
+              </div>
 
-                  <div>
-                    <label className="text-[10px] font-black text-[#a1a5b7] uppercase tracking-widest block mb-2 px-1">Security Key</label>
-                    <div className="relative group">
-                       <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#a1a5b7] group-focus-within:text-[#009ef7] transition-colors" size={16} />
-                       <Input 
-                        type={showPassword ? 'text' : 'password'}
-                        required
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="bg-[#f5f8fa] border-none rounded-xl h-12 pl-12 pr-12 text-xs font-bold text-[#3f4254] focus-visible:ring-2 focus-visible:ring-[#009ef7] transition-all"
-                       />
-                       <button 
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-[#a1a5b7] hover:text-[#3f4254] transition-colors"
-                       >
-                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                       </button>
-                    </div>
-                  </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Password</label>
+                <div className="relative group">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={16} />
+                  <Input 
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    placeholder="••••••••" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="bg-muted/40 border-border/80 rounded-lg h-10 pl-10 pr-10 text-xs font-medium text-foreground focus-visible:ring-1 focus-visible:ring-primary"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
                 </div>
+              </div>
 
-                <Button 
-                  type="submit" 
-                  disabled={isLoading}
-                  className="w-full h-14 bg-[#009ef7] hover:bg-[#0086d1] rounded-xl text-white text-xs font-black uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(0,158,247,0.4)] transition-all flex items-center justify-center gap-3"
-                >
-                  {isLoading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                  ) : (
-                    <>Initiate Access <ArrowRight size={18} /></>
-                  )}
-                </Button>
-                
-                <div className="text-center">
-                   <button type="button" className="text-[10px] font-black text-[#009ef7] uppercase tracking-widest hover:underline">Request Elevated Access</button>
-                </div>
-             </form>
-           </CardContent>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+                className="w-full h-10 font-semibold text-xs shadow-xs mt-2"
+              >
+                {isLoading ? (
+                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin"></div>
+                ) : (
+                  <>Sign In <ArrowRight size={15} className="ml-1" /></>
+                )}
+              </Button>
+            </form>
+          </CardContent>
         </Card>
         
-        <p className="text-center mt-12 text-[10px] font-bold text-[#a1a5b7] uppercase tracking-[0.2em] italic">
-           Secured by LexiNode Sentinel Architecture
+        <p className="text-center mt-8 text-xs text-muted-foreground">
+          Protected by LexiNote Admin Security
         </p>
       </div>
     </div>

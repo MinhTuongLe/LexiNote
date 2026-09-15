@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -30,9 +30,9 @@ const icons: Record<ToastType, LucideIcon> = {
 };
 
 const colors: Record<ToastType, string> = {
-  success: 'bg-[#e8fff3] border-[#50cd89]/20 text-[#50cd89]',
-  error: 'bg-[#fff5f8] border-[#f1416c]/20 text-[#f1416c]',
-  info: 'bg-[#f1faff] border-[#009ef7]/20 text-[#009ef7]',
+  success: 'bg-card border-emerald-500/30 text-emerald-600 dark:text-emerald-400 shadow-lg shadow-black/5',
+  error: 'bg-card border-destructive/30 text-destructive shadow-lg shadow-black/5',
+  info: 'bg-card border-primary/30 text-primary shadow-lg shadow-black/5',
 };
 
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -43,7 +43,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setToasts((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 5000);
+    }, 4000);
   }, []);
 
   const removeToast = (id: string) => {
@@ -53,26 +53,26 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-8 right-8 z-[10000] flex flex-col gap-3 w-full max-w-[360px]">
+      <div className="fixed bottom-6 right-6 z-[10000] flex flex-col gap-2.5 w-full max-w-sm pointer-events-none">
         {toasts.map((t) => {
           const Icon = icons[t.type];
           return (
-            <div 
+            <div
               key={t.id}
-              className={`flex items-start gap-4 p-4 rounded-2xl border shadow-lg animate-in slide-in-from-right fade-in duration-300 ${colors[t.type]}`}
+              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200 ${colors[t.type]}`}
             >
-              <div className="mt-0.5">
-                <Icon size={20} />
+              <div className="mt-0.5 shrink-0">
+                <Icon size={18} />
               </div>
-              <div className="flex-1">
-                <h4 className="text-sm font-bold leading-tight">{t.title}</h4>
-                {t.message && <p className="text-[11px] font-semibold opacity-80 mt-1">{t.message}</p>}
+              <div className="flex-1 min-w-0">
+                <h4 className="text-xs font-semibold text-foreground leading-tight">{t.title}</h4>
+                {t.message && <p className="text-[11px] text-muted-foreground mt-0.5">{t.message}</p>}
               </div>
-              <button 
+              <button
                 onClick={() => removeToast(t.id)}
-                className="hover:opacity-60 transition-opacity"
+                className="text-muted-foreground hover:text-foreground transition-colors shrink-0 p-0.5"
               >
-                <X size={16} />
+                <X size={14} />
               </button>
             </div>
           );

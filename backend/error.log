@@ -154,3 +154,24 @@ NotFoundException: Cannot GET /api/v1/reviews/stats
     at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
     at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
     at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-15T17:52:33.948Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.not_admin_access
+    at DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:21:13)
+
+[2026-09-15T17:52:41.315Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:29:13)
+    at async DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:17:18)
+
+[2026-09-15T17:52:46.841Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.not_admin_access
+    at DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:21:13)
+
+[2026-09-15T17:53:06.442Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.not_admin_access
+    at DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:21:13)
+
+[2026-09-15T18:03:54.269Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.not_admin_access
+    at DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:21:13)
