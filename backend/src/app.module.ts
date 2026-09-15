@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, RouterModule } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
-import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
-import { WordModule } from './word/word.module';
-import { ReviewModule } from './review/review.module';
-import { MetaController } from './meta/meta.controller';
-import { SettingsModule } from './settings/settings.module';
+import { AuthModule } from './client/auth/auth.module';
+import { UserModule } from './client/user/user.module';
+import { WordModule } from './client/word/word.module';
+import { ReviewModule } from './client/review/review.module';
+import { MetaModule } from './meta/meta.module';
+import { SettingsModule } from './client/settings/settings.module';
+import { AnalyticsModule } from './dashboard/analytics/analytics.module';
+import { ManagementModule } from './dashboard/management/management.module';
+import { DashboardAuthModule } from './dashboard/auth/dashboard-auth.module';
+import { DashboardWordsModule } from './dashboard/words/words.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 
 @Module({
   imports: [
@@ -16,17 +21,48 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
       isGlobal: true,
     }),
     PrismaModule,
+    // Client
     AuthModule,
     UserModule,
     WordModule,
     ReviewModule,
     SettingsModule,
+    // Dashboard
+    AnalyticsModule,
+    ManagementModule,
+    DashboardAuthModule,
+    DashboardWordsModule,
+    DashboardConfigModule,
+    MetaModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
-      limit: 100, // Increased to 100 per minute for normal app behavior, 10 was too strict
+      limit: 100,
     }]),
+    RouterModule.register([
+      {
+        path: 'v1/client',
+        children: [
+          { path: '/', module: AuthModule },
+          { path: '/', module: UserModule },
+          { path: '/', module: WordModule },
+          { path: '/', module: ReviewModule },
+          { path: '/', module: SettingsModule },
+          { path: '/', module: MetaModule },
+        ],
+      },
+      {
+        path: 'v1/dashboard',
+        children: [
+          { path: '/', module: AnalyticsModule },
+          { path: '/', module: ManagementModule },
+          { path: '/', module: DashboardAuthModule },
+          { path: '/', module: DashboardWordsModule },
+          { path: '/', module: DashboardConfigModule },
+        ],
+      },
+    ]),
   ],
-  controllers: [MetaController],
+  controllers: [],
   providers: [
     {
       provide: APP_GUARD,

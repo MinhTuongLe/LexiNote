@@ -90,6 +90,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
     }
   };
 
+
   return (
     <div className="profile-page">
       <div className="profile-back">

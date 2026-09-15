@@ -7,7 +7,7 @@ import i18n from '../i18n';
 
 // Base query with auth header
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:1337/api',
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:1337/api/v1/client',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as any).auth.token;
     if (token) {
