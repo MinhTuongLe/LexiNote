@@ -35,7 +35,7 @@ const OverviewPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">System Overview</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time heuristics and platform metrics.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Real-time learning metrics and vocabulary acquisition.</p>
         </div>
         <div className="flex items-center gap-2.5">
           <Button 
@@ -48,7 +48,7 @@ const OverviewPage: React.FC = () => {
           </Button>
           <Button 
             size="sm"
-            className="h-9 px-4 min-w-[130px] font-medium transition-all shadow-xs"
+            className="h-9 px-4 min-w-[130px] font-semibold transition-all shadow-xs"
             onClick={handleScan}
             disabled={isScanning}
           >
@@ -125,8 +125,8 @@ const OverviewPage: React.FC = () => {
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorWords" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.25}/>
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.00}/>
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.25}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.00}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-border/40" />
@@ -151,18 +151,18 @@ const OverviewPage: React.FC = () => {
                     contentStyle={{ 
                       backgroundColor: 'var(--card)', 
                       borderColor: 'var(--border)', 
-                      borderRadius: '0.5rem',
+                      borderRadius: '0.75rem',
                       color: 'var(--foreground)',
-                      boxShadow: '0 4px 20px -2px rgba(0,0,0,0.1)',
+                      boxShadow: '0 4px 20px -2px rgba(0,0,0,0.08)',
                       fontSize: '12px',
                       fontWeight: 500
                     }}
-                    cursor={{ stroke: '#6366f1', strokeWidth: 1.5, strokeDasharray: '4 4' }}
+                    cursor={{ stroke: '#f43f5e', strokeWidth: 1.5, strokeDasharray: '4 4' }}
                   />
                   <Area 
                     type="monotone" 
                     dataKey="words" 
-                    stroke="#6366f1" 
+                    stroke="#f43f5e" 
                     strokeWidth={2.5} 
                     fillOpacity={1} 
                     fill="url(#colorWords)" 
@@ -210,14 +210,14 @@ const OverviewPage: React.FC = () => {
                   ))
                 )}
                 {!isActivityLoading && (!recentActivities || recentActivities.length === 0) && (
-                  <p className="text-xs text-muted-foreground text-center py-6">No recent system waves.</p>
+                  <p className="text-xs text-muted-foreground text-center py-6">No recent learning activity.</p>
                 )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Security Banner with Modern Deep Indigo Gradient */}
-          <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 p-6 rounded-xl border border-indigo-500/20 text-white relative overflow-hidden shadow-sm">
+          {/* Security Banner with Warm Dark Rose/Slate Gradient */}
+          <div className="bg-gradient-to-br from-slate-900 via-rose-950/40 to-slate-900 p-6 rounded-xl border border-rose-500/20 text-white relative overflow-hidden shadow-sm">
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-3">
                 <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
@@ -231,7 +231,7 @@ const OverviewPage: React.FC = () => {
               </p>
               <Button 
                 size="sm"
-                className="mt-4 h-8 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs rounded-lg transition-colors"
+                className="mt-4 h-8 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs rounded-lg transition-colors border-none"
                 onClick={() => alert('Integrity scan: All endpoints secure.')}
               >
                 Scan Integrity

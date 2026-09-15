@@ -21,10 +21,10 @@ export function useOverview() {
       value: stats ? formatNumber(stats.totalUsers) : '...', 
       change: stats?.userChange || '+12.5%', 
       icon: Users, 
-      theme: '#6366f1', 
-      bg: 'rgba(99, 102, 241, 0.12)',
-      textColor: 'text-indigo-600 dark:text-indigo-400',
-      bgColor: 'bg-indigo-500/10'
+      theme: '#f43f5e', 
+      bg: 'rgba(244, 63, 94, 0.12)',
+      textColor: 'text-rose-600 dark:text-rose-400',
+      bgColor: 'bg-rose-500/10'
     },
     { 
       label: 'Word Count', 
@@ -41,10 +41,10 @@ export function useOverview() {
       value: stats ? formatNumber(stats.activeSessions) : '...', 
       change: '-2.1%', 
       icon: Activity, 
-      theme: '#8b5cf6', 
-      bg: 'rgba(139, 92, 246, 0.12)',
-      textColor: 'text-violet-600 dark:text-violet-400',
-      bgColor: 'bg-violet-500/10'
+      theme: '#a855f7', 
+      bg: 'rgba(168, 85, 247, 0.12)',
+      textColor: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-500/10'
     },
     { 
       label: 'Learning Points', 
