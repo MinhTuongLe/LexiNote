@@ -8,6 +8,7 @@ import Card from '../../components/Card';
 import { Eye, EyeOff } from 'lucide-react';
 import { useCuteDialog } from '../../context/DialogContext';
 import { useTranslation } from 'react-i18next';
+import { checkHasSeenGuide } from '../../utils/authUtils';
 import './Auth.css';
 
 interface LoginProps {
@@ -22,20 +23,26 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [login, { isLoading }] = useLoginMutation();
   const dispatch = useDispatch();
-  const { showAlert } = useCuteDialog();
+  const { showAlert, closeDialog } = useCuteDialog();
   const { t } = useTranslation();
-
-
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const result = await login({ email, password }).unwrap();
-      
-
+      const hasSeenGuide = checkHasSeenGuide(result.user);
 
       dispatch(setCredentials(result));
-      showAlert(t('auth.login_success_title'), t('auth.login_success_msg', { name: result.user.fullName }), 'success');
+
+      if (hasSeenGuide) {
+        // Returning user: show Welcome Back popup and go to dashboard
+        showAlert(t('auth.login_success_title'), t('auth.login_success_msg', { name: result.user.fullName }), 'success');
+        navigate('/dashboard', { replace: true });
+      } else {
+        // First-time user: only show Intro guide (WelcomePage), never show Welcome Back popup
+        closeDialog();
+        navigate('/welcome', { replace: true });
+      }
     } catch (err: any) {
       if (err.data?.code === 'EMAIL_NOT_VERIFIED') {
         showAlert(t('auth.not_verified_title'), t('auth.not_verified_msg'), 'alert');
