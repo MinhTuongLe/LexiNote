@@ -21,12 +21,14 @@ export class DashboardWordsController {
     @Query('limit') limit?: string,
     @Query('search') search?: string,
     @Query('type') type?: string,
+    @Query('ownerId') ownerId?: string,
   ) {
     return this.wordsService.getAllWords(
       page ? parseInt(page) : 1,
       limit ? parseInt(limit) : 20,
       search,
       type,
+      ownerId ? parseInt(ownerId) : undefined,
     );
   }
 

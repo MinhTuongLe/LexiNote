@@ -2,7 +2,7 @@ import { dashboardApi } from './dashboardApi';
 
 export const wordsApi = dashboardApi.injectEndpoints({
   endpoints: (builder) => ({
-    getWords: builder.query<any, { page?: number; limit?: number; search?: string; type?: string }>({
+    getWords: builder.query<any, { page?: number; limit?: number; search?: string; type?: string; ownerId?: number }>({
       query: (params) => ({
         url: '/words',
         params,

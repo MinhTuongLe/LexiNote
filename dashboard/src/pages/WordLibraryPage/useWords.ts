@@ -1,15 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useGetWordsQuery, useDeleteWordMutation, useUpdateWordMutation } from '@/store/api/wordsApi';
 
 export function useWords() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialOwnerId = searchParams.get('ownerId') ? Number(searchParams.get('ownerId')) : undefined;
+
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('All');
+  const [ownerId, setOwnerId] = useState<number | undefined>(initialOwnerId);
+
+  useEffect(() => {
+    const paramOwner = searchParams.get('ownerId');
+    if (paramOwner) {
+      setOwnerId(Number(paramOwner));
+    }
+  }, [searchParams]);
 
   const { data, isLoading } = useGetWordsQuery({ 
     page, 
     search, 
-    type: filter === 'All' ? undefined : filter.toLowerCase() 
+    type: filter === 'All' ? undefined : filter.toLowerCase(),
+    ownerId
   });
   const [deleteWord] = useDeleteWordMutation();
   const [updateWord] = useUpdateWordMutation();
@@ -20,6 +33,17 @@ export function useWords() {
   const handleSearchChange = (value: string) => {
     setSearch(value);
     setPage(1);
+  };
+
+  const handleOwnerChange = (newOwnerId?: number) => {
+    setOwnerId(newOwnerId);
+    setPage(1);
+    if (newOwnerId) {
+      setSearchParams({ ownerId: String(newOwnerId) });
+    } else {
+      searchParams.delete('ownerId');
+      setSearchParams(searchParams);
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -39,6 +63,8 @@ export function useWords() {
     setSearch: handleSearchChange,
     filter,
     setFilter,
+    ownerId,
+    setOwnerId: handleOwnerChange,
     page,
     setPage,
     totalPages: meta.totalPages,

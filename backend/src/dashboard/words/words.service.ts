@@ -5,7 +5,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class DashboardWordsService {
   constructor(private prisma: PrismaService) {}
 
-  async getAllWords(page = 1, limit = 20, search?: string, type?: string) {
+  async getAllWords(page = 1, limit = 20, search?: string, type?: string, ownerId?: number) {
     const skip = (page - 1) * limit;
     const where: any = {};
 
@@ -20,6 +20,10 @@ export class DashboardWordsService {
       where.type = type;
     }
 
+    if (ownerId) {
+      where.ownerId = ownerId;
+    }
+
     const [words, total] = await Promise.all([
       this.prisma.word.findMany({
         where,
@@ -27,8 +31,9 @@ export class DashboardWordsService {
         take: limit,
         include: {
           owner: {
-            select: { fullName: true, email: true },
+            select: { id: true, fullName: true, email: true },
           },
+          reviews: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -40,6 +45,13 @@ export class DashboardWordsService {
         ...w,
         createdAt: w.createdAt.toString(),
         updatedAt: w.updatedAt.toString(),
+        reviews: w.reviews.map(r => ({
+          ...r,
+          lastReviewed: r.lastReviewed ? r.lastReviewed.toString() : null,
+          nextReview: r.nextReview.toString(),
+          createdAt: r.createdAt.toString(),
+          updatedAt: r.updatedAt.toString(),
+        })),
       })),
       meta: {
         total,

@@ -19,8 +19,11 @@ import { useUsers } from './useUsers';
 import ReModal from '@/components/ui/ReModal';
 import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
+import { UserDetailModal } from './UserDetailModal';
+import { useNavigate } from 'react-router-dom';
 
 const UserManagementPage: React.FC = () => {
+  const navigate = useNavigate();
   const {
     users,
     isLoading,
@@ -44,6 +47,8 @@ const UserManagementPage: React.FC = () => {
   const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
+  const [inspectUserId, setInspectUserId] = React.useState<number | null>(null);
   const [selectedUser, setSelectedUser] = React.useState<any>(null);
   
   const [newUserData, setNewUserData] = React.useState({ fullName: '', email: '' });
@@ -353,9 +358,12 @@ const UserManagementPage: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
-                          onClick={() => toast({ type: 'info', title: 'User Info', message: `${user.fullName} (${user.email})` })}
+                          onClick={() => {
+                            setInspectUserId(user.id);
+                            setIsDetailModalOpen(true);
+                          }}
                           className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="View Info"
+                          title="Inspect User Details & SRS Progress"
                         >
                           <Eye size={14} />
                         </Button>
@@ -451,6 +459,16 @@ const UserManagementPage: React.FC = () => {
           </div>
         </div>
       </Card>
+
+      <UserDetailModal
+        userId={inspectUserId}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        onViewUserWords={(userId) => {
+          setIsDetailModalOpen(false);
+          navigate(`/dashboard/words?ownerId=${userId}`);
+        }}
+      />
     </div>
   );
 };

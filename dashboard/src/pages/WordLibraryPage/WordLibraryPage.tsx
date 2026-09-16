@@ -7,7 +7,10 @@ import {
   Trash2,
   FileText,
   Clock,
-  ExternalLink
+  ExternalLink,
+  User,
+  BrainCircuit,
+  X
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +29,8 @@ const WordLibraryPage: React.FC = () => {
     setSearch,
     filter,
     setFilter,
+    ownerId,
+    setOwnerId,
     page,
     setPage,
     totalPages,
@@ -101,6 +106,23 @@ const WordLibraryPage: React.FC = () => {
           <Plus size={16} className="mr-1.5" /> Batch Word Import
         </Button>
       </div>
+
+      {ownerId && (
+        <div className="flex items-center justify-between p-3 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs font-semibold">
+          <div className="flex items-center gap-2">
+            <User size={16} />
+            <span>Filtering words owned by User #{ownerId}</span>
+          </div>
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => setOwnerId(undefined)}
+            className="h-6 px-2 text-primary hover:bg-primary/20 gap-1"
+          >
+            <X size={12} /> Clear Filter
+          </Button>
+        </div>
+      )}
 
       {/* Edit Word Modal */}
       <ReModal
@@ -277,7 +299,7 @@ const WordLibraryPage: React.FC = () => {
                         <h3 className="text-base font-bold text-foreground group-hover:text-primary transition-colors tracking-tight">
                           {word.word}
                         </h3>
-                        <div className="flex items-center gap-1.5 mt-1">
+                        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           <span className="bg-muted text-muted-foreground text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded">
                             {word.type}
                           </span>
@@ -285,6 +307,18 @@ const WordLibraryPage: React.FC = () => {
                           <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
                             <Clock size={10} /> {new Date(Number(word.createdAt)).toLocaleDateString()}
                           </div>
+                          {word.owner && (
+                            <>
+                              <span className="text-muted-foreground/40 text-xs">•</span>
+                              <button 
+                                onClick={(e) => { e.stopPropagation(); setOwnerId(word.owner.id); }}
+                                className="text-[10px] text-primary hover:underline flex items-center gap-1 font-semibold"
+                                title="Click to filter by this owner"
+                              >
+                                <User size={10} /> {word.owner.fullName || word.owner.email}
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                       
@@ -312,7 +346,7 @@ const WordLibraryPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mb-4">
+                    <div className="mb-3">
                       <div className="bg-muted/40 p-3.5 rounded-lg border border-border/60">
                         <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                           <FileText size={12} />
@@ -321,6 +355,22 @@ const WordLibraryPage: React.FC = () => {
                         <p className="text-xs font-semibold text-foreground leading-relaxed">{word.meaningVi}</p>
                       </div>
                     </div>
+
+                    {/* SRS Stats Summary Bar */}
+                    {word.reviews?.[0] ? (
+                      <div className="flex items-center justify-between text-[11px] font-mono p-2 rounded-lg bg-muted/20 border border-border/40 mb-3">
+                        <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-semibold">
+                          <BrainCircuit size={12} /> EF: {word.reviews[0].easeFactor}
+                        </span>
+                        <span className="text-muted-foreground">
+                          ✓ {word.reviews[0].correctCount} / ✗ {word.reviews[0].wrongCount}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-muted-foreground italic px-1 mb-3">
+                        New word (No SRS reviews yet)
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between pt-3 border-t border-border/60">
                       <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-semibold ${

@@ -42,6 +42,12 @@ export class ManagementController {
     return this.managementService.findOne(id);
   }
 
+  @Get('users/:id/details')
+  @ApiOperation({ summary: 'Get full user details including owned words and SRS progress' })
+  async getUserDetails(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.getUserDetails(id);
+  }
+
   @Patch('users/:id')
   @ApiOperation({ summary: 'Update user data' })
   async updateUser(
@@ -55,5 +61,17 @@ export class ManagementController {
   @ApiOperation({ summary: 'Toggle user active/inactive status' })
   async toggleStatus(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.toggleStatus(id);
+  }
+
+  @Post('users/:id/toggle-verify')
+  @ApiOperation({ summary: 'Toggle user email verification status' })
+  async toggleVerify(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.toggleEmailVerified(id);
+  }
+
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Delete user account and related records' })
+  async deleteUser(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.deleteUser(id);
   }
 }

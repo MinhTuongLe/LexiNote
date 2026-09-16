@@ -39,6 +39,19 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Users', 'Stats'],
     }),
+    getUserDetails: builder.query<any, number>({
+      query: (id) => ({
+        url: `/management/users/${id}/details`,
+      }),
+      providesTags: (result, error, id) => [{ type: 'Users', id }],
+    }),
+    toggleEmailVerified: builder.mutation<any, number>({
+      query: (id) => ({
+        url: `/management/users/${id}/toggle-verify`,
+        method: 'POST',
+      }),
+      invalidatesTags: (result, error, id) => ['Users', { type: 'Users', id }],
+    }),
   }),
 });
 
@@ -47,5 +60,7 @@ export const {
   useCreateUserMutation,
   useToggleUserStatusMutation, 
   useUpdateUserMutation,
-  useDeleteUserMutation
+  useDeleteUserMutation,
+  useGetUserDetailsQuery,
+  useToggleEmailVerifiedMutation,
 } = usersApi;
