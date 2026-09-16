@@ -14,6 +14,7 @@ import { DashboardAuthModule } from './dashboard/auth/dashboard-auth.module';
 import { DashboardWordsModule } from './dashboard/words/words.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
+import { AuditModule } from './dashboard/audit/audit.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { DashboardConfigModule } from './dashboard/config/dashboard-config.modul
     DashboardAuthModule,
     DashboardWordsModule,
     DashboardConfigModule,
+    AuditModule,
     MetaModule,
     ThrottlerModule.forRoot([{
       ttl: 60000,
@@ -58,6 +60,7 @@ import { DashboardConfigModule } from './dashboard/config/dashboard-config.modul
           { path: '/', module: DashboardAuthModule },
           { path: '/', module: DashboardWordsModule },
           { path: '/', module: DashboardConfigModule },
+          { path: '/', module: AuditModule },
         ],
       },
     ]),

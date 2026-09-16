@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class ManagementService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   async getAllUsers(page = 1, limit = 10, search?: string, isActive?: boolean) {
     const skip = (page - 1) * limit;
@@ -148,15 +152,61 @@ export class ManagementService {
     };
   }
 
+  async getUserSessions(userId: number) {
+    const sessions = await this.prisma.refreshToken.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return sessions.map(s => ({
+      ...s,
+      createdAt: s.createdAt.toString(),
+      expiresAt: s.expiresAt.toString(),
+      isExpired: Number(s.expiresAt) < Date.now(),
+    }));
+  }
+
+  async revokeSession(sessionId: number) {
+    const token = await this.prisma.refreshToken.findUnique({ where: { id: sessionId } });
+    if (!token) return null;
+
+    const result = await this.prisma.refreshToken.delete({ where: { id: sessionId } });
+    await this.auditService.logAction({
+      action: 'SESSION_REVOKE',
+      targetType: 'USER_SESSION',
+      targetId: String(token.userId),
+      details: { sessionId, ipAddress: token.ipAddress, userAgent: token.userAgent },
+    });
+    return result;
+  }
+
+  async revokeAllUserSessions(userId: number) {
+    const result = await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    await this.auditService.logAction({
+      action: 'USER_REVOKE_ALL_SESSIONS',
+      targetType: 'USER',
+      targetId: String(userId),
+      details: { revokedCount: result.count },
+    });
+    return result;
+  }
+
   async update(id: number, data: any) {
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data,
     });
+    await this.auditService.logAction({
+      action: 'USER_UPDATE',
+      targetType: 'USER',
+      targetId: String(id),
+      details: data,
+    });
+    return updated;
   }
 
   async createUser(data: any) {
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...data,
         password: 'hashed_password_placeholder',
@@ -164,31 +214,76 @@ export class ManagementService {
         isActive: true,
       },
     });
+    await this.auditService.logAction({
+      action: 'USER_CREATE',
+      targetType: 'USER',
+      targetId: String(user.id),
+      details: { email: user.email, fullName: user.fullName },
+    });
+    return user;
   }
 
   async toggleStatus(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) return null;
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { isActive: !user.isActive },
     });
+
+    await this.auditService.logAction({
+      action: 'USER_TOGGLE_STATUS',
+      targetType: 'USER',
+      targetId: String(id),
+      details: { previousStatus: user.isActive, newStatus: updated.isActive, email: user.email },
+    });
+
+    return updated;
   }
 
   async toggleEmailVerified(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
     if (!user) return null;
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id },
       data: { isEmailVerified: !user.isEmailVerified },
     });
+
+    await this.auditService.logAction({
+      action: 'USER_TOGGLE_VERIFY',
+      targetType: 'USER',
+      targetId: String(id),
+      details: { previousState: user.isEmailVerified, newState: updated.isEmailVerified, email: user.email },
+    });
+
+    return updated;
   }
 
   async deleteUser(id: number) {
-    return this.prisma.user.delete({
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (user) {
+      await this.prisma.archive.create({
+        data: {
+          fromModel: 'User',
+          originalRecord: JSON.parse(JSON.stringify(user, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+          originalRecordId: { id },
+        },
+      });
+    }
+
+    const deleted = await this.prisma.user.delete({
       where: { id },
     });
+
+    await this.auditService.logAction({
+      action: 'USER_DELETE',
+      targetType: 'USER',
+      targetId: String(id),
+      details: { email: user?.email },
+    });
+
+    return deleted;
   }
 }

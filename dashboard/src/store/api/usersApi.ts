@@ -52,6 +52,26 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: (result, error, id) => ['Users', { type: 'Users', id }],
     }),
+    getUserSessions: builder.query<any, number>({
+      query: (userId) => ({
+        url: `/management/users/${userId}/sessions`,
+      }),
+      providesTags: (result, error, userId) => [{ type: 'Users', id: `sessions-${userId}` }],
+    }),
+    revokeUserSession: builder.mutation<any, { userId: number; sessionId: number }>({
+      query: ({ sessionId }) => ({
+        url: `/management/users/sessions/${sessionId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, { userId }) => [{ type: 'Users', id: `sessions-${userId}` }],
+    }),
+    revokeAllUserSessions: builder.mutation<any, number>({
+      query: (userId) => ({
+        url: `/management/users/${userId}/sessions`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (result, error, userId) => [{ type: 'Users', id: `sessions-${userId}` }],
+    }),
   }),
 });
 
@@ -63,4 +83,7 @@ export const {
   useDeleteUserMutation,
   useGetUserDetailsQuery,
   useToggleEmailVerifiedMutation,
+  useGetUserSessionsQuery,
+  useRevokeUserSessionMutation,
+  useRevokeAllUserSessionsMutation,
 } = usersApi;

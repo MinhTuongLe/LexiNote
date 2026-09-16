@@ -109,3 +109,20 @@ model RefreshToken {
   @@index([hashedToken])
   @@map("refresh_token")
 }
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int?     @map("actor_id")
+  actorEmail String?  @map("actor_email")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String?  @map("target_id")
+  details    Json?    @db.Json
+  ipAddress  String?  @map("ip_address")
+  createdAt  BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_log")
+}

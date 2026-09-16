@@ -6,7 +6,10 @@ import Skeleton from '@/components/ui/Skeleton';
 import { 
   useGetUserDetailsQuery, 
   useToggleUserStatusMutation, 
-  useToggleEmailVerifiedMutation 
+  useToggleEmailVerifiedMutation,
+  useGetUserSessionsQuery,
+  useRevokeUserSessionMutation,
+  useRevokeAllUserSessionsMutation
 } from '@/store/api/usersApi';
 import { 
   Mail, 
@@ -16,7 +19,10 @@ import {
   XCircle, 
   ShieldCheck, 
   Sparkles,
-  Layers
+  Layers,
+  KeyRound,
+  LogOut,
+  Globe
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 
@@ -34,14 +40,20 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
   onViewUserWords
 }) => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'overview' | 'words'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'words' | 'sessions'>('overview');
 
   const { data, isLoading, refetch } = useGetUserDetailsQuery(userId || 0, {
     skip: !userId || !isOpen,
   });
 
+  const { data: sessions, isLoading: isSessionsLoading, refetch: refetchSessions } = useGetUserSessionsQuery(userId || 0, {
+    skip: !userId || !isOpen || activeTab !== 'sessions',
+  });
+
   const [toggleStatus, { isLoading: isTogglingStatus }] = useToggleUserStatusMutation();
   const [toggleVerify, { isLoading: isTogglingVerify }] = useToggleEmailVerifiedMutation();
+  const [revokeSession] = useRevokeUserSessionMutation();
+  const [revokeAllSessions, { isLoading: isRevokingAll }] = useRevokeAllUserSessionsMutation();
 
   if (!isOpen || !userId) return null;
 
@@ -66,6 +78,26 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       refetch();
     } catch (err) {
       toast({ type: 'error', title: 'Action Failed', message: 'Could not toggle email verification.' });
+    }
+  };
+
+  const handleRevokeSingle = async (sessionId: number) => {
+    try {
+      await revokeSession({ userId, sessionId }).unwrap();
+      toast({ type: 'success', title: 'Session Terminated', message: 'Active session has been revoked.' });
+      refetchSessions();
+    } catch (err) {
+      toast({ type: 'error', title: 'Revoke Failed', message: 'Could not terminate session.' });
+    }
+  };
+
+  const handleRevokeAll = async () => {
+    try {
+      await revokeAllSessions(userId).unwrap();
+      toast({ type: 'success', title: 'Force Logout Success', message: 'All active sessions for this user have been terminated.' });
+      refetchSessions();
+    } catch (err) {
+      toast({ type: 'error', title: 'Revoke Failed', message: 'Could not terminate user sessions.' });
     }
   };
 
@@ -204,6 +236,16 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
               >
                 Vocabulary Library ({words.length})
               </button>
+              <button
+                className={`py-2 px-4 border-b-2 font-medium transition-colors ${
+                  activeTab === 'sessions'
+                    ? 'border-primary text-primary font-semibold'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                }`}
+                onClick={() => setActiveTab('sessions')}
+              >
+                Sessions & Security
+              </button>
             </div>
 
             {/* Tab 1: Account Overview */}
@@ -295,9 +337,69 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                 )}
               </div>
             )}
+
+            {/* Tab 3: Active Sessions & Remote Logout */}
+            {activeTab === 'sessions' && (
+              <div className="space-y-4 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+                    Active Refresh Token Sessions ({sessions?.length || 0})
+                  </span>
+                  <Button
+                    size="xs"
+                    variant="destructive"
+                    onClick={handleRevokeAll}
+                    disabled={isRevokingAll || !sessions || sessions.length === 0}
+                    className="gap-1 text-xs"
+                  >
+                    <LogOut size={12} /> Force Logout All Devices
+                  </Button>
+                </div>
+
+                {isSessionsLoading ? (
+                  <Skeleton className="h-20 w-full" />
+                ) : !sessions || sessions.length === 0 ? (
+                  <div className="p-4 rounded-lg border border-border/60 bg-muted/20 text-center text-muted-foreground">
+                    No active refresh token sessions found for this user.
+                  </div>
+                ) : (
+                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                    {sessions.map((sess: any) => (
+                      <div
+                        key={sess.id}
+                        className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between text-xs"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2 font-mono font-semibold text-foreground">
+                            <Globe size={13} className="text-primary" /> {sess.ipAddress || '127.0.0.1'}
+                            {sess.isExpired ? (
+                              <Badge variant="destructive" className="text-[9px] py-0">Expired</Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-[9px] py-0 border-emerald-500/30 text-emerald-500">Active</Badge>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-muted-foreground truncate max-w-sm">
+                            {sess.userAgent || 'Unknown Device / Browser'}
+                          </p>
+                        </div>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => handleRevokeSingle(sess.id)}
+                          className="h-7 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10 border-rose-500/30"
+                        >
+                          Revoke
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
     </ReModal>
   );
 };
+

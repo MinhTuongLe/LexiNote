@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class DashboardWordsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private auditService: AuditService,
+  ) {}
 
   async getAllWords(page = 1, limit = 20, search?: string, type?: string, ownerId?: number) {
     const skip = (page - 1) * limit;
@@ -63,19 +67,47 @@ export class DashboardWordsService {
   }
 
   async deleteWord(id: number) {
-    // Audit trace should happen here in a real scenario
-    return this.prisma.word.delete({
+    const word = await this.prisma.word.findUnique({ where: { id } });
+    if (word) {
+      await this.prisma.archive.create({
+        data: {
+          fromModel: 'Word',
+          originalRecord: JSON.parse(JSON.stringify(word, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+          originalRecordId: { id },
+        },
+      });
+    }
+
+    const deleted = await this.prisma.word.delete({
       where: { id },
     });
+
+    await this.auditService.logAction({
+      action: 'WORD_DELETE',
+      targetType: 'WORD',
+      targetId: String(id),
+      details: { word: word?.word, meaningVi: word?.meaningVi },
+    });
+
+    return deleted;
   }
 
   async updateWord(id: number, data: any) {
-    return this.prisma.word.update({
+    const updated = await this.prisma.word.update({
       where: { id },
       data: {
         meaningVi: data.meaningVi,
         type: data.type,
       },
     });
+
+    await this.auditService.logAction({
+      action: 'WORD_UPDATE',
+      targetType: 'WORD',
+      targetId: String(id),
+      details: data,
+    });
+
+    return updated;
   }
 }

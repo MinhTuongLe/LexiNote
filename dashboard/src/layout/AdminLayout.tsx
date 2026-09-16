@@ -54,6 +54,9 @@ const AdminLayout: React.FC = () => {
     { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { title: 'User Management', path: '/dashboard/users', icon: Users },
     { title: 'Word Library', path: '/dashboard/words', icon: BookOpen },
+    { title: 'Moderation Queue', path: '/dashboard/moderation', icon: Sparkles },
+    { title: 'Audit Logs', path: '/dashboard/audit', icon: ShieldCheck },
+    { title: 'Trash & Recovery', path: '/dashboard/trash', icon: Trash2 },
     { title: 'System Config', path: '/dashboard/config', icon: Settings },
   ];
 
@@ -63,6 +66,9 @@ const AdminLayout: React.FC = () => {
       dashboard: 'Overview',
       users: 'User Management',
       words: 'Word Library',
+      moderation: 'Moderation Queue',
+      audit: 'Audit Logs',
+      trash: 'Trash & Recovery',
       config: 'System Config',
       profile: 'Account Profile',
       settings: 'Settings'

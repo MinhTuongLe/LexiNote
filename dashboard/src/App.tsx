@@ -36,6 +36,9 @@ const ProtectedRoute = () => {
 
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import AuditLogPage from './pages/AuditLogPage/AuditLogPage';
+import ModerationPage from './pages/ModerationPage/ModerationPage';
+import TrashPage from './pages/TrashPage/TrashPage';
 
 function App() {
   return (
@@ -48,6 +51,9 @@ function App() {
             <Route index element={<OverviewPage />} />
             <Route path="users" element={<UserManagementPage />} />
             <Route path="words" element={<WordLibraryPage />} />
+            <Route path="moderation" element={<ModerationPage />} />
+            <Route path="audit" element={<AuditLogPage />} />
+            <Route path="trash" element={<TrashPage />} />
             <Route path="config" element={<SystemConfigPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="settings" element={<SettingsPage />} />

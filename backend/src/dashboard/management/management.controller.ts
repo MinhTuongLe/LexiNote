@@ -74,4 +74,22 @@ export class ManagementController {
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.deleteUser(id);
   }
+
+  @Get('users/:id/sessions')
+  @ApiOperation({ summary: 'Get active login sessions for user' })
+  async getUserSessions(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.getUserSessions(id);
+  }
+
+  @Delete('users/:id/sessions')
+  @ApiOperation({ summary: 'Revoke all sessions for user (Force logout)' })
+  async revokeAllUserSessions(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.revokeAllUserSessions(id);
+  }
+
+  @Delete('users/sessions/:sessionId')
+  @ApiOperation({ summary: 'Revoke specific refresh token session' })
+  async revokeSession(@Param('sessionId', ParseIntPipe) sessionId: number) {
+    return this.managementService.revokeSession(sessionId);
+  }
 }
