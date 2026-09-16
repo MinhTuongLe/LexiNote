@@ -36,10 +36,12 @@ import { AuditModule } from './dashboard/audit/audit.module';
     DashboardConfigModule,
     AuditModule,
     MetaModule,
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 100,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     RouterModule.register([
       {
         path: 'v1/client',
@@ -75,4 +77,3 @@ import { AuditModule } from './dashboard/audit/audit.module';
 })
 export class AppModule {}
 // Rebuild trigger
-

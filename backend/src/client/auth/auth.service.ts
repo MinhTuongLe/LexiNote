@@ -1,4 +1,10 @@
-import { Injectable, UnauthorizedException, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
@@ -19,11 +25,13 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
-    const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const user = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (!user) {
       throw new UnauthorizedException('error.auth.email_not_found');
     }
-    
+
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
       throw new UnauthorizedException('error.auth.wrong_password');
@@ -67,7 +75,10 @@ export class AuthService {
       },
     });
 
-    const refreshToken = this.generateRefreshToken(user.id, refreshTokenRecord.id);
+    const refreshToken = this.generateRefreshToken(
+      user.id,
+      refreshTokenRecord.id,
+    );
     const hashedToken = await bcrypt.hash(refreshToken, 10);
 
     // Update with real hashed token
@@ -94,7 +105,9 @@ export class AuthService {
       throw new BadRequestException('error.auth.password_too_short');
     }
 
-    const existing = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const existing = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (existing) {
       throw new BadRequestException('error.auth.email_exists');
     }
@@ -106,7 +119,9 @@ export class AuthService {
       isEmailVerified: false,
     });
 
-    console.info(`👤 New user registered: ${newUser.email} (unverified). Use MASTER_VERIFY_CODE to verify.`);
+    console.info(
+      `👤 New user registered: ${newUser.email} (unverified). Use MASTER_VERIFY_CODE to verify.`,
+    );
 
     return {
       message: 'success.auth.registered',
@@ -146,10 +161,15 @@ export class AuthService {
       throw new UnauthorizedException('error.auth.session_expired');
     }
 
-    const isValidRefresh = await bcrypt.compare(refreshToken, session.hashedToken);
+    const isValidRefresh = await bcrypt.compare(
+      refreshToken,
+      session.hashedToken,
+    );
     if (!isValidRefresh) {
       // Possible token reuse attack - invalidate EVERY session for security
-      await this.prisma.refreshToken.deleteMany({ where: { userId: session.userId } });
+      await this.prisma.refreshToken.deleteMany({
+        where: { userId: session.userId },
+      });
       throw new UnauthorizedException('error.auth.token_theft');
     }
 
@@ -157,16 +177,23 @@ export class AuthService {
       throw new UnauthorizedException('error.auth.account_inactive');
     }
 
-    const payload = { id: session.user.id, email: session.user.email, role: session.user.role };
+    const payload = {
+      id: session.user.id,
+      email: session.user.email,
+      role: session.user.role,
+    };
     const newAccessToken = this.jwtService.sign(payload);
-    
+
     // Rotate refresh token
-    const newRefreshToken = this.generateRefreshToken(session.user.id, session.id);
+    const newRefreshToken = this.generateRefreshToken(
+      session.user.id,
+      session.id,
+    );
     const hashedRefresh = await bcrypt.hash(newRefreshToken, 10);
 
     await this.prisma.refreshToken.update({
       where: { id: session.id },
-      data: { 
+      data: {
         hashedToken: hashedRefresh,
         userAgent: request?.headers?.['user-agent'] || session.userAgent,
         ipAddress: request?.ip || session.ipAddress,
@@ -182,9 +209,12 @@ export class AuthService {
   }
 
   async verifyEmail(email: string, token: string) {
-    const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const user = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (!user) throw new NotFoundException('error.auth.user_not_found');
-    if (user.isEmailVerified) throw new BadRequestException('error.auth.already_verified');
+    if (user.isEmailVerified)
+      throw new BadRequestException('error.auth.already_verified');
 
     const masterCode = this.configService.get('MASTER_VERIFY_CODE');
     const isMasterCode = masterCode && token === masterCode;
@@ -192,12 +222,18 @@ export class AuthService {
     if (!isMasterCode) {
       // Logic for verification code verification (if implemented)
       // Original code skip this if master mode.
-      if (!user.emailVerificationExpires || Number(user.emailVerificationExpires) < Date.now()) {
+      if (
+        !user.emailVerificationExpires ||
+        Number(user.emailVerificationExpires) < Date.now()
+      ) {
         throw new BadRequestException('error.auth.verification_expired');
       }
-      
-      const isValid = user.emailVerificationToken ? await bcrypt.compare(token, user.emailVerificationToken) : false;
-      if (!isValid) throw new BadRequestException('error.auth.invalid_verification');
+
+      const isValid = user.emailVerificationToken
+        ? await bcrypt.compare(token, user.emailVerificationToken)
+        : false;
+      if (!isValid)
+        throw new BadRequestException('error.auth.invalid_verification');
     }
 
     // Update user to verified
@@ -207,9 +243,13 @@ export class AuthService {
       emailVerificationExpires: null,
     });
 
-    const payload = { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role };
+    const payload = {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    };
     const accessToken = this.jwtService.sign(payload);
-    
+
     // Create new session upon verification
     const refreshTokenRecord = await this.prisma.refreshToken.create({
       data: {
@@ -219,7 +259,10 @@ export class AuthService {
       },
     });
 
-    const refreshToken = this.generateRefreshToken(updatedUser.id, refreshTokenRecord.id);
+    const refreshToken = this.generateRefreshToken(
+      updatedUser.id,
+      refreshTokenRecord.id,
+    );
     const hashedRefresh = await bcrypt.hash(refreshToken, 10);
     await this.prisma.refreshToken.update({
       where: { id: refreshTokenRecord.id },
@@ -237,7 +280,9 @@ export class AuthService {
   async forgotPassword(email: string) {
     if (!email) throw new BadRequestException('error.auth.email_required');
 
-    const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const user = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (!user) {
       // Don't reveal if user exists
       return {
@@ -252,7 +297,9 @@ export class AuthService {
         resetPasswordToken: hashedMaster,
         resetPasswordExpires: BigInt(Date.now() + 30 * 60 * 1000), // 30 mins
       });
-      console.info(`🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE to reset.`);
+      console.info(
+        `🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE to reset.`,
+      );
     } else {
       const resetToken = crypto.randomInt(100000, 999999).toString();
       const resetExpires = Date.now() + 5 * 60 * 1000;
@@ -261,7 +308,9 @@ export class AuthService {
         resetPasswordToken: hashedToken,
         resetPasswordExpires: BigInt(resetExpires),
       });
-      console.info(`🔑 Reset token generated for ${user.email}: ${resetToken} (no email service)`);
+      console.info(
+        `🔑 Reset token generated for ${user.email}: ${resetToken} (no email service)`,
+      );
     }
 
     return {
@@ -276,15 +325,22 @@ export class AuthService {
     }
 
     if (newPassword.length < 6) {
-      throw new BadRequestException('New password must be at least 6 characters! 🔑');
+      throw new BadRequestException(
+        'New password must be at least 6 characters! 🔑',
+      );
     }
 
-    const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const user = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (!user || !user.resetPasswordToken) {
       throw new BadRequestException('error.auth.invalid_reset_request');
     }
 
-    if (user.resetPasswordExpires && Number(user.resetPasswordExpires) < Date.now()) {
+    if (
+      user.resetPasswordExpires &&
+      Number(user.resetPasswordExpires) < Date.now()
+    ) {
       await this.userService.update(user.id, {
         resetPasswordToken: null,
         resetPasswordExpires: null,
@@ -292,7 +348,10 @@ export class AuthService {
       throw new BadRequestException('error.auth.reset_expired');
     }
 
-    const isValidToken = await bcrypt.compare(resetToken, user.resetPasswordToken);
+    const isValidToken = await bcrypt.compare(
+      resetToken,
+      user.resetPasswordToken,
+    );
     if (!isValidToken) {
       throw new BadRequestException('error.auth.invalid_reset_code');
     }
@@ -314,7 +373,9 @@ export class AuthService {
     }
 
     if (newPassword.length < 6) {
-      throw new BadRequestException('New password must be at least 6 characters! 🔑');
+      throw new BadRequestException(
+        'New password must be at least 6 characters! 🔑',
+      );
     }
 
     const user = await this.userService.findOneById(userId);
@@ -325,7 +386,7 @@ export class AuthService {
       throw new BadRequestException('error.auth.wrong_current_password');
     }
 
-    await this.userService.update(userId, { 
+    await this.userService.update(userId, {
       password: newPassword,
     });
 
@@ -335,18 +396,21 @@ export class AuthService {
     return { message: 'success.auth.password_changed' };
   }
 
-
   async resendVerification(email: string) {
     if (!email) throw new BadRequestException('error.auth.email_required');
 
-    const user = await this.userService.findOneByEmail(email.toLowerCase().trim());
+    const user = await this.userService.findOneByEmail(
+      email.toLowerCase().trim(),
+    );
     if (!user) throw new NotFoundException('error.auth.user_not_found');
 
     if (user.isEmailVerified) {
       throw new BadRequestException('error.auth.already_verified');
     }
 
-    console.info(`🔁 Resend verification requested for: ${user.email} (use MASTER_VERIFY_CODE)`);
+    console.info(
+      `🔁 Resend verification requested for: ${user.email} (use MASTER_VERIFY_CODE)`,
+    );
 
     return {
       message: 'success.auth.resend_verification',

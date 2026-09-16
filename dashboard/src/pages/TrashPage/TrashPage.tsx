@@ -3,15 +3,12 @@ import {
   Trash2, 
   RotateCcw, 
   Database, 
-  Search, 
   Eye, 
   RefreshCw, 
-  AlertTriangle,
-  FileText,
   User,
   BookOpen
 } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -24,10 +21,18 @@ import {
 } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
 
+export interface ArchiveRecordItem {
+  id: number;
+  fromModel: string;
+  originalRecordId?: number | string;
+  originalRecord?: Record<string, unknown>;
+  createdAt?: string;
+}
+
 const TrashPage: React.FC = () => {
   const { toast } = useToast();
   const [page, setPage] = useState(1);
-  const [selectedRecord, setSelectedRecord] = useState<any>(null);
+  const [selectedRecord, setSelectedRecord] = useState<ArchiveRecordItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { data, isLoading, refetch } = useGetArchiveLogsQuery({ page });
@@ -46,7 +51,7 @@ const TrashPage: React.FC = () => {
         message: `Archived ${res?.restoredModel || 'item'} has been re-inserted into active database.` 
       });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Restore Failed', message: 'Could not restore archived record.' });
     }
   };
@@ -57,7 +62,7 @@ const TrashPage: React.FC = () => {
       await deleteRecord(id).unwrap();
       toast({ type: 'info', title: 'Permanently Erased', message: 'Archive entry purged.' });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Purge Failed', message: 'Could not delete archive entry.' });
     }
   };
@@ -182,8 +187,8 @@ const TrashPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                archives.map((arch: any) => {
-                  const payload = arch.originalRecord || {};
+                archives.map((arch: ArchiveRecordItem) => {
+                  const payload = (arch.originalRecord || {}) as Record<string, string>;
                   const identifier = payload.word || payload.email || payload.fullName || JSON.stringify(arch.originalRecordId);
 
                   return (
@@ -248,6 +253,34 @@ const TrashPage: React.FC = () => {
             </TableBody>
           </Table>
         </div>
+
+        {meta.totalPages > 1 && (
+          <div className="p-4 border-t border-border/60 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{meta.totalPages}</span>
+            </p>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p: number) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="h-8 text-xs"
+              >
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setPage((p: number) => Math.min(meta.totalPages, p + 1))}
+                disabled={page === meta.totalPages}
+                className="h-8 text-xs"
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        )}
       </Card>
     </div>
   );

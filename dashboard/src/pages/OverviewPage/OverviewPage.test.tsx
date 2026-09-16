@@ -35,7 +35,7 @@ describe('OverviewPage', () => {
     vi.clearAllMocks();
     
     // Mock global fetch
-    global.fetch = vi.fn();
+    globalThis.fetch = vi.fn();
   });
 
   it('renders correctly and shows heading', () => {
@@ -44,10 +44,10 @@ describe('OverviewPage', () => {
   });
 
   it('displays loading state or initial stats', async () => {
-    (global.fetch as any).mockResolvedValue({
+    vi.mocked(globalThis.fetch).mockResolvedValue({
       ok: true,
       json: async () => ({ totalUsers: 1000, totalWords: 5000 }),
-    });
+    } as Response);
 
     render(<OverviewPage />, { wrapper });
     

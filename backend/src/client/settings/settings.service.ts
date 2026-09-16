@@ -7,14 +7,15 @@ export class SettingsService {
   constructor(private prisma: PrismaService) {}
 
   async getSettings(userId: number) {
-    const user = await this.prisma.user.findUnique({
+    const user = (await this.prisma.user.findUnique({
       where: { id: userId },
       select: { settings: true } as any,
-    }) as any;
+    })) as any;
 
     if (!user) throw new NotFoundException('User not found');
 
-    const currentSettings = typeof user.settings === 'object' ? user.settings : {};
+    const currentSettings =
+      typeof user.settings === 'object' ? user.settings : {};
 
     return {
       preferences: {
@@ -31,20 +32,21 @@ export class SettingsService {
   }
 
   async updateSettings(userId: number, settings: any) {
-    const user = await this.prisma.user.findUnique({
+    const user = (await this.prisma.user.findUnique({
       where: { id: userId },
       select: { settings: true } as any,
-    }) as any;
+    })) as any;
 
     if (!user) throw new NotFoundException('User not found');
 
-    const currentSettings = typeof user.settings === 'object' ? user.settings : {};
+    const currentSettings =
+      typeof user.settings === 'object' ? user.settings : {};
     const newSettings = { ...currentSettings, ...settings };
 
-    const updatedUser = await this.prisma.user.update({
+    const updatedUser = (await this.prisma.user.update({
       where: { id: userId },
       data: { settings: newSettings } as any,
-    }) as any;
+    })) as any;
 
     return {
       settings: await this.getSettings(userId),
@@ -53,10 +55,10 @@ export class SettingsService {
   }
 
   async getValidTypes(userId: number): Promise<string[]> {
-    const user = await this.prisma.user.findUnique({
+    const user = (await this.prisma.user.findUnique({
       where: { id: userId },
       select: { settings: true } as any,
-    }) as any;
+    })) as any;
     const settings = user?.settings;
     const customTypes = settings?.wordTypes?.map((t: any) => t.value) || [];
     return [...VALID_WORD_TYPES, ...customTypes];
@@ -68,13 +70,15 @@ export class SettingsService {
       this.prisma.refreshToken.deleteMany({ where: { userId } }),
       // Delete child records first to avoid foreign key constraint errors
       this.prisma.review.deleteMany({ where: { word: { ownerId: userId } } }),
-      this.prisma.wordRelation.deleteMany({ where: { word: { ownerId: userId } } }),
+      this.prisma.wordRelation.deleteMany({
+        where: { word: { ownerId: userId } },
+      }),
       // Now delete words
       this.prisma.word.deleteMany({ where: { ownerId: userId } }),
       // Update user status
       this.prisma.user.update({
         where: { id: userId },
-        data: { 
+        data: {
           status: 'deleted',
           settings: {},
           fullName: 'Deleted User',

@@ -7,14 +7,15 @@ export class AnalyticsService {
 
   async getSummary() {
     const now = Date.now();
-    const [userCount, wordCount, activeSessions, totalReviews] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.word.count(),
-      this.prisma.refreshToken.count({
-        where: { expiresAt: { gt: BigInt(now) } }
-      }),
-      this.prisma.review.count(),
-    ]);
+    const [userCount, wordCount, activeSessions, totalReviews] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.word.count(),
+        this.prisma.refreshToken.count({
+          where: { expiresAt: { gt: BigInt(now) } },
+        }),
+        this.prisma.review.count(),
+      ]);
 
     // Calculate growth (Mocking for now as we don't have historical snapshots, but could be derived from createdAt)
     return {
@@ -31,7 +32,7 @@ export class AnalyticsService {
     // Generate last 7 days chart data
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
-    
+
     const chartData = await Promise.all(
       Array.from({ length: 7 }).map(async (_, i) => {
         const date = new Date();
@@ -53,7 +54,7 @@ export class AnalyticsService {
           name: days[date.getDay()],
           words: count,
         };
-      })
+      }),
     );
 
     return chartData;
@@ -71,13 +72,13 @@ export class AnalyticsService {
       },
     });
 
-    return recentUsers.map(user => ({
+    return recentUsers.map((user) => ({
       id: user.id,
       message: `New Member: ${user.fullName}`,
       sub: user.email,
       time: this.getRelativeTime(user.createdAt),
       color: 'border-[#009ef7]',
-      bg: 'bg-[#009ef7]'
+      bg: 'bg-[#009ef7]',
     }));
   }
 

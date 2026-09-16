@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, UseGuards, Request, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Query,
+} from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -19,7 +27,11 @@ export class ReviewController {
   @Post('update')
   @ApiOperation({ summary: 'Update SRS after session' })
   async updateSRS(@Request() req: any, @Body() body: any) {
-    return this.reviewService.updateSRS(req.user.userId, body.reviewId, body.quality);
+    return this.reviewService.updateSRS(
+      req.user.userId,
+      body.reviewId,
+      body.quality,
+    );
   }
 
   @Post('game-session')

@@ -29,16 +29,19 @@ const errorTranslations: Record<string, Record<string, string>> = {
   }
 };
 
-export function getErrorMessage(err: any, fallback = 'An unexpected error occurred.'): string {
+export function getErrorMessage(err: unknown, fallback = 'An unexpected error occurred.'): string {
   if (!err) return fallback;
 
   let rawMessage = '';
   if (typeof err === 'string') {
     rawMessage = err;
-  } else if (err?.data?.message) {
-    rawMessage = Array.isArray(err.data.message) ? err.data.message[0] : err.data.message;
-  } else if (err?.message) {
-    rawMessage = err.message;
+  } else if (typeof err === 'object' && err !== null) {
+    const errorObj = err as { data?: { message?: string | string[] }; message?: string };
+    if (errorObj.data?.message) {
+      rawMessage = Array.isArray(errorObj.data.message) ? errorObj.data.message[0] : errorObj.data.message;
+    } else if (errorObj.message) {
+      rawMessage = errorObj.message;
+    }
   }
 
   if (!rawMessage) return fallback;

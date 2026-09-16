@@ -13,7 +13,9 @@ import {
   X,
   Sun,
   Moon,
-  Sparkles
+  Sparkles,
+  ShieldCheck,
+  Trash2
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
 import { useSelector, useDispatch } from 'react-redux';

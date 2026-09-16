@@ -1,14 +1,13 @@
 import React from 'react';
 import { 
   Search, 
-  Filter, 
   Eye, 
-  ShieldCheck, 
-  ArrowUpDown,
   Download,
   Plus,
   Trash2, 
-  Edit2
+  Edit2,
+  ShieldCheck,
+  BadgeCheck
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Skeleton from '@/components/ui/Skeleton';
 import { useUsers } from './useUsers';
+import type { DashboardUserItem } from './useUsers';
 import ReModal from '@/components/ui/ReModal';
 import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
@@ -49,14 +49,14 @@ const UserManagementPage: React.FC = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
   const [inspectUserId, setInspectUserId] = React.useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = React.useState<any>(null);
+  const [selectedUser, setSelectedUser] = React.useState<DashboardUserItem | null>(null);
   
   const [newUserData, setNewUserData] = React.useState({ fullName: '', email: '' });
   const [editUserData, setEditUserData] = React.useState({ fullName: '' });
   const [isActionLoading, setIsActionLoading] = React.useState(false);
 
   const handleExport = () => {
-    exportToCSV(users, 'lexinote_users');
+    exportToCSV(users as unknown as Record<string, unknown>[], 'lexinote_users');
     toast({ type: 'info', title: 'Export Initiated', message: 'User database is being exported to CSV.' });
   };
 
@@ -69,7 +69,7 @@ const UserManagementPage: React.FC = () => {
       setIsAddModalOpen(false);
       setNewUserData({ fullName: '', email: '' });
       toast({ type: 'success', title: 'Member Created', message: `${newUserData.fullName} has been added.` });
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Action Failed', message: 'User creation failed. Please check inputs.' });
     } finally {
       setIsActionLoading(false);
@@ -84,7 +84,7 @@ const UserManagementPage: React.FC = () => {
       await handleUpdateUser(selectedUser.id, editUserData);
       setIsEditModalOpen(false);
       toast({ type: 'success', title: 'User Updated', message: 'User metadata has been synchronized.' });
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Sync Failed', message: 'Could not update user.' });
     } finally {
       setIsActionLoading(false);
@@ -99,7 +99,7 @@ const UserManagementPage: React.FC = () => {
       await handleDeleteUser(selectedUser.id);
       setIsDeleteModalOpen(false);
       toast({ type: 'success', title: 'Member Removed', message: 'Entry has been removed from database.' });
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Delete Failed', message: 'Security constraint prevented deletion.' });
     } finally {
       setIsActionLoading(false);
@@ -318,13 +318,28 @@ const UserManagementPage: React.FC = () => {
                   <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
                     <TableCell className="px-6 py-3.5">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-xs shrink-0">
-                          {user.fullName.charAt(0).toUpperCase()}
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-xs shrink-0 overflow-hidden">
+                          {user.avatar ? (
+                            user.avatar.startsWith('http') ? (
+                              <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-base">{user.avatar}</span>
+                            )
+                          ) : (
+                            user.fullName.charAt(0).toUpperCase()
+                          )}
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                            {user.fullName}
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                              {user.fullName}
+                            </span>
+                            {user.isEmailVerified && (
+                              <span title="Verified Email Account" className="inline-flex items-center">
+                                <BadgeCheck size={14} className="text-emerald-500 shrink-0" />
+                              </span>
+                            )}
+                          </div>
                           <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
                         </div>
                       </div>
@@ -335,20 +350,21 @@ const UserManagementPage: React.FC = () => {
                           ? 'bg-primary/10 text-primary border border-primary/20' 
                           : 'bg-muted text-muted-foreground'
                       }`}>
-                        {user.role}
+                        {user.role || 'MEMBER'}
                       </span>
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-center">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold ${
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
                         user.isActive 
                           ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' 
                           : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20'
                       }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
                         {user.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-center font-mono text-xs font-medium text-foreground">
-                      {user.wordCount.toLocaleString()}
+                      {(user.wordCount ?? 0).toLocaleString()}
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-xs text-muted-foreground">
                       {formatDate(user.createdAt)}
@@ -417,47 +433,49 @@ const UserManagementPage: React.FC = () => {
           </Table>
         </div>
 
-        {/* Action Bar Footer */}
-        <div className="p-4 border-t border-border/60 flex items-center justify-between">
-          <p className="text-xs text-muted-foreground">
-            Showing <span className="font-semibold text-foreground">{users.length}</span> of <span className="font-semibold text-foreground">{totalUsers}</span> entries
-          </p>
-          <div className="flex gap-2 items-center">
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setPage((p: number) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              Previous
-            </Button>
-            <div className="flex gap-1 items-center">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                <button 
-                  key={num} 
-                  onClick={() => setPage(num)}
-                  className={`w-7 h-7 rounded-md text-xs font-semibold transition-all ${
-                    page === num 
-                      ? 'bg-primary text-primary-foreground shadow-xs' 
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
+        {/* Action Bar Footer (Rendered only when totalPages > 1) */}
+        {totalPages > 1 && (
+          <div className="p-4 border-t border-border/60 flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              Showing <span className="font-semibold text-foreground">{users.length}</span> of <span className="font-semibold text-foreground">{totalUsers}</span> entries
+            </p>
+            <div className="flex gap-2 items-center">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setPage((p: number) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Previous
+              </Button>
+              <div className="flex gap-1 items-center">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+                  <button 
+                    key={num} 
+                    onClick={() => setPage(num)}
+                    className={`w-7 h-7 rounded-md text-xs font-semibold transition-all ${
+                      page === num 
+                        ? 'bg-primary text-primary-foreground shadow-xs' 
+                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    {num}
+                  </button>
+                ))}
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Next
+              </Button>
             </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-            >
-              Next
-            </Button>
           </div>
-        </div>
+        )}
       </Card>
 
       <UserDetailModal

@@ -2,24 +2,18 @@ import React, { useState } from 'react';
 import { 
   ShieldCheck, 
   Search, 
-  Filter, 
-  Clock, 
   Database, 
-  User, 
-  Code, 
   Eye, 
-  RefreshCw,
-  AlertTriangle,
-  FileText,
-  KeyRound
+  RefreshCw
 } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import Skeleton from '@/components/ui/Skeleton';
 import ReModal from '@/components/ui/ReModal';
 import { useGetAuditLogsQuery, useGetArchiveLogsQuery } from '@/store/api/auditApi';
+import type { AuditLogItem, ArchiveRecordItem } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
 
 const AuditLogPage: React.FC = () => {
@@ -28,7 +22,7 @@ const AuditLogPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [actionFilter, setActionFilter] = useState('ALL');
   const [targetFilter, setTargetFilter] = useState('ALL');
-  const [selectedLog, setSelectedLog] = useState<any>(null);
+  const [selectedLog, setSelectedLog] = useState<AuditLogItem | ArchiveRecordItem | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { toast } = useToast();
@@ -106,7 +100,11 @@ const AuditLogPage: React.FC = () => {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         title="Audit Log Entry Inspector"
-        description={`Log ID #${selectedLog?.id} | Action: ${selectedLog?.action}`}
+        description={`Log ID #${selectedLog?.id || ''} | ${
+          selectedLog && 'action' in selectedLog 
+            ? `Action: ${selectedLog.action}` 
+            : `Model: ${(selectedLog as ArchiveRecordItem | null)?.fromModel || ''}`
+        }`}
       >
         {selectedLog && (
           <div className="space-y-4 text-xs">
@@ -114,7 +112,9 @@ const AuditLogPage: React.FC = () => {
               <div>
                 <span className="text-muted-foreground">Actor ID / Email:</span>
                 <p className="font-semibold text-foreground mt-0.5">
-                  {selectedLog.actorEmail || `Actor #${selectedLog.actorId || 'System'}`}
+                  {'action' in selectedLog 
+                    ? (selectedLog.actorEmail || `Actor #${selectedLog.actorId || 'System'}`)
+                    : 'System Archivist'}
                 </p>
               </div>
               <div>
@@ -124,12 +124,16 @@ const AuditLogPage: React.FC = () => {
               <div>
                 <span className="text-muted-foreground">Target Type & ID:</span>
                 <p className="font-mono text-foreground mt-0.5">
-                  {selectedLog.targetType} {selectedLog.targetId ? `#${selectedLog.targetId}` : ''}
+                  {'action' in selectedLog 
+                    ? `${selectedLog.targetType}${selectedLog.targetId ? ` #${selectedLog.targetId}` : ''}`
+                    : (selectedLog as ArchiveRecordItem).fromModel}
                 </p>
               </div>
               <div>
                 <span className="text-muted-foreground">IP Address:</span>
-                <p className="font-mono text-foreground mt-0.5">{selectedLog.ipAddress || '127.0.0.1'}</p>
+                <p className="font-mono text-foreground mt-0.5">
+                  {'action' in selectedLog ? (selectedLog.ipAddress || '127.0.0.1') : '127.0.0.1'}
+                </p>
               </div>
             </div>
 
@@ -138,7 +142,13 @@ const AuditLogPage: React.FC = () => {
                 Event Payload & Metadata (JSON)
               </label>
               <pre className="p-3 rounded-lg bg-slate-950 text-emerald-400 font-mono text-[11px] overflow-x-auto max-h-60 border border-border/80">
-                {JSON.stringify(selectedLog.details || selectedLog.originalRecord || selectedLog, null, 2)}
+                {JSON.stringify(
+                  'action' in selectedLog 
+                    ? (selectedLog.details || selectedLog) 
+                    : ((selectedLog as ArchiveRecordItem).originalRecord || selectedLog),
+                  null,
+                  2
+                )}
               </pre>
             </div>
           </div>
@@ -218,12 +228,12 @@ const AuditLogPage: React.FC = () => {
             <Table>
               <TableHeader className="bg-muted/30">
                 <TableRow className="border-border/60">
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actor</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action</TableHead>
+                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Log ID</TableHead>
+                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Action Event</TableHead>
+                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Actor / Admin</TableHead>
                   <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Target</TableHead>
-                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">IP Address</TableHead>
-                  <TableHead className="px-6 py-3.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payload</TableHead>
+                  <TableHead className="px-6 py-3.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</TableHead>
+                  <TableHead className="px-6 py-3.5 text-right text-xs font-semibold text-muted-foreground uppercase tracking-wider">Details</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody className="divide-y divide-border/60">
@@ -236,28 +246,28 @@ const AuditLogPage: React.FC = () => {
                 ) : logs.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-32 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                      No audit events recorded yet. Perform admin actions to generate logs.
+                      No audit logs match current filters.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  logs.map((log: any) => (
+                  logs.map((log: AuditLogItem) => (
                     <TableRow key={log.id} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="px-6 py-3.5 font-mono text-xs text-muted-foreground">
-                        {formatDate(log.createdAt)}
-                      </TableCell>
-                      <TableCell className="px-6 py-3.5 font-medium text-xs text-foreground">
-                        {log.actorEmail || `Admin #${log.actorId || '1'}`}
+                      <TableCell className="px-6 py-3.5 font-mono text-xs font-bold text-foreground">
+                        #{log.id}
                       </TableCell>
                       <TableCell className="px-6 py-3.5">
-                        <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border ${getActionBadgeClass(log.action)}`}>
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${getActionBadgeClass(log.action)}`}>
                           {log.action}
                         </span>
                       </TableCell>
-                      <TableCell className="px-6 py-3.5 text-xs font-mono text-muted-foreground">
-                        {log.targetType} {log.targetId ? `#${log.targetId}` : ''}
+                      <TableCell className="px-6 py-3.5 text-xs font-medium text-foreground">
+                        {log.actorEmail || `Actor #${log.actorId || 'System'}`}
                       </TableCell>
                       <TableCell className="px-6 py-3.5 font-mono text-xs text-muted-foreground">
-                        {log.ipAddress || '127.0.0.1'}
+                        {log.targetType}{log.targetId ? ` #${log.targetId}` : ''}
+                      </TableCell>
+                      <TableCell className="px-6 py-3.5 font-mono text-xs text-muted-foreground">
+                        {formatDate(log.createdAt)}
                       </TableCell>
                       <TableCell className="px-6 py-3.5 text-right">
                         <Button
@@ -275,6 +285,34 @@ const AuditLogPage: React.FC = () => {
               </TableBody>
             </Table>
           </div>
+
+          {auditMeta.totalPages > 1 && (
+            <div className="p-4 border-t border-border/60 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{auditMeta.totalPages}</span>
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-8 text-xs"
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(auditMeta.totalPages, p + 1))}
+                  disabled={page === auditMeta.totalPages}
+                  className="h-8 text-xs"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 
@@ -304,7 +342,7 @@ const AuditLogPage: React.FC = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  archives.map((arch: any) => (
+                  archives.map((arch: ArchiveRecordItem) => (
                     <TableRow key={arch.id} className="hover:bg-muted/30 transition-colors">
                       <TableCell className="px-6 py-3.5 font-mono text-xs font-bold text-foreground">
                         #{arch.id}
@@ -331,7 +369,88 @@ const AuditLogPage: React.FC = () => {
               </TableBody>
             </Table>
           </div>
+
+          {archiveMeta.totalPages > 1 && (
+            <div className="p-4 border-t border-border/60 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{archiveMeta.totalPages}</span>
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-8 text-xs"
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(archiveMeta.totalPages, p + 1))}
+                  disabled={page === archiveMeta.totalPages}
+                  className="h-8 text-xs"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </Card>
+      )}
+
+      {/* Inspect Detail Modal */}
+      {selectedLog && (
+        <ReModal
+          isOpen={isDetailModalOpen}
+          onClose={() => {
+            setIsDetailModalOpen(false);
+            setSelectedLog(null);
+          }}
+          title={'action' in selectedLog ? `Audit Event: ${selectedLog.action}` : `Archived Record: ${selectedLog.fromModel || 'Data'}`}
+          description={'action' in selectedLog ? `Target: ${selectedLog.targetType || 'N/A'} (ID: ${selectedLog.targetId || 'N/A'})` : `Model: ${selectedLog.fromModel || 'N/A'}`}
+          footer={
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setIsDetailModalOpen(false);
+                setSelectedLog(null);
+              }}
+            >
+              Close
+            </Button>
+          }
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3 text-xs bg-muted/30 p-3 rounded-lg border border-border/60">
+              <div>
+                <span className="text-muted-foreground block">Date & Time:</span>
+                <span className="font-semibold text-foreground">{formatDate(selectedLog.createdAt)}</span>
+              </div>
+              {'ipAddress' in selectedLog && (
+                <div>
+                  <span className="text-muted-foreground block">IP Address:</span>
+                  <span className="font-mono font-semibold text-foreground">{selectedLog.ipAddress || 'Internal'}</span>
+                </div>
+              )}
+              {'actorEmail' in selectedLog && Boolean(selectedLog.actorEmail) && (
+                <div className="col-span-2">
+                  <span className="text-muted-foreground block">Actor:</span>
+                  <span className="font-semibold text-foreground">{selectedLog.actorEmail}</span>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold text-muted-foreground block mb-1">Payload / Changes:</span>
+              <pre className="p-3 bg-muted/50 rounded-lg text-xs font-mono overflow-auto max-h-64 text-foreground border border-border/60">
+                {JSON.stringify('details' in selectedLog ? selectedLog.details : ('originalRecord' in selectedLog ? selectedLog.originalRecord : {}), null, 2)}
+              </pre>
+            </div>
+          </div>
+        </ReModal>
       )}
     </div>
   );

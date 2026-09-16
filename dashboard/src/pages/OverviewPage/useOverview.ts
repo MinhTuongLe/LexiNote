@@ -11,7 +11,8 @@ export function useOverview() {
   const { data: stats, isLoading: isSummaryLoading, error: summaryError } = useGetSummaryQuery();
   const { data: chartData, isLoading: isChartLoading, error: chartError } = useGetChartDataQuery();
 
-  const formatNumber = (num: number | string) => {
+  const formatNumber = (num?: number | string | null) => {
+    if (num == null) return '0';
     return new Intl.NumberFormat().format(Number(num));
   };
 
@@ -19,7 +20,7 @@ export function useOverview() {
     { 
       label: 'Total Users', 
       value: stats ? formatNumber(stats.totalUsers) : '...', 
-      change: stats?.userChange || '+12.5%', 
+      change: String(stats?.userChange || '+12.5%'), 
       icon: Users, 
       theme: '#f43f5e', 
       bg: 'rgba(244, 63, 94, 0.12)',
@@ -29,10 +30,10 @@ export function useOverview() {
     { 
       label: 'Word Count', 
       value: stats ? formatNumber(stats.totalWords) : '...', 
-      change: stats?.wordChange || '+5.2%', 
+      change: String(stats?.wordChange || '+5.2%'), 
       icon: BookOpen, 
       theme: '#10b981', 
-      bg: 'rgba(16, 185, 129, 0.12)',
+      bg: 'rgba(168, 85, 247, 0.12)',
       textColor: 'text-emerald-600 dark:text-emerald-400',
       bgColor: 'bg-emerald-500/10'
     },

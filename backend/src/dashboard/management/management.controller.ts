@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { ManagementService } from './management.service';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -32,7 +43,7 @@ export class ManagementController {
 
   @Post('users')
   @ApiOperation({ summary: 'Create new user' })
-  async createUser(@Body() body: any) {
+  async createUser(@Body() body: { fullName: string; email: string }) {
     return this.managementService.createUser(body);
   }
 
@@ -43,7 +54,9 @@ export class ManagementController {
   }
 
   @Get('users/:id/details')
-  @ApiOperation({ summary: 'Get full user details including owned words and SRS progress' })
+  @ApiOperation({
+    summary: 'Get full user details including owned words and SRS progress',
+  })
   async getUserDetails(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.getUserDetails(id);
   }
@@ -52,7 +65,7 @@ export class ManagementController {
   @ApiOperation({ summary: 'Update user data' })
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: any,
+    @Body() body: { fullName?: string; email?: string },
   ) {
     return this.managementService.update(id, body);
   }

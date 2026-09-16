@@ -95,7 +95,7 @@ const SettingsPage: React.FC = () => {
                   <p className="text-[11px] text-muted-foreground mt-0.5">{item.desc}</p>
                 </div>
                 <button 
-                  onClick={() => handleToggle(item.id as any)}
+                  onClick={() => handleToggle(item.id as keyof typeof toggles)}
                   className={`w-10 h-6 rounded-full relative p-0.5 transition-colors ${
                     toggles[item.id as keyof typeof toggles] ? 'bg-primary' : 'bg-muted-foreground/30'
                   }`}

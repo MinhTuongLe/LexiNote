@@ -21,5 +21,4 @@ export class MetaController {
   async getDashboardStats(@Request() req: any) {
     return this.wordService.getDashboardStats(req.user.userId);
   }
-
 }

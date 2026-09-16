@@ -1,4 +1,14 @@
-import { Controller, Get, Delete, Patch, Param, Query, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Delete,
+  Patch,
+  Param,
+  Query,
+  Body,
+  UseGuards,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { DashboardWordsService } from './words.service';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -36,7 +46,7 @@ export class DashboardWordsController {
   @ApiOperation({ summary: 'Update word details' })
   async updateWord(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: any,
+    @Body() data: { meaningVi?: string; type?: string },
   ) {
     return this.wordsService.updateWord(id, data);
   }

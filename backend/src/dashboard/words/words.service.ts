@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DashboardWordsService {
@@ -9,9 +10,15 @@ export class DashboardWordsService {
     private auditService: AuditService,
   ) {}
 
-  async getAllWords(page = 1, limit = 20, search?: string, type?: string, ownerId?: number) {
+  async getAllWords(
+    page = 1,
+    limit = 20,
+    search?: string,
+    type?: string,
+    ownerId?: number,
+  ) {
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.WordWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -45,11 +52,11 @@ export class DashboardWordsService {
     ]);
 
     return {
-      data: words.map(w => ({
+      data: words.map((w) => ({
         ...w,
         createdAt: w.createdAt.toString(),
         updatedAt: w.updatedAt.toString(),
-        reviews: w.reviews.map(r => ({
+        reviews: w.reviews.map((r) => ({
           ...r,
           lastReviewed: r.lastReviewed ? r.lastReviewed.toString() : null,
           nextReview: r.nextReview.toString(),
@@ -72,7 +79,7 @@ export class DashboardWordsService {
       await this.prisma.archive.create({
         data: {
           fromModel: 'Word',
-          originalRecord: JSON.parse(JSON.stringify(word, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+          originalRecord: word as unknown as Prisma.InputJsonValue,
           originalRecordId: { id },
         },
       });
@@ -92,7 +99,7 @@ export class DashboardWordsService {
     return deleted;
   }
 
-  async updateWord(id: number, data: any) {
+  async updateWord(id: number, data: { meaningVi?: string; type?: string }) {
     const updated = await this.prisma.word.update({
       where: { id },
       data: {
@@ -105,7 +112,7 @@ export class DashboardWordsService {
       action: 'WORD_UPDATE',
       targetType: 'WORD',
       targetId: String(id),
-      details: data,
+      details: data as Record<string, unknown>,
     });
 
     return updated;

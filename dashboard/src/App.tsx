@@ -8,21 +8,6 @@ import LoginPage from './pages/LoginPage';
 import { useSelector } from 'react-redux';
 import type { RootState } from './store';
 import { Outlet } from 'react-router-dom';
-import { 
-  ShieldCheck, 
-  Calendar, 
-  Key, 
-  Mail, 
-  Globe,
-  Languages,
-  User as UserIcon,
-  BadgeCheck,
-  CreditCard,
-  Bell,
-  ChevronRight
-} from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 const ProtectedRoute = () => {
   const { isAuthenticated } = useSelector((state: RootState) => state.auth);

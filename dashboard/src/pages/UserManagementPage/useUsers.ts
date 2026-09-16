@@ -7,6 +7,27 @@ import {
 } from '@/store/api/usersApi';
 import { useState } from 'react';
 
+export interface CreateUserData {
+  fullName: string;
+  email: string;
+}
+
+export interface UpdateUserData {
+  fullName: string;
+}
+
+export interface DashboardUserItem {
+  id: number;
+  email: string;
+  fullName: string;
+  avatar?: string | null;
+  isActive: boolean;
+  isEmailVerified: boolean;
+  createdAt: number | string;
+  wordCount?: number;
+  role?: string;
+}
+
 export function useUsers() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -22,7 +43,7 @@ export function useUsers() {
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
 
-  const users = data?.data || [];
+  const users: DashboardUserItem[] = data?.data || [];
   const totalPages = data?.meta?.totalPages || 1;
   const totalUsers = data?.meta?.total || 0;
 
@@ -35,19 +56,20 @@ export function useUsers() {
     toggleStatus(id);
   };
 
-  const handleCreateUser = async (data: any) => {
-    return createUser(data).unwrap();
+  const handleCreateUser = async (userData: CreateUserData) => {
+    return createUser(userData).unwrap();
   };
 
-  const handleUpdateUser = async (id: number, data: any) => {
-    return updateUser({ id, data }).unwrap();
+  const handleUpdateUser = async (id: number, userData: UpdateUserData) => {
+    return updateUser({ id, data: userData }).unwrap();
   };
 
   const handleDeleteUser = async (id: number) => {
     return deleteUser(id).unwrap();
   };
 
-  const formatDate = (epoch: any) => {
+  const formatDate = (epoch: number | string | undefined | null) => {
+    if (!epoch) return 'N/A';
     return new Date(Number(epoch)).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',

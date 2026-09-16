@@ -34,7 +34,7 @@ const LoginPage: React.FC = () => {
       const result = await login({ email, password }).unwrap();
       dispatch(setCredentials({ user: result.user, token: result.token }));
       navigate('/dashboard');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(getErrorMessage(err, 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.'));
     }
   };

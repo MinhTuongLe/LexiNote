@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
 import { 
   CheckCircle2, 
-  XCircle, 
   AlertCircle, 
   Search, 
-  Filter, 
   Sparkles, 
-  FileText, 
   CheckSquare, 
   Square,
   RefreshCw,
   Edit2,
   Trash2,
-  ThumbsUp,
-  Sliders
+  ThumbsUp
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import Skeleton from '@/components/ui/Skeleton';
 import { useGetWordsQuery, useDeleteWordMutation, useUpdateWordMutation } from '@/store/api/wordsApi';
+import type { Word } from '@/store/api/wordsApi';
 import { useToast } from '@/components/ui/Toast';
 import ReModal from '@/components/ui/ReModal';
 
@@ -31,7 +28,7 @@ const ModerationPage: React.FC = () => {
   const [qualityFilter, setQualityFilter] = useState<'ALL' | 'MISSING_EXAMPLE' | 'SHORT_MEANING'>('ALL');
   const [selectedWordIds, setSelectedWordIds] = useState<number[]>([]);
   
-  const [editingWord, setEditingWord] = useState<any>(null);
+  const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [newMeaning, setNewMeaning] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -47,7 +44,7 @@ const ModerationPage: React.FC = () => {
   const allWords = data?.data || [];
 
   // Filter for items requiring moderation or quality review
-  const filteredWords = allWords.filter((w: any) => {
+  const filteredWords = allWords.filter((w: Word) => {
     if (qualityFilter === 'MISSING_EXAMPLE') return !w.example || w.example.trim() === '';
     if (qualityFilter === 'SHORT_MEANING') return !w.meaningVi || w.meaningVi.length < 5;
     return true;
@@ -63,11 +60,11 @@ const ModerationPage: React.FC = () => {
     if (selectedWordIds.length === filteredWords.length) {
       setSelectedWordIds([]);
     } else {
-      setSelectedWordIds(filteredWords.map((w: any) => w.id));
+      setSelectedWordIds(filteredWords.map((w: Word) => w.id));
     }
   };
 
-  const handleApprove = (word: any) => {
+  const handleApprove = (word: Word) => {
     toast({ type: 'success', title: 'Approved & Verified', message: `"${word.word}" passed moderation standards.` });
   };
 
@@ -81,7 +78,7 @@ const ModerationPage: React.FC = () => {
       await deleteWord(wordId).unwrap();
       toast({ type: 'info', title: 'Word Rejected', message: 'Item removed and archived to trash.' });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Action Failed', message: 'Could not reject word.' });
     }
   };
@@ -93,7 +90,7 @@ const ModerationPage: React.FC = () => {
       setIsEditModalOpen(false);
       toast({ type: 'success', title: 'Word Updated', message: 'Meaning corrected successfully.' });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Update Failed', message: 'Could not update word.' });
     }
   };
@@ -224,7 +221,7 @@ const ModerationPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredWords.map((w: any) => {
+            {filteredWords.map((w: Word) => {
               const isSelected = selectedWordIds.includes(w.id);
               const hasNoExample = !w.example || w.example.trim() === '';
               const isShortMeaning = !w.meaningVi || w.meaningVi.length < 5;
@@ -245,10 +242,16 @@ const ModerationPage: React.FC = () => {
                           {isSelected ? <CheckSquare size={18} className="text-primary" /> : <Square size={18} />}
                         </button>
                         <div>
-                          <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                            {w.word}
-                            <Badge variant="outline" className="text-[10px] uppercase">{w.type}</Badge>
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-foreground text-sm">{w.word}</span>
+                            <Badge variant="outline" className="text-[10px] py-0 px-1.5">{w.type}</Badge>
+                            {hasNoExample && (
+                              <Badge variant="outline" className="text-[9px] py-0 border-amber-500/30 text-amber-500 bg-amber-500/10">Missing Ex</Badge>
+                            )}
+                            {isShortMeaning && (
+                              <Badge variant="outline" className="text-[9px] py-0 border-rose-500/30 text-rose-500 bg-rose-500/10">Short Def</Badge>
+                            )}
+                          </div>
                           <p className="text-xs font-semibold text-muted-foreground mt-0.5">{w.meaningVi}</p>
                         </div>
                       </div>
@@ -307,6 +310,34 @@ const ModerationPage: React.FC = () => {
               );
             })}
           </div>
+
+          {data?.meta && data.meta.totalPages > 1 && (
+            <div className="p-4 border-t border-border/60 flex items-center justify-between mt-4">
+              <p className="text-xs text-muted-foreground">
+                Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{data.meta.totalPages}</span>
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="h-8 text-xs"
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPage(p => Math.min(data.meta.totalPages, p + 1))}
+                  disabled={page === data.meta.totalPages}
+                  className="h-8 text-xs"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 export interface CreateAuditLogDto {
   actorId?: number;
@@ -7,8 +8,26 @@ export interface CreateAuditLogDto {
   action: string;
   targetType: string;
   targetId?: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
+}
+
+interface ArchivedWordPayload {
+  word: string;
+  meaningVi: string;
+  example?: string;
+  type?: string;
+  ownerId: number;
+}
+
+interface ArchivedUserPayload {
+  email: string;
+  password?: string;
+  fullName: string;
+  avatar?: string;
+  role?: Prisma.UserCreateInput['role'];
+  isActive?: boolean;
+  isEmailVerified?: boolean;
 }
 
 @Injectable()
@@ -17,27 +36,31 @@ export class AuditService {
 
   async logAction(dto: CreateAuditLogDto) {
     try {
-      if ((this.prisma as any).auditLog) {
-        return await (this.prisma as any).auditLog.create({
-          data: {
-            actorId: dto.actorId,
-            actorEmail: dto.actorEmail,
-            action: dto.action,
-            targetType: dto.targetType,
-            targetId: dto.targetId ? String(dto.targetId) : null,
-            details: dto.details ?? {},
-            ipAddress: dto.ipAddress || '127.0.0.1',
-          },
-        });
-      }
+      return await this.prisma.auditLog.create({
+        data: {
+          actorId: dto.actorId,
+          actorEmail: dto.actorEmail,
+          action: dto.action,
+          targetType: dto.targetType,
+          targetId: dto.targetId ? String(dto.targetId) : null,
+          details: (dto.details as Prisma.InputJsonValue) ?? {},
+          ipAddress: dto.ipAddress || '127.0.0.1',
+        },
+      });
     } catch (e) {
       console.error('Failed to log audit event:', e);
     }
   }
 
-  async getAuditLogs(page = 1, limit = 20, search?: string, action?: string, targetType?: string) {
+  async getAuditLogs(
+    page = 1,
+    limit = 20,
+    search?: string,
+    action?: string,
+    targetType?: string,
+  ) {
     const skip = (page - 1) * limit;
-    const where: any = {};
+    const where: Prisma.AuditLogWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -56,32 +79,32 @@ export class AuditService {
     }
 
     try {
-      if ((this.prisma as any).auditLog) {
-        const [logs, total] = await Promise.all([
-          (this.prisma as any).auditLog.findMany({
-            where,
-            skip,
-            take: limit,
-            orderBy: { createdAt: 'desc' },
-          }),
-          (this.prisma as any).auditLog.count({ where }),
-        ]);
+      const [logs, total] = await Promise.all([
+        this.prisma.auditLog.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: 'desc' },
+        }),
+        this.prisma.auditLog.count({ where }),
+      ]);
 
-        return {
-          data: logs.map((l: any) => ({
-            ...l,
-            createdAt: l.createdAt ? l.createdAt.toString() : Date.now().toString(),
-          })),
-          meta: {
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-          },
-        };
-      }
-    } catch (e) {
-      // Fallback empty if table not migrated yet
+      return {
+        data: logs.map((l) => ({
+          ...l,
+          createdAt: l.createdAt
+            ? l.createdAt.toString()
+            : Date.now().toString(),
+        })),
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
+    } catch {
+      // Fallback empty if table query fails
     }
 
     return {
@@ -102,7 +125,7 @@ export class AuditService {
     ]);
 
     return {
-      data: archives.map(a => ({
+      data: archives.map((a) => ({
         ...a,
         createdAt: a.createdAt ? a.createdAt.toString() : null,
       })),
@@ -116,32 +139,36 @@ export class AuditService {
   }
 
   async restoreArchiveRecord(archiveId: number) {
-    const record = await this.prisma.archive.findUnique({ where: { id: archiveId } });
+    const record = await this.prisma.archive.findUnique({
+      where: { id: archiveId },
+    });
     if (!record || !record.originalRecord) return null;
 
-    const data: any = record.originalRecord;
+    const rawData = record.originalRecord;
     const model = record.fromModel;
 
     if (model === 'Word') {
+      const wordData = rawData as unknown as ArchivedWordPayload;
       await this.prisma.word.create({
         data: {
-          word: data.word,
-          meaningVi: data.meaningVi,
-          example: data.example,
-          type: data.type || 'noun',
-          ownerId: data.ownerId,
+          word: wordData.word,
+          meaningVi: wordData.meaningVi,
+          example: wordData.example,
+          type: wordData.type || 'noun',
+          ownerId: wordData.ownerId,
         },
       });
     } else if (model === 'User') {
+      const userData = rawData as unknown as ArchivedUserPayload;
       await this.prisma.user.create({
         data: {
-          email: data.email,
-          password: data.password || 'restored_password_placeholder',
-          fullName: data.fullName,
-          avatar: data.avatar,
-          role: data.role || 'MEMBER',
-          isActive: data.isActive ?? true,
-          isEmailVerified: data.isEmailVerified ?? false,
+          email: userData.email,
+          password: userData.password || 'restored_password_placeholder',
+          fullName: userData.fullName,
+          avatar: userData.avatar,
+          role: userData.role || 'MEMBER',
+          isActive: userData.isActive ?? true,
+          isEmailVerified: userData.isEmailVerified ?? false,
         },
       });
     }
@@ -152,14 +179,19 @@ export class AuditService {
       action: 'ARCHIVE_RESTORE',
       targetType: model ? model.toUpperCase() : 'UNKNOWN',
       targetId: String(archiveId),
-      details: { fromModel: model, originalRecord: data },
+      details: {
+        fromModel: model,
+        originalRecord: rawData as Record<string, unknown>,
+      },
     });
 
     return { success: true, restoredModel: model };
   }
 
   async deleteArchiveRecord(archiveId: number) {
-    const deleted = await this.prisma.archive.delete({ where: { id: archiveId } });
+    const deleted = await this.prisma.archive.delete({
+      where: { id: archiveId },
+    });
     await this.logAction({
       action: 'ARCHIVE_PERMANENT_DELETE',
       targetType: 'ARCHIVE',

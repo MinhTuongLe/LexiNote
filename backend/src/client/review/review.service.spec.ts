@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReviewService } from './review.service';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 
 describe('ReviewService', () => {
   let service: ReviewService;
   let prisma: PrismaService;
 
-  const mockPrisma = {
+  const mockPrisma: any = {
     word: {
       count: jest.fn(),
       findMany: jest.fn(),
@@ -18,7 +18,7 @@ describe('ReviewService', () => {
       deleteMany: jest.fn(),
       createMany: jest.fn(),
     },
-    $transaction: jest.fn((cb) => cb(mockPrisma)),
+    $transaction: jest.fn((cb: any) => cb(mockPrisma)),
   };
 
   beforeEach(async () => {
@@ -38,9 +38,9 @@ describe('ReviewService', () => {
     it('should return mock fallback if no words exist', async () => {
       mockPrisma.word.count.mockResolvedValue(0);
       mockPrisma.review.findMany.mockResolvedValue([]);
-      
+
       const stats = await service.getStudyStats(1);
-      
+
       expect(stats.streak).toBe(12); // Fallback value
       expect(stats.totalReviewed).toBe(208); // Fallback value
     });
@@ -48,29 +48,29 @@ describe('ReviewService', () => {
     it('should calculate correct mastery breakdown', async () => {
       mockPrisma.word.count.mockResolvedValue(3);
       mockPrisma.review.findMany.mockResolvedValue([
-        { 
-          correctCount: 10, 
-          interval: 30, 
-          easeFactor: 2.5, 
+        {
+          correctCount: 10,
+          interval: 30,
+          easeFactor: 2.5,
           lastReviewed: BigInt(Date.now()),
-          word: { type: 'noun' } 
+          word: { type: 'noun' },
         },
-        { 
-          correctCount: 2, 
-          interval: 5, 
-          easeFactor: 2.3, 
+        {
+          correctCount: 2,
+          interval: 5,
+          easeFactor: 2.3,
           lastReviewed: BigInt(Date.now()),
-          word: { type: 'verb' } 
+          word: { type: 'verb' },
         },
-        { 
-          correctCount: 0, 
-          interval: 0, 
-          easeFactor: 2.5, 
+        {
+          correctCount: 0,
+          interval: 0,
+          easeFactor: 2.5,
           lastReviewed: null,
-          word: { type: 'adj' } 
+          word: { type: 'adj' },
         },
       ]);
-      
+
       // Mock streak and activity to avoid nested complexity in this unit test
       jest.spyOn(service, 'getStreak').mockResolvedValue(5);
       jest.spyOn(service, 'getActivityData').mockResolvedValue([]);
@@ -130,9 +130,9 @@ describe('ReviewService', () => {
       ]);
 
       const activity = await service.getActivityData(1, 2025, 0);
-      
-      const day1 = activity.find(a => a.date === '2025-01-01');
-      const day2 = activity.find(a => a.date === '2025-01-02');
+
+      const day1 = activity.find((a) => a.date === '2025-01-01');
+      const day2 = activity.find((a) => a.date === '2025-01-02');
 
       expect(day1?.count).toBe(2);
       expect(day2?.count).toBe(1);

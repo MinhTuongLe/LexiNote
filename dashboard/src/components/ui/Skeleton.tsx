@@ -12,4 +12,5 @@ const Skeleton: React.FC<SkeletonProps> = ({ className }) => {
   );
 };
 
+export { Skeleton };
 export default Skeleton;

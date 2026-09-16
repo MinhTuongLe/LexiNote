@@ -20,11 +20,35 @@ import {
   ShieldCheck, 
   Sparkles,
   Layers,
-  KeyRound,
   LogOut,
   Globe
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+
+export interface UserWordReview {
+  correctCount: number;
+  wrongCount: number;
+  easeFactor: number;
+  interval: number;
+}
+
+export interface UserWordItem {
+  id: number;
+  word: string;
+  type: string;
+  meaningVi: string;
+  example?: string;
+  reviews?: UserWordReview[];
+}
+
+export interface UserSessionItem {
+  id: number;
+  ipAddress?: string;
+  isExpired?: boolean;
+  userAgent?: string;
+  createdAt?: string;
+  expiresAt?: string;
+}
 
 interface UserDetailModalProps {
   userId: number | null;
@@ -66,7 +90,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       await toggleStatus(userId).unwrap();
       toast({ type: 'success', title: 'Status Updated', message: 'User status toggled successfully.' });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Action Failed', message: 'Could not update user status.' });
     }
   };
@@ -76,7 +100,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       await toggleVerify(userId).unwrap();
       toast({ type: 'success', title: 'Verification Updated', message: 'User email verification status toggled.' });
       refetch();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Action Failed', message: 'Could not toggle email verification.' });
     }
   };
@@ -86,7 +110,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       await revokeSession({ userId, sessionId }).unwrap();
       toast({ type: 'success', title: 'Session Terminated', message: 'Active session has been revoked.' });
       refetchSessions();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Revoke Failed', message: 'Could not terminate session.' });
     }
   };
@@ -96,7 +120,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       await revokeAllSessions(userId).unwrap();
       toast({ type: 'success', title: 'Force Logout Success', message: 'All active sessions for this user have been terminated.' });
       refetchSessions();
-    } catch (err) {
+    } catch {
       toast({ type: 'error', title: 'Revoke Failed', message: 'Could not terminate user sessions.' });
     }
   };
@@ -258,7 +282,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   </div>
                   <div>
                     <span className="text-muted-foreground">Created Date:</span>
-                    <span className="ml-2 text-foreground">{formatDate(user.createdAt)}</span>
+                    <span className="ml-2 text-foreground">{formatDate(user.createdAt != null ? String(user.createdAt) : undefined)}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">Total Correct Reviews:</span>
@@ -297,7 +321,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                     This user has not created any vocabulary items yet.
                   </div>
                 ) : (
-                  words.map((w: any) => {
+                  words.map((w: UserWordItem) => {
                     const review = w.reviews?.[0];
                     return (
                       <div
@@ -364,7 +388,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   </div>
                 ) : (
                   <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
-                    {sessions.map((sess: any) => (
+                    {sessions.map((sess: UserSessionItem) => (
                       <div
                         key={sess.id}
                         className="p-3 rounded-lg border border-border/60 bg-card flex items-center justify-between text-xs"

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ManagementService {
@@ -11,8 +12,8 @@ export class ManagementService {
 
   async getAllUsers(page = 1, limit = 10, search?: string, isActive?: boolean) {
     const skip = (page - 1) * limit;
-    const where: any = {
-      role: 'MEMBER'
+    const where: Prisma.UserWhereInput = {
+      role: 'MEMBER',
     };
 
     if (search) {
@@ -50,7 +51,7 @@ export class ManagementService {
     ]);
 
     return {
-      data: users.map(u => ({
+      data: users.map((u) => ({
         ...u,
         createdAt: u.createdAt.toString(),
         wordCount: u._count.words,
@@ -104,11 +105,11 @@ export class ManagementService {
       orderBy: { createdAt: 'desc' },
     });
 
-    const formattedWords = words.map(w => ({
+    const formattedWords = words.map((w) => ({
       ...w,
       createdAt: w.createdAt.toString(),
       updatedAt: w.updatedAt.toString(),
-      reviews: w.reviews.map(r => ({
+      reviews: w.reviews.map((r) => ({
         ...r,
         lastReviewed: r.lastReviewed ? r.lastReviewed.toString() : null,
         nextReview: r.nextReview.toString(),
@@ -123,8 +124,8 @@ export class ManagementService {
     let totalEase = 0;
     let reviewedCount = 0;
 
-    words.forEach(w => {
-      w.reviews.forEach(r => {
+    words.forEach((w) => {
+      w.reviews.forEach((r) => {
         totalCorrect += r.correctCount;
         totalWrong += r.wrongCount;
         totalEase += r.easeFactor;
@@ -135,8 +136,12 @@ export class ManagementService {
     });
 
     const totalAnswers = totalCorrect + totalWrong;
-    const retentionRate = totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 0;
-    const avgEaseFactor = reviewedCount > 0 ? parseFloat((totalEase / reviewedCount).toFixed(2)) : 2.5;
+    const retentionRate =
+      totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 0;
+    const avgEaseFactor =
+      reviewedCount > 0
+        ? parseFloat((totalEase / reviewedCount).toFixed(2))
+        : 2.5;
 
     return {
       user,
@@ -158,7 +163,7 @@ export class ManagementService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return sessions.map(s => ({
+    return sessions.map((s) => ({
       ...s,
       createdAt: s.createdAt.toString(),
       expiresAt: s.expiresAt.toString(),
@@ -167,21 +172,31 @@ export class ManagementService {
   }
 
   async revokeSession(sessionId: number) {
-    const token = await this.prisma.refreshToken.findUnique({ where: { id: sessionId } });
+    const token = await this.prisma.refreshToken.findUnique({
+      where: { id: sessionId },
+    });
     if (!token) return null;
 
-    const result = await this.prisma.refreshToken.delete({ where: { id: sessionId } });
+    const result = await this.prisma.refreshToken.delete({
+      where: { id: sessionId },
+    });
     await this.auditService.logAction({
       action: 'SESSION_REVOKE',
       targetType: 'USER_SESSION',
       targetId: String(token.userId),
-      details: { sessionId, ipAddress: token.ipAddress, userAgent: token.userAgent },
+      details: {
+        sessionId,
+        ipAddress: token.ipAddress,
+        userAgent: token.userAgent,
+      },
     });
     return result;
   }
 
   async revokeAllUserSessions(userId: number) {
-    const result = await this.prisma.refreshToken.deleteMany({ where: { userId } });
+    const result = await this.prisma.refreshToken.deleteMany({
+      where: { userId },
+    });
     await this.auditService.logAction({
       action: 'USER_REVOKE_ALL_SESSIONS',
       targetType: 'USER',
@@ -191,7 +206,7 @@ export class ManagementService {
     return result;
   }
 
-  async update(id: number, data: any) {
+  async update(id: number, data: Prisma.UserUpdateInput) {
     const updated = await this.prisma.user.update({
       where: { id },
       data,
@@ -200,12 +215,12 @@ export class ManagementService {
       action: 'USER_UPDATE',
       targetType: 'USER',
       targetId: String(id),
-      details: data,
+      details: data as Record<string, unknown>,
     });
     return updated;
   }
 
-  async createUser(data: any) {
+  async createUser(data: { fullName: string; email: string }) {
     const user = await this.prisma.user.create({
       data: {
         ...data,
@@ -236,7 +251,11 @@ export class ManagementService {
       action: 'USER_TOGGLE_STATUS',
       targetType: 'USER',
       targetId: String(id),
-      details: { previousStatus: user.isActive, newStatus: updated.isActive, email: user.email },
+      details: {
+        previousStatus: user.isActive,
+        newStatus: updated.isActive,
+        email: user.email,
+      },
     });
 
     return updated;
@@ -255,7 +274,11 @@ export class ManagementService {
       action: 'USER_TOGGLE_VERIFY',
       targetType: 'USER',
       targetId: String(id),
-      details: { previousState: user.isEmailVerified, newState: updated.isEmailVerified, email: user.email },
+      details: {
+        previousState: user.isEmailVerified,
+        newState: updated.isEmailVerified,
+        email: user.email,
+      },
     });
 
     return updated;
@@ -266,8 +289,7 @@ export class ManagementService {
     if (user) {
       await this.prisma.archive.create({
         data: {
-          fromModel: 'User',
-          originalRecord: JSON.parse(JSON.stringify(user, (key, value) => typeof value === 'bigint' ? value.toString() : value)),
+          originalRecord: user as unknown as Prisma.InputJsonValue,
           originalRecordId: { id },
         },
       });

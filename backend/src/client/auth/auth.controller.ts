@@ -1,4 +1,15 @@
-import { Controller, Post, Body, Get, UseGuards, Request, Patch, Query, Req, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Request,
+  Patch,
+  Query,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -80,10 +91,12 @@ export class AuthController {
   @ApiBearerAuth()
   @Post('logout')
   @ApiOperation({ summary: 'Logout and invalidate refresh token' })
-  async logout(@Request() req: any, @Body('refreshToken') currentToken?: string) {
+  async logout(
+    @Request() req: any,
+    @Body('refreshToken') currentToken?: string,
+  ) {
     return this.authService.logout(req.user.userId, currentToken);
   }
-
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

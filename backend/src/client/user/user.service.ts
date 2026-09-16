@@ -10,7 +10,7 @@ export class UserService {
   async create(data: Prisma.UserCreateInput): Promise<User> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(data.password, salt);
-    
+
     return this.prisma.user.create({
       data: {
         ...data,
@@ -36,7 +36,7 @@ export class UserService {
       const salt = await bcrypt.genSalt(10);
       data.password = await bcrypt.hash(data.password, salt);
     }
-    
+
     return this.prisma.user.update({
       where: { id },
       data,

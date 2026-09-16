@@ -20,6 +20,7 @@ import { useWords } from './useWords';
 import ReModal from '@/components/ui/ReModal';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/Toast';
+import type { Word } from '@/store/api/wordsApi';
 
 const WordLibraryPage: React.FC = () => {
   const {
@@ -44,14 +45,14 @@ const WordLibraryPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   
-  const [editingWord, setEditingWord] = React.useState<any>(null);
+  const [editingWord, setEditingWord] = React.useState<Word | null>(null);
   const [newMeaning, setNewMeaning] = React.useState('');
   const [batchData, setBatchData] = React.useState('');
   const [isProcessing, setIsProcessing] = React.useState(false);
 
-  const handleEditTrigger = (word: any) => {
-    setEditingWord(word);
-    setNewMeaning(word.meaningVi);
+  const handleEditTrigger = (wordItem: Word) => {
+    setEditingWord(wordItem);
+    setNewMeaning(wordItem.meaningVi);
     setIsEditModalOpen(true);
   };
 
@@ -62,7 +63,7 @@ const WordLibraryPage: React.FC = () => {
       await handleUpdate(editingWord.id, { meaningVi: newMeaning });
       setIsEditModalOpen(false);
       toast({ type: 'success', title: 'Word Updated', message: `Meaning for "${editingWord.word}" has been revised.` });
-    } catch (e) {
+    } catch {
       toast({ type: 'error', title: 'Update Failed', message: 'Failed to synchronize lexical changes.' });
     } finally {
       setIsProcessing(false);
@@ -76,7 +77,7 @@ const WordLibraryPage: React.FC = () => {
       await handleDelete(editingWord.id);
       setIsDeleteModalOpen(false);
       toast({ type: 'success', title: 'Word Removed', message: `"${editingWord.word}" removed from registry.` });
-    } catch (e) {
+    } catch {
       toast({ type: 'error', title: 'Delete Failed', message: 'Registry constraint prevented removal.' });
     } finally {
       setIsProcessing(false);
@@ -311,11 +312,11 @@ const WordLibraryPage: React.FC = () => {
                             <>
                               <span className="text-muted-foreground/40 text-xs">•</span>
                               <button 
-                                onClick={(e) => { e.stopPropagation(); setOwnerId(word.owner.id); }}
+                                onClick={(e) => { e.stopPropagation(); if (word.owner) setOwnerId(word.owner.id); }}
                                 className="text-[10px] text-primary hover:underline flex items-center gap-1 font-semibold"
                                 title="Click to filter by this owner"
                               >
-                                <User size={10} /> {word.owner.fullName || word.owner.email}
+                                <User size={10} /> {word.owner?.fullName || word.owner?.email}
                               </button>
                             </>
                           )}
@@ -396,6 +397,32 @@ const WordLibraryPage: React.FC = () => {
               ))
             )}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 mt-4 border-t border-border/60">
+              <span className="text-xs text-muted-foreground">Page {page} of {totalPages}</span>
+              <div className="flex gap-2">
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setPage((p: number) => Math.max(1, p - 1))} 
+                  disabled={page === 1}
+                  className="h-8 text-xs"
+                >
+                  Previous
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))} 
+                  disabled={page === totalPages}
+                  className="h-8 text-xs"
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

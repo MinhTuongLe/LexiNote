@@ -55,8 +55,11 @@ async function bootstrap() {
 
   // 🛡️ Security: Enable CORS with tighter origins
   const isProd = process.env.NODE_ENV === 'production';
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean) || [];
-  
+  const allowedOrigins =
+    process.env.ALLOWED_ORIGINS?.split(',')
+      .map((o) => o.trim())
+      .filter(Boolean) || [];
+
   app.enableCors({
     origin: (origin, callback) => {
       // 1. Allow if no Origin header (e.g. Render Health Check, cURL, Postman)
@@ -68,7 +71,7 @@ async function bootstrap() {
       if (!isProd && allowedOrigins.length === 0) {
         return callback(null, true);
       }
-      
+
       // 3. Strict check against allowed whitelist
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -79,7 +82,8 @@ async function bootstrap() {
     },
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, Accept-Language, x-custom-lang',
+    allowedHeaders:
+      'Content-Type, Accept, Authorization, Accept-Language, x-custom-lang',
   });
 
   // Swagger Documentation Setup
@@ -99,4 +103,3 @@ async function bootstrap() {
 }
 bootstrap();
 // Trigger rebuild
-

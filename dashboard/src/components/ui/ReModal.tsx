@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
-import { Button } from './button';
+
 
 interface ModalProps {
   isOpen: boolean;
@@ -78,4 +78,5 @@ const ReModal: React.FC<ModalProps> = ({
   );
 };
 
+export { ReModal };
 export default ReModal;

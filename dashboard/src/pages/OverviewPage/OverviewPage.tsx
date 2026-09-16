@@ -192,7 +192,7 @@ const OverviewPage: React.FC = () => {
                     </div>
                   ))
                 ) : (
-                  (recentActivities || []).map((log: any, i: number) => (
+                  ((recentActivities || []) as { message?: string; time?: string; sub?: string }[]).map((log, i: number) => (
                     <div key={i} className="flex gap-3.5 group items-start">
                       <div className="w-1.5 h-1.5 rounded-full bg-primary mt-1.5 shrink-0 group-hover:scale-125 transition-transform"></div>
                       <div className="flex-1 min-w-0">

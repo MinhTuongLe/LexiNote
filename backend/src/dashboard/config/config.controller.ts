@@ -22,7 +22,7 @@ export class DashboardConfigController {
 
   @Patch()
   @ApiOperation({ summary: 'Update system parameters' })
-  updateConfig(@Body() body: any) {
+  updateConfig(@Body() body: Record<string, unknown>) {
     return this.configService.updateConfig(body);
   }
 }

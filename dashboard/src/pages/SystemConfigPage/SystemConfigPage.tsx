@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   Shield, 
   Globe, 
@@ -22,12 +22,6 @@ const SystemConfigPage: React.FC = () => {
   const [autoBackup, setAutoBackup] = useState(true);
   const [debugMode, setDebugMode] = useState(false);
 
-  useEffect(() => {
-    if (config) {
-      setRateLimit(config.security?.rateLimit || 100);
-    }
-  }, [config]);
-
   const handleReset = () => {
     if (confirm('Revert all infrastructure parameters to factory defaults?')) {
       setRateLimit(100);
@@ -47,7 +41,7 @@ const SystemConfigPage: React.FC = () => {
           timestamp: Date.now() 
       }).unwrap();
       alert('System configuration updated safely.');
-    } catch (err) {
+    } catch {
       alert('Failed to update config.');
     }
   };

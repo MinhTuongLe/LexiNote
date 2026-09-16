@@ -27,10 +27,18 @@ const ProfilePage: React.FC = () => {
         <Card className="border-border/60 bg-card shadow-xs flex flex-col items-center">
           <CardContent className="p-8 flex flex-col items-center w-full">
             <div className="relative group">
-              <div className="w-20 h-20 rounded-2xl bg-primary/10 text-primary border-2 border-primary/30 flex items-center justify-center text-2xl font-bold shadow-sm transition-transform group-hover:scale-105">
-                {user?.fullName?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'AD'}
-              </div>
-              {user?.isActive && (
+              {user?.avatar ? (
+                <img 
+                  src={user.avatar} 
+                  alt={user.fullName || 'Administrator'} 
+                  className="w-20 h-20 rounded-2xl object-cover border-2 border-primary/30 shadow-sm transition-transform group-hover:scale-105" 
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 text-primary border-2 border-primary/30 flex items-center justify-center text-2xl font-bold shadow-sm transition-transform group-hover:scale-105">
+                  {user?.fullName?.split(' ').map((n: string) => n[0]).join('').toUpperCase() || 'AD'}
+                </div>
+              )}
+              {Boolean(user?.isActive) && (
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 border-2 border-card rounded-full flex items-center justify-center shadow-xs">
                   <BadgeCheck size={14} className="text-white" />
                 </div>
@@ -42,9 +50,9 @@ const ProfilePage: React.FC = () => {
             </div>
             <div className="mt-4 flex gap-1.5">
               <span className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider">
-                {user?.role || 'Admin'}
+                {String(user?.role || 'Admin')}
               </span>
-              {user?.isEmailVerified && (
+              {Boolean(user?.isEmailVerified) && (
                 <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-semibold px-2.5 py-1 rounded-md uppercase tracking-wider">
                   Verified
                 </span>

@@ -8,5 +8,5 @@ export const VALID_WORD_TYPES = [
   'phrase',
   'noun_phrase',
   'verb_phrase',
-  'other'
+  'other',
 ];

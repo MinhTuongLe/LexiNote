@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Word, Prisma } from '@prisma/client';
 import { SettingsService } from '../settings/settings.service';
@@ -104,7 +108,7 @@ export class WordService {
   async find(userId: number, filters: any) {
     const { search, type, page, limit } = filters;
     const pageNum = parseInt(page) || 1;
-    const limitNum = limit === 'all' ? undefined : (parseInt(limit) || 20);
+    const limitNum = limit === 'all' ? undefined : parseInt(limit) || 20;
     const skip = limitNum ? (pageNum - 1) * limitNum : undefined;
 
     const where: Prisma.WordWhereInput = {
@@ -139,7 +143,7 @@ export class WordService {
     ]);
 
     // Format BigInt to Number or String for JSON response
-    const formattedWords = words.map(w => this.formatWord(w));
+    const formattedWords = words.map((w) => this.formatWord(w));
 
     return {
       data: formattedWords,
@@ -194,11 +198,14 @@ export class WordService {
         data: updateData,
       });
 
-      if (updatedWord.count === 0) throw new NotFoundException('error.word.not_found');
+      if (updatedWord.count === 0)
+        throw new NotFoundException('error.word.not_found');
 
       // Update relations if provided
       if (data.synonyms !== undefined) {
-        await tx.wordRelation.deleteMany({ where: { wordId: id, type: 'synonym' } });
+        await tx.wordRelation.deleteMany({
+          where: { wordId: id, type: 'synonym' },
+        });
         if (data.synonyms && data.synonyms.length > 0) {
           await tx.wordRelation.createMany({
             data: data.synonyms.map((val: string) => ({
@@ -211,7 +218,9 @@ export class WordService {
       }
 
       if (data.antonyms !== undefined) {
-        await tx.wordRelation.deleteMany({ where: { wordId: id, type: 'antonym' } });
+        await tx.wordRelation.deleteMany({
+          where: { wordId: id, type: 'antonym' },
+        });
         if (data.antonyms && data.antonyms.length > 0) {
           await tx.wordRelation.createMany({
             data: data.antonyms.map((val: string) => ({
@@ -264,9 +273,15 @@ export class WordService {
 
     if (verifiedWordIds.length > 0) {
       return this.prisma.$transaction(async (tx) => {
-        await tx.wordRelation.deleteMany({ where: { wordId: { in: verifiedWordIds } } });
-        await tx.review.deleteMany({ where: { wordId: { in: verifiedWordIds } } });
-        const result = await tx.word.deleteMany({ where: { id: { in: verifiedWordIds } } });
+        await tx.wordRelation.deleteMany({
+          where: { wordId: { in: verifiedWordIds } },
+        });
+        await tx.review.deleteMany({
+          where: { wordId: { in: verifiedWordIds } },
+        });
+        const result = await tx.word.deleteMany({
+          where: { id: { in: verifiedWordIds } },
+        });
         return { success: true, count: result.count };
       });
     }
@@ -282,7 +297,7 @@ export class WordService {
 
     for (let i = 0; i < words.length; i += chunkSize) {
       const chunk = words.slice(i, i + chunkSize);
-      
+
       const chunkPromises = chunk.map(async (data) => {
         const { word, meaningVi, example, type } = data;
 
@@ -331,32 +346,35 @@ export class WordService {
 
   async getDashboardStats(userId: number) {
     const now = BigInt(Date.now() + 10 * 60 * 1000); // 10 min buffer for precision loss
-    
-    const [totalWords, dueReviewsCount, recentWords, studyStats] = await Promise.all([
-      this.prisma.word.count({ where: { ownerId: userId } }),
-      this.prisma.review.count({
-        where: {
-          nextReview: { lte: now },
-          word: { ownerId: userId },
-        },
-      }),
-      this.prisma.word.findMany({
-        where: { ownerId: userId },
-        include: {
-          relations: true,
-          reviews: true,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        take: 3,
-      }),
-      this.reviewService.getStudyStats(userId),
-    ]);
+
+    const [totalWords, dueReviewsCount, recentWords, studyStats] =
+      await Promise.all([
+        this.prisma.word.count({ where: { ownerId: userId } }),
+        this.prisma.review.count({
+          where: {
+            nextReview: { lte: now },
+            word: { ownerId: userId },
+          },
+        }),
+        this.prisma.word.findMany({
+          where: { ownerId: userId },
+          include: {
+            relations: true,
+            reviews: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 3,
+        }),
+        this.reviewService.getStudyStats(userId),
+      ]);
 
     const formattedRecentWords = recentWords.map((w: any) => {
-      const review = w.reviews[0]; 
-      const progress = review ? Math.min(Math.round((review.correctCount / 5) * 100), 100) : 0;
+      const review = w.reviews[0];
+      const progress = review
+        ? Math.min(Math.round((review.correctCount / 5) * 100), 100)
+        : 0;
 
       return {
         ...w,

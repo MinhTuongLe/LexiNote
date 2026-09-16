@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { WordService } from './word.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -32,7 +43,11 @@ export class WordController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a word' })
-  async update(@Request() req: any, @Param('id') id: string, @Body() body: UpdateWordDto) {
+  async update(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() body: UpdateWordDto,
+  ) {
     return this.wordService.update(req.user.userId, parseInt(id), body);
   }
 

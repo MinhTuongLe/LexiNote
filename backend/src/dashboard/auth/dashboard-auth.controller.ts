@@ -1,4 +1,12 @@
-import { Controller, Post, Body, UnauthorizedException, Get, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException,
+  Get,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { AuthService } from '../../client/auth/auth.service';
 import { Role } from '@prisma/client';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
@@ -13,9 +21,15 @@ export class DashboardAuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Admin login for dashboard' })
-  async login(@Body() loginDto: any, @Req() req: any) {
-    const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-    
+  async login(
+    @Body() loginDto: { email: string; password: string },
+    @Req() req: Record<string, unknown>,
+  ) {
+    const user = (await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    )) as { id: number; email: string; role: Role };
+
     // Explicitly check for ADMIN role
     if (user.role !== Role.ADMIN) {
       throw new UnauthorizedException('error.auth.not_admin_access');
@@ -28,7 +42,7 @@ export class DashboardAuthController {
   @Roles(Role.ADMIN)
   @Get('me')
   @ApiOperation({ summary: 'Get current admin profile' })
-  async getProfile(@Req() req: any) {
+  getProfile(@Req() req: { user: Record<string, unknown> }) {
     return req.user;
   }
 }

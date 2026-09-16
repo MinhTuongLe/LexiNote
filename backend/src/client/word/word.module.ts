@@ -8,6 +8,6 @@ import { ReviewModule } from '../review/review.module';
   imports: [SettingsModule, ReviewModule],
   providers: [WordService],
   controllers: [WordController],
-  exports: [WordService]
+  exports: [WordService],
 })
 export class WordModule {}

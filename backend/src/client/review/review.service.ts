@@ -7,7 +7,7 @@ export class ReviewService {
 
   async getDueWords(userId: number) {
     const now = BigInt(Date.now());
-    
+
     const reviews = await this.prisma.review.findMany({
       where: {
         nextReview: { lte: now },
@@ -51,7 +51,7 @@ export class ReviewService {
 
   async recordGameSession(userId: number, wordIds: number[]) {
     const now = BigInt(Date.now());
-    
+
     // For games, we update the activity timestamp and increment correctCount.
     // We do NOT aggressively update the SRS interval to maintain spaced repetition integrity.
     return this.prisma.review.updateMany({
@@ -61,7 +61,7 @@ export class ReviewService {
       },
       data: {
         lastReviewed: now,
-        correctCount: { increment: 1 }
+        correctCount: { increment: 1 },
       },
     });
   }
@@ -81,9 +81,10 @@ export class ReviewService {
       if (correctCount === 0) interval = 1;
       else if (correctCount === 1) interval = 6;
       else interval = Math.round(interval * easeFactor);
-      
+
       correctCount++;
-      easeFactor = easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+      easeFactor =
+        easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
       if (easeFactor < 1.3) easeFactor = 1.3;
     } else {
       correctCount = 0;
@@ -91,7 +92,7 @@ export class ReviewService {
       wrongCount++;
     }
 
-    const nextReview = BigInt(Date.now() + (interval * 24 * 60 * 60 * 1000));
+    const nextReview = BigInt(Date.now() + interval * 24 * 60 * 60 * 1000);
 
     const updated = await this.prisma.review.update({
       where: { id: reviewId },
@@ -118,7 +119,7 @@ export class ReviewService {
       select: { id: true },
     });
 
-    const verifiedIds = words.map(w => w.id);
+    const verifiedIds = words.map((w) => w.id);
 
     if (verifiedIds.length === 0) {
       return { success: true, count: 0 };
@@ -133,7 +134,7 @@ export class ReviewService {
 
       // Create fresh starting points (due 1h ago to bypass float precision loss)
       await tx.review.createMany({
-        data: verifiedIds.map(id => ({
+        data: verifiedIds.map((id) => ({
           wordId: id,
           nextReview: BigInt(Date.now() - 3600000),
           interval: 0,
@@ -148,8 +149,10 @@ export class ReviewService {
   }
 
   async getStudyStats(userId: number, year?: number, month?: number) {
-    const wordCount = await this.prisma.word.count({ where: { ownerId: userId } });
-    
+    const wordCount = await this.prisma.word.count({
+      where: { ownerId: userId },
+    });
+
     const reviews = await this.prisma.review.findMany({
       where: { word: { ownerId: userId } },
       include: { word: true },
@@ -157,20 +160,26 @@ export class ReviewService {
 
     const streak = await this.getStreak(userId);
     const weeklyActivity = await this.getActivityData(userId, year, month);
-    
+
     let masteredCount = 0;
     let learningCount = 0;
     let newCount = 0;
     let totalCorrect = 0;
     let totalWrong = 0;
     let totalEaseFactor = 0;
-    
+
     const typesMap = new Map<string, any>();
 
     reviews.forEach((r: any) => {
       const type = r.word.type || 'other';
       if (!typesMap.has(type)) {
-        typesMap.set(type, { type, total: 0, mastered: 0, learning: 0, new: 0 });
+        typesMap.set(type, {
+          type,
+          total: 0,
+          mastered: 0,
+          learning: 0,
+          new: 0,
+        });
       }
       const typeStats = typesMap.get(type);
       typeStats.total++;
@@ -193,21 +202,31 @@ export class ReviewService {
 
     const reviewedWords = reviews.filter((r: any) => r.lastReviewed !== null);
     const totalReviewed = reviewedWords.length;
-    const totalEaseFactorReviewed = reviewedWords.reduce((sum: number, r: any) => sum + r.easeFactor, 0);
+    const totalEaseFactorReviewed = reviewedWords.reduce(
+      (sum: number, r: any) => sum + r.easeFactor,
+      0,
+    );
 
-    const accuracy = (totalCorrect + totalWrong) > 0 
-      ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100) 
-      : 0;
-    const averageEaseFactor = totalReviewed > 0 ? totalEaseFactorReviewed / totalReviewed : 0;
+    const accuracy =
+      totalCorrect + totalWrong > 0
+        ? Math.round((totalCorrect / (totalCorrect + totalWrong)) * 100)
+        : 0;
+    const averageEaseFactor =
+      totalReviewed > 0 ? totalEaseFactorReviewed / totalReviewed : 0;
 
-    let totalTimeSpentMinutes = Math.round(((totalCorrect + totalWrong) * 5) / 60);
+    const totalTimeSpentMinutes = Math.round(
+      ((totalCorrect + totalWrong) * 5) / 60,
+    );
 
-    let weakestWords = [...reviews]
-      .filter(r => r.wrongCount > 0)
+    const weakestWords = [...reviews]
+      .filter((r) => r.wrongCount > 0)
       .sort((a, b) => b.wrongCount - a.wrongCount)
       .slice(0, 5)
-      .map((r: any) => ({ word: r.word.word, meaning: r.word.meaningVi, wrongCount: r.wrongCount }));
-
+      .map((r: any) => ({
+        word: r.word.word,
+        meaning: r.word.meaningVi,
+        wrongCount: r.wrongCount,
+      }));
 
     return {
       streak,
@@ -221,31 +240,35 @@ export class ReviewService {
       accuracy,
       totalTimeSpentMinutes,
       weakestWords,
-      totalSessions: Math.ceil((totalCorrect + totalWrong) / 7), 
+      totalSessions: Math.ceil((totalCorrect + totalWrong) / 7),
     };
   }
 
   async getStreak(userId: number): Promise<number> {
     const reviews = await this.prisma.review.findMany({
-      where: { 
+      where: {
         word: { ownerId: userId },
-        lastReviewed: { not: null }
+        lastReviewed: { not: null },
       },
       select: { lastReviewed: true },
-      orderBy: { lastReviewed: 'desc' }
+      orderBy: { lastReviewed: 'desc' },
     });
 
     if (reviews.length === 0) return 0;
 
-    const dates = reviews.map(r => {
+    const dates = reviews.map((r) => {
       const d = new Date(Number(r.lastReviewed));
       return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
     });
 
     const uniqueDates = Array.from(new Set(dates));
-    
+
     const today = new Date();
-    const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate()).getTime();
+    const todayMidnight = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    ).getTime();
     const yesterdayMidnight = todayMidnight - 86400000;
 
     if (uniqueDates[0] < yesterdayMidnight) return 0;
@@ -265,11 +288,16 @@ export class ReviewService {
     return streak;
   }
 
-  async getActivityData(userId: number, year?: number, month?: number): Promise<{ date: string, count: number }[]> {
-    const targetDate = (year !== undefined && month !== undefined) 
-      ? new Date(year, month, 1) 
-      : new Date();
-    
+  async getActivityData(
+    userId: number,
+    year?: number,
+    month?: number,
+  ): Promise<{ date: string; count: number }[]> {
+    const targetDate =
+      year !== undefined && month !== undefined
+        ? new Date(year, month, 1)
+        : new Date();
+
     let startDate: Date;
     let endDate: Date;
 
@@ -280,14 +308,16 @@ export class ReviewService {
     } else {
       // Default: Current Week (Monday to Sunday)
       const dayOfWeek = targetDate.getDay();
-      const diffToMon = (dayOfWeek === 0 ? 6 : dayOfWeek - 1);
+      const diffToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       startDate = new Date(targetDate);
       startDate.setDate(targetDate.getDate() - diffToMon);
       startDate.setHours(0, 0, 0, 0);
       endDate = new Date(startDate.getTime() + 7 * 86400000);
     }
 
-    const daysCount = Math.round((endDate.getTime() - startDate.getTime()) / 86400000);
+    const daysCount = Math.round(
+      (endDate.getTime() - startDate.getTime()) / 86400000,
+    );
     const activityDays = Array.from({ length: daysCount }).map((_, i) => {
       const d = new Date(startDate);
       d.setDate(startDate.getDate() + i);
@@ -302,14 +332,16 @@ export class ReviewService {
         lastReviewed: {
           gte: BigInt(startDate.getTime()),
           lt: BigInt(endDate.getTime()),
-        }
+        },
       },
-      select: { lastReviewed: true }
+      select: { lastReviewed: true },
     });
 
     const countsMap = new Map<string, number>();
     reviewsInRange.forEach((r: any) => {
-      const dateStr = new Date(Number(r.lastReviewed)).toISOString().split('T')[0];
+      const dateStr = new Date(Number(r.lastReviewed))
+        .toISOString()
+        .split('T')[0];
       countsMap.set(dateStr, (countsMap.get(dateStr) || 0) + 1);
     });
 
@@ -317,7 +349,7 @@ export class ReviewService {
       const dateStr = d.toISOString().split('T')[0];
       return {
         date: dateStr,
-        count: countsMap.get(dateStr) || 0
+        count: countsMap.get(dateStr) || 0,
       };
     });
   }
