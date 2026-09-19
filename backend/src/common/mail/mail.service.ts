@@ -24,13 +24,14 @@ export class MailService {
     const port = Number(this.configService.get<number | string>('SMTP_PORT', 587));
     const user = this.configService.get<string>('SMTP_USER');
     const rawPass = this.configService.get<string>('SMTP_PASS');
-    const pass = rawPass ? rawPass.replace(/\s+/g, '') : '';
+    const pass = rawPass ? rawPass.replace(/["'\s]/g, '') : '';
     const rawSecure = this.configService.get<string | boolean>('SMTP_SECURE', false);
     const secure = String(rawSecure).toLowerCase() === 'true' || port === 465;
     
-    this.fromEmail =
-      this.configService.get<string>('MAIL_FROM') ||
-      '"LexiNote App" <no-reply@lexinote.app>';
+    const rawFrom = this.configService.get<string>('MAIL_FROM');
+    this.fromEmail = rawFrom
+      ? rawFrom.replace(/^['"]+|['"]+$/g, '')
+      : '"LexiNote App" <no-reply@lexinote.app>';
 
     if (host && user && pass) {
       this.transporter = nodemailer.createTransport({
@@ -38,6 +39,8 @@ export class MailService {
         port,
         secure,
         auth: { user, pass },
+        connectionTimeout: 10000, // 10 seconds timeout
+        socketTimeout: 10000,
       });
       this.logger.log(`📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`);
     } else {
