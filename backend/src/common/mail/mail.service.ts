@@ -1,6 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+
 import {
   renderVerificationEmailTemplate,
   renderForgotPasswordTemplate,
@@ -34,14 +36,16 @@ export class MailService {
       : '"LexiNote App" <no-reply@lexinote.app>';
 
     if (host && user && pass) {
-      this.transporter = nodemailer.createTransport({
+      const transportOptions: SMTPTransport.Options & { family?: number } = {
         host,
         port,
         secure,
         auth: { user, pass },
-        connectionTimeout: 10000, // 10 seconds timeout
-        socketTimeout: 10000,
-      });
+        family: 4, // Force IPv4 to prevent Cloud/Render IPv6 SMTP connection timeouts
+        connectionTimeout: 15000,
+        socketTimeout: 15000,
+      };
+      this.transporter = nodemailer.createTransport(transportOptions as SMTPTransport.Options);
       this.logger.log(`📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`);
     } else {
       this.logger.warn(
