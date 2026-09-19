@@ -10,7 +10,10 @@ import {
   ExternalLink,
   User,
   BrainCircuit,
-  X
+  X,
+  Tag,
+  Layers,
+  Sparkles
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -36,7 +39,9 @@ const WordLibraryPage: React.FC = () => {
     setPage,
     totalPages,
     handleDelete,
-    handleUpdate
+    handleUpdate,
+    handleAddRelation,
+    handleDeleteRelation
   } = useWords();
 
   const { toast } = useToast();
@@ -44,29 +49,78 @@ const WordLibraryPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = React.useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+  const [isRelationModalOpen, setIsRelationModalOpen] = React.useState(false);
   
   const [editingWord, setEditingWord] = React.useState<Word | null>(null);
   const [newMeaning, setNewMeaning] = React.useState('');
+  const [newExample, setNewExample] = React.useState('');
   const [batchData, setBatchData] = React.useState('');
   const [isProcessing, setIsProcessing] = React.useState(false);
+
+  // New Relation Form state
+  const [relType, setRelType] = React.useState<'synonym' | 'antonym' | 'collocation'>('synonym');
+  const [relValue, setRelValue] = React.useState('');
 
   const handleEditTrigger = (wordItem: Word) => {
     setEditingWord(wordItem);
     setNewMeaning(wordItem.meaningVi);
+    setNewExample(wordItem.example || '');
     setIsEditModalOpen(true);
+  };
+
+  const handleRelationTrigger = (wordItem: Word) => {
+    setEditingWord(wordItem);
+    setRelType('synonym');
+    setRelValue('');
+    setIsRelationModalOpen(true);
   };
 
   const onConfirmUpdate = async () => {
     if (!editingWord || !newMeaning) return;
     setIsProcessing(true);
     try {
-      await handleUpdate(editingWord.id, { meaningVi: newMeaning });
+      await handleUpdate(editingWord.id, { 
+        meaningVi: newMeaning,
+        example: newExample
+      });
       setIsEditModalOpen(false);
-      toast({ type: 'success', title: 'Word Updated', message: `Meaning for "${editingWord.word}" has been revised.` });
+      toast({ type: 'success', title: 'Word Updated', message: `Meaning & example for "${editingWord.word}" updated.` });
     } catch {
       toast({ type: 'error', title: 'Update Failed', message: 'Failed to synchronize lexical changes.' });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const onAddRelationSubmit = async () => {
+    if (!editingWord || !relValue.trim()) return;
+    setIsProcessing(true);
+    try {
+      await handleAddRelation(editingWord.id, relType, relValue.trim());
+      toast({ type: 'success', title: 'Relation Added', message: `Added ${relType}: "${relValue}"` });
+      setRelValue('');
+      // update local word relations reference
+      setEditingWord(prev => prev ? {
+        ...prev,
+        relations: [...(prev.relations || []), { id: Date.now(), wordId: prev.id, type: relType, value: relValue.trim() }]
+      } : null);
+    } catch {
+      toast({ type: 'error', title: 'Action Failed', message: 'Could not add word relation.' });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onDeleteRelationItem = async (relationId: number) => {
+    try {
+      await handleDeleteRelation(relationId);
+      toast({ type: 'success', title: 'Relation Deleted', message: 'Relation item removed.' });
+      setEditingWord(prev => prev ? {
+        ...prev,
+        relations: (prev.relations || []).filter(r => r.id !== relationId)
+      } : null);
+    } catch {
+      toast({ type: 'error', title: 'Action Failed', message: 'Could not delete relation.' });
     }
   };
 
@@ -97,7 +151,7 @@ const WordLibraryPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Word Library</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Audit and curate linguistic vocabulary repository.</p>
+          <p className="text-xs text-muted-foreground mt-0.5">Audit and curate linguistic vocabulary repository & relations.</p>
         </div>
         <Button 
           size="sm" 
@@ -130,7 +184,7 @@ const WordLibraryPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         title={`Edit Word: ${editingWord?.word?.toUpperCase()}`}
-        description="Modify the semantic definition for this regional entry."
+        description="Modify the semantic definition and example sentence."
         footer={
           <>
             <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
@@ -148,6 +202,90 @@ const WordLibraryPage: React.FC = () => {
               onChange={(e) => setNewMeaning(e.target.value)}
               className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
             />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Example Sentence</label>
+            <Textarea 
+              value={newExample}
+              onChange={(e) => setNewExample(e.target.value)}
+              placeholder="e.g. She found the book by pure serendipity."
+              className="bg-muted/40 border-border/80 min-h-[90px] rounded-lg p-3 text-xs font-medium text-foreground"
+            />
+          </div>
+        </div>
+      </ReModal>
+
+      {/* Manage Relations Modal */}
+      <ReModal
+        isOpen={isRelationModalOpen}
+        onClose={() => setIsRelationModalOpen(false)}
+        title={`Manage Relations: ${editingWord?.word?.toUpperCase()}`}
+        description="Add synonyms, antonyms, or collocations for this word."
+        footer={
+          <Button variant="outline" size="sm" onClick={() => setIsRelationModalOpen(false)}>Close</Button>
+        }
+      >
+        <div className="space-y-4">
+          <div className="flex gap-2 items-end">
+            <div className="w-1/3 space-y-1">
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase">Type</label>
+              <select 
+                value={relType} 
+                onChange={(e) => setRelType(e.target.value as 'synonym' | 'antonym' | 'collocation')}
+                className="w-full bg-muted/40 border border-border/80 rounded-md h-9 px-2 text-xs font-semibold text-foreground focus:outline-hidden"
+              >
+                <option value="synonym">Synonym</option>
+                <option value="antonym">Antonym</option>
+                <option value="collocation">Collocation</option>
+              </select>
+            </div>
+            <div className="w-2/3 space-y-1">
+              <label className="text-[10px] font-semibold text-muted-foreground uppercase">Value</label>
+              <div className="flex gap-1">
+                <Input 
+                  value={relValue}
+                  onChange={(e) => setRelValue(e.target.value)}
+                  placeholder="e.g. chance, luck..."
+                  className="bg-muted/40 border-border/80 h-9 text-xs font-medium text-foreground"
+                />
+                <Button size="sm" className="h-9 px-3 shrink-0" onClick={onAddRelationSubmit} disabled={isProcessing}>
+                  <Plus size={14} /> Add
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-border/60 space-y-2">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Tag size={13} className="text-primary" /> Active Relations ({(editingWord?.relations || []).length})
+            </h4>
+            {(editingWord?.relations || []).length === 0 ? (
+              <p className="text-xs text-muted-foreground italic py-2">No relations recorded yet.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2 pt-1">
+                {(editingWord?.relations || []).map((rel) => (
+                  <div 
+                    key={rel.id} 
+                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold border ${
+                      rel.type === 'synonym' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                      rel.type === 'antonym' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
+                      'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
+                    }`}
+                  >
+                    <span className="uppercase text-[9px] font-bold opacity-75">{rel.type}:</span>
+                    <span>{rel.value}</span>
+                    <button 
+                      onClick={() => onDeleteRelationItem(rel.id)}
+                      className="ml-1 hover:text-destructive transition-colors"
+                      title="Remove relation"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </ReModal>
@@ -327,8 +465,18 @@ const WordLibraryPage: React.FC = () => {
                         <Button 
                           variant="ghost" 
                           size="icon" 
+                          onClick={(e) => { e.stopPropagation(); handleRelationTrigger(word); }}
+                          className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          title="Manage Relations (Synonyms/Antonyms)"
+                        >
+                          <Tag size={13}/>
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
                           onClick={(e) => { e.stopPropagation(); handleEditTrigger(word); }}
                           className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title="Edit Meaning & Example"
                         >
                           <Edit2 size={13}/>
                         </Button>
@@ -341,13 +489,14 @@ const WordLibraryPage: React.FC = () => {
                             setEditingWord(word);
                             setIsDeleteModalOpen(true);
                           }}
+                          title="Delete Word"
                         >
                           <Trash2 size={13}/>
                         </Button>
                       </div>
                     </div>
 
-                    <div className="mb-3">
+                    <div className="mb-3 space-y-2">
                       <div className="bg-muted/40 p-3.5 rounded-lg border border-border/60">
                         <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
                           <FileText size={12} />
@@ -355,6 +504,30 @@ const WordLibraryPage: React.FC = () => {
                         </div>
                         <p className="text-xs font-semibold text-foreground leading-relaxed">{word.meaningVi}</p>
                       </div>
+
+                      {word.example && (
+                        <div className="bg-muted/20 p-2.5 rounded-lg border border-border/40 text-xs italic text-muted-foreground">
+                          "{word.example}"
+                        </div>
+                      )}
+
+                      {word.relations && word.relations.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {word.relations.map((rel) => (
+                            <span 
+                              key={rel.id}
+                              className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+                                rel.type === 'synonym' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' :
+                                rel.type === 'antonym' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20' :
+                                'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20'
+                              }`}
+                            >
+                              <span className="uppercase text-[8px] opacity-70">{rel.type}:</span>
+                              {rel.value}
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     {/* SRS Stats Summary Bar */}

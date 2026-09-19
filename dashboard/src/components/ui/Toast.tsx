@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { X, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -11,8 +11,17 @@ interface Toast {
   message?: string;
 }
 
+export type ToastPayload = { type: ToastType; title: string; message?: string };
+
+export interface ToastFunction {
+  (payload: ToastPayload): void;
+  success: (title: string, message?: string) => void;
+  error: (title: string, message?: string) => void;
+  info: (title: string, message?: string) => void;
+}
+
 interface ToastContextType {
-  toast: (payload: { type: ToastType; title: string; message?: string }) => void;
+  toast: ToastFunction;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -39,7 +48,7 @@ const colors: Record<ToastType, string> = {
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const toast = useCallback(({ type, title, message }: { type: ToastType; title: string; message?: string }) => {
+  const addToast = useCallback(({ type, title, message }: ToastPayload) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts((prev) => [...prev, { id, type, title, message }]);
     setTimeout(() => {
@@ -51,16 +60,34 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     setToasts((prev) => prev.filter((t) => t.id !== id));
   };
 
+  const toastInstance = useMemo<ToastFunction>(() => {
+    const fn = ((payload: ToastPayload) => {
+      addToast(payload);
+    }) as ToastFunction;
+
+    fn.success = (title: string, message?: string) => {
+      addToast({ type: 'success', title, message });
+    };
+    fn.error = (title: string, message?: string) => {
+      addToast({ type: 'error', title, message });
+    };
+    fn.info = (title: string, message?: string) => {
+      addToast({ type: 'info', title, message });
+    };
+
+    return fn;
+  }, [addToast]);
+
   return (
-    <ToastContext.Provider value={{ toast }}>
+    <ToastContext.Provider value={{ toast: toastInstance }}>
       {children}
-      <div className="fixed bottom-6 right-6 z-[10000] flex flex-col gap-2.5 w-full max-w-sm pointer-events-none">
+      <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[10000] flex flex-col gap-2.5 w-full max-w-sm pointer-events-none px-4">
         {toasts.map((t) => {
           const Icon = icons[t.type];
           return (
             <div
               key={t.id}
-              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md animate-in slide-in-from-bottom-2 fade-in duration-200 ${colors[t.type]}`}
+              className={`pointer-events-auto flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md animate-in slide-in-from-top-2 fade-in duration-200 ${colors[t.type]}`}
             >
               <div className="mt-0.5 shrink-0">
                 <Icon size={18} />
@@ -71,6 +98,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               </div>
               <button
                 onClick={() => removeToast(t.id)}
+                aria-label="Close notification"
                 className="text-muted-foreground hover:text-foreground transition-colors shrink-0 p-0.5"
               >
                 <X size={14} />

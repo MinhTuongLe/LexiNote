@@ -5,8 +5,10 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useToast } from '@/components/ui/Toast';
 
 const SettingsPage: React.FC = () => {
+  const { toast } = useToast();
   const [lang, setLang] = useState('VN');
   const [toggles, setToggles] = useState({
     density: true,
@@ -20,7 +22,7 @@ const SettingsPage: React.FC = () => {
 
   const handleSave = () => {
     localStorage.setItem('lexi_settings', JSON.stringify({ lang, toggles }));
-    alert('Environment settings synchronized with local storage.');
+    toast.success('Settings Synchronized', 'Environment settings synchronized with local storage.');
   };
 
   return (

@@ -45,6 +45,7 @@ export class DashboardWordsService {
             select: { id: true, fullName: true, email: true },
           },
           reviews: true,
+          relations: true,
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -56,6 +57,11 @@ export class DashboardWordsService {
         ...w,
         createdAt: w.createdAt.toString(),
         updatedAt: w.updatedAt.toString(),
+        relations: (w.relations || []).map((rel) => ({
+          ...rel,
+          createdAt: rel.createdAt.toString(),
+          updatedAt: rel.updatedAt.toString(),
+        })),
         reviews: w.reviews.map((r) => ({
           ...r,
           lastReviewed: r.lastReviewed ? r.lastReviewed.toString() : null,
@@ -99,12 +105,19 @@ export class DashboardWordsService {
     return deleted;
   }
 
-  async updateWord(id: number, data: { meaningVi?: string; type?: string }) {
+  async updateWord(
+    id: number,
+    data: { meaningVi?: string; type?: string; example?: string },
+  ) {
     const updated = await this.prisma.word.update({
       where: { id },
       data: {
-        meaningVi: data.meaningVi,
-        type: data.type,
+        ...(data.meaningVi !== undefined && { meaningVi: data.meaningVi }),
+        ...(data.type !== undefined && { type: data.type }),
+        ...(data.example !== undefined && { example: data.example }),
+      },
+      include: {
+        relations: true,
       },
     });
 
@@ -116,5 +129,43 @@ export class DashboardWordsService {
     });
 
     return updated;
+  }
+
+  async addRelation(wordId: number, type: string, value: string) {
+    const relation = await this.prisma.wordRelation.create({
+      data: {
+        wordId,
+        type,
+        value,
+      },
+    });
+
+    await this.auditService.logAction({
+      action: 'WORD_RELATION_CREATE',
+      targetType: 'WORD_RELATION',
+      targetId: String(relation.id),
+      details: { wordId, type, value },
+    });
+
+    return {
+      ...relation,
+      createdAt: relation.createdAt.toString(),
+      updatedAt: relation.updatedAt.toString(),
+    };
+  }
+
+  async deleteRelation(relationId: number) {
+    const relation = await this.prisma.wordRelation.delete({
+      where: { id: relationId },
+    });
+
+    await this.auditService.logAction({
+      action: 'WORD_RELATION_DELETE',
+      targetType: 'WORD_RELATION',
+      targetId: String(relationId),
+      details: { wordId: relation.wordId, type: relation.type, value: relation.value },
+    });
+
+    return relation;
   }
 }

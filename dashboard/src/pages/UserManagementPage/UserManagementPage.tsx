@@ -17,6 +17,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import { useUsers } from './useUsers';
 import type { DashboardUserItem } from './useUsers';
 import ReModal from '@/components/ui/ReModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
 import { UserDetailModal } from './UserDetailModal';
@@ -39,6 +40,7 @@ const UserManagementPage: React.FC = () => {
     handleCreateUser,
     handleUpdateUser,
     handleDeleteUser,
+    handleUpdateRole,
     formatDate
   } = useUsers();
 
@@ -50,6 +52,23 @@ const UserManagementPage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
   const [inspectUserId, setInspectUserId] = React.useState<number | null>(null);
   const [selectedUser, setSelectedUser] = React.useState<DashboardUserItem | null>(null);
+
+  const [roleConfirmUser, setRoleConfirmUser] = React.useState<DashboardUserItem | null>(null);
+
+  const onToggleRole = (user: DashboardUserItem) => {
+    setRoleConfirmUser(user);
+  };
+
+  const handleConfirmRoleChange = async () => {
+    if (!roleConfirmUser) return;
+    const targetRole = roleConfirmUser.role === 'ADMIN' ? 'MEMBER' : 'ADMIN';
+    try {
+      await handleUpdateRole(roleConfirmUser.id, targetRole);
+      toast.success('Role Updated', `${roleConfirmUser.fullName} is now an ${targetRole}.`);
+    } catch {
+      toast.error('Action Failed', 'Could not update user role.');
+    }
+  };
   
   const [newUserData, setNewUserData] = React.useState({ fullName: '', email: '' });
   const [editUserData, setEditUserData] = React.useState({ fullName: '' });
@@ -345,13 +364,17 @@ const UserManagementPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-3.5">
-                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
-                        user.role === 'ADMIN' 
-                          ? 'bg-primary/10 text-primary border border-primary/20' 
-                          : 'bg-muted text-muted-foreground'
-                      }`}>
+                      <button
+                        onClick={() => onToggleRole(user)}
+                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md hover:opacity-80 transition-all ${
+                          user.role === 'ADMIN' 
+                            ? 'bg-primary/15 text-primary border border-primary/30 font-bold' 
+                            : 'bg-muted text-muted-foreground border border-border/60'
+                        }`}
+                        title="Click to toggle user role (ADMIN / MEMBER)"
+                      >
                         {user.role || 'MEMBER'}
-                      </span>
+                      </button>
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-center">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
@@ -486,6 +509,16 @@ const UserManagementPage: React.FC = () => {
           setIsDetailModalOpen(false);
           navigate(`/dashboard/words?ownerId=${userId}`);
         }}
+      />
+
+      <ConfirmModal
+        isOpen={!!roleConfirmUser}
+        onClose={() => setRoleConfirmUser(null)}
+        onConfirm={handleConfirmRoleChange}
+        title="Change User Role"
+        description={`Are you sure you want to change ${roleConfirmUser?.fullName || 'this user'}'s role to ${roleConfirmUser?.role === 'ADMIN' ? 'MEMBER' : 'ADMIN'}?`}
+        confirmText="Change Role"
+        variant="warning"
       />
     </div>
   );

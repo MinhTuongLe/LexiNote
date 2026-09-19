@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useGetWordsQuery, useDeleteWordMutation, useUpdateWordMutation } from '@/store/api/wordsApi';
+import { 
+  useGetWordsQuery, 
+  useDeleteWordMutation, 
+  useUpdateWordMutation,
+  useAddWordRelationMutation,
+  useDeleteWordRelationMutation 
+} from '@/store/api/wordsApi';
 
 export function useWords() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -18,6 +24,8 @@ export function useWords() {
   });
   const [deleteWord] = useDeleteWordMutation();
   const [updateWord] = useUpdateWordMutation();
+  const [addRelation] = useAddWordRelationMutation();
+  const [deleteRelation] = useDeleteWordRelationMutation();
 
   const words = data?.data || [];
   const meta = data?.meta || { totalPages: 1, total: 0 };
@@ -38,13 +46,19 @@ export function useWords() {
   };
 
   const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to remove this word from the global registry?')) {
-      await deleteWord(id);
-    }
+    return deleteWord(id).unwrap();
   };
 
-  const handleUpdate = async (id: number, data: { meaningVi?: string; type?: string }) => {
+  const handleUpdate = async (id: number, data: { meaningVi?: string; type?: string; example?: string }) => {
     return updateWord({ id, data }).unwrap();
+  };
+
+  const handleAddRelation = async (wordId: number, type: string, value: string) => {
+    return addRelation({ wordId, type, value }).unwrap();
+  };
+
+  const handleDeleteRelation = async (relationId: number) => {
+    return deleteRelation(relationId).unwrap();
   };
 
   return {
@@ -61,6 +75,8 @@ export function useWords() {
     totalPages: meta.totalPages,
     totalWords: meta.total,
     handleDelete,
-    handleUpdate
+    handleUpdate,
+    handleAddRelation,
+    handleDeleteRelation
   };
 }

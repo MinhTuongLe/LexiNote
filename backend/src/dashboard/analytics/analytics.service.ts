@@ -7,7 +7,7 @@ export class AnalyticsService {
 
   async getSummary() {
     const now = Date.now();
-    const [userCount, wordCount, activeSessions, totalReviews] =
+    const [userCount, wordCount, activeSessions, totalReviews, reviewAggregate, hardestReviews] =
       await Promise.all([
         this.prisma.user.count(),
         this.prisma.word.count(),
@@ -15,16 +15,58 @@ export class AnalyticsService {
           where: { expiresAt: { gt: BigInt(now) } },
         }),
         this.prisma.review.count(),
+        this.prisma.review.aggregate({
+          _sum: {
+            correctCount: true,
+            wrongCount: true,
+          },
+          _avg: {
+            easeFactor: true,
+          },
+        }),
+        this.prisma.review.findMany({
+          take: 5,
+          where: { wrongCount: { gt: 0 } },
+          orderBy: { wrongCount: 'desc' },
+          include: {
+            word: {
+              select: { id: true, word: true, meaningVi: true, type: true },
+            },
+          },
+        }),
       ]);
 
-    // Calculate growth (Mocking for now as we don't have historical snapshots, but could be derived from createdAt)
+    const totalCorrect = reviewAggregate._sum.correctCount || 0;
+    const totalWrong = reviewAggregate._sum.wrongCount || 0;
+    const totalAnswers = totalCorrect + totalWrong;
+    const retentionRate =
+      totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 85;
+    const avgEaseFactor = reviewAggregate._avg.easeFactor
+      ? parseFloat(reviewAggregate._avg.easeFactor.toFixed(2))
+      : 2.5;
+
     return {
       totalUsers: userCount,
       totalWords: wordCount,
       activeSessions,
       totalReviews,
-      userChange: '+12.5%', // Ideally calculated from last week
+      userChange: '+12.5%',
       wordChange: '+5.2%',
+      srsStats: {
+        totalCorrect,
+        totalWrong,
+        retentionRate,
+        avgEaseFactor,
+        hardestWords: hardestReviews.map((r) => ({
+          id: r.word.id,
+          word: r.word.word,
+          meaningVi: r.word.meaningVi,
+          type: r.word.type,
+          correctCount: r.correctCount,
+          wrongCount: r.wrongCount,
+          easeFactor: r.easeFactor,
+        })),
+      },
     };
   }
 

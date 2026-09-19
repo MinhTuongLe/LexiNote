@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import Skeleton from '@/components/ui/Skeleton';
 import ReModal from '@/components/ui/ReModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { 
   useGetArchiveLogsQuery, 
   useRestoreArchiveRecordMutation, 
@@ -56,14 +57,20 @@ const TrashPage: React.FC = () => {
     }
   };
 
-  const handlePermanentDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to permanently delete this archive record? This CANNOT be undone.')) return;
+  const [deleteConfirmId, setDeleteConfirmId] = useState<number | null>(null);
+
+  const handlePermanentDelete = (id: number) => {
+    setDeleteConfirmId(id);
+  };
+
+  const confirmPermanentDelete = async () => {
+    if (!deleteConfirmId) return;
     try {
-      await deleteRecord(id).unwrap();
-      toast({ type: 'info', title: 'Permanently Erased', message: 'Archive entry purged.' });
+      await deleteRecord(deleteConfirmId).unwrap();
+      toast.info('Permanently Erased', 'Archive entry purged.');
       refetch();
     } catch {
-      toast({ type: 'error', title: 'Purge Failed', message: 'Could not delete archive entry.' });
+      toast.error('Purge Failed', 'Could not delete archive entry.');
     }
   };
 
@@ -282,6 +289,17 @@ const TrashPage: React.FC = () => {
           </div>
         )}
       </Card>
+
+      <ConfirmModal
+        isOpen={deleteConfirmId !== null}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={confirmPermanentDelete}
+        title="Permanently Delete Record"
+        description="Are you sure you want to permanently delete this archive record? This CANNOT be undone."
+        confirmText="Permanently Delete"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

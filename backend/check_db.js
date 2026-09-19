@@ -1,38 +1,28 @@
+require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
+const bcrypt = require('bcryptjs');
 
 async function checkDb() {
-  const prisma = new PrismaClient();
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const adapter = new PrismaPg(pool);
+  const prisma = new PrismaClient({ adapter });
+
   try {
-    const totalWords = await prisma.word.count();
-    const totalReviews = await prisma.review.count();
-    
-    // In RAW query to avoid Prisma logic issues
-    const wordsWithReviews = await prisma.$queryRaw`SELECT count(distinct word) FROM review`;
-    const wordsCount = await prisma.$queryRaw`SELECT count(*) FROM word`;
-    
-    console.log(`Total Words (Prisma): ${totalWords}`);
-    console.log(`Total Reviews (Prisma): ${totalReviews}`);
-    console.log(`Words in Word table:`, wordsCount);
-    console.log(`Words with Review record:`, wordsWithReviews);
+    const user = await prisma.user.findUnique({ where: { email: 'admin@gmail.com' } });
+    console.log('--- ADMIN USER RECORD ---');
+    console.log(user);
 
-    const missing = await prisma.$queryRaw`
-      SELECT id, word FROM word 
-      WHERE id NOT IN (SELECT word FROM review)
-    `;
-    console.log(`Words missing reviews: ${missing.length}`);
-    if (missing.length > 0) {
-      console.log('Sample missing reviews:', missing.slice(0, 5));
+    if (user) {
+      const isMatch = await bcrypt.compare('123456', user.password);
+      console.log('Is "123456" valid password for admin?:', isMatch);
     }
-    
-    const dueCount = await prisma.review.count({
-        where: { nextReview: { lte: Date.now() + 600000 } } // Check with 10 min buffer
-    });
-    console.log(`Reviews due with 10 min buffer: ${dueCount}`);
-
   } catch (err) {
     console.error('Error checking DB:', err);
   } finally {
     await prisma.$disconnect();
+    await pool.end();
   }
 }
 

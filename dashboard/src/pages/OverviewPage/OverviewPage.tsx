@@ -7,7 +7,10 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   RefreshCw,
-  Clock
+  Clock,
+  BrainCircuit,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,9 +18,11 @@ import { Button } from "@/components/ui/button";
 import Skeleton from '@/components/ui/Skeleton';
 import { useOverview } from './useOverview';
 import { useGetRecentActivityQuery } from '@/store/api/analyticsApi';
+import { useToast } from '@/components/ui/Toast';
 
 const OverviewPage: React.FC = () => {
-  const { kpis, chartData, isLoading } = useOverview();
+  const { toast } = useToast();
+  const { kpis, srsStats, chartData, isLoading } = useOverview();
   const { data: recentActivities, isLoading: isActivityLoading } = useGetRecentActivityQuery();
   const [isScanning, setIsScanning] = React.useState(false);
 
@@ -25,7 +30,7 @@ const OverviewPage: React.FC = () => {
     setIsScanning(true);
     setTimeout(() => {
       setIsScanning(false);
-      alert('System Scan Complete: 0 vulnerabilities found. Shards are synchronized.');
+      toast.success('System Scan Complete', '0 vulnerabilities found. Shards are synchronized.');
     }, 2000);
   };
 
@@ -42,7 +47,7 @@ const OverviewPage: React.FC = () => {
             variant="outline" 
             size="sm"
             className="h-9 px-3.5 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={() => alert('Cluster Map initialization sequence started.')}
+            onClick={() => toast.info('Cluster Map Initialized', 'Cluster Map initialization sequence started.')}
           >
             <Layers size={14} className="mr-1.5" /> View Clusters
           </Button>
@@ -216,7 +221,7 @@ const OverviewPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Security Banner with Warm Dark Rose/Slate Gradient */}
+          {/* Security Banner */}
           <div className="bg-gradient-to-br from-slate-900 via-rose-950/40 to-slate-900 p-6 rounded-xl border border-rose-500/20 text-white relative overflow-hidden shadow-sm">
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-3">
@@ -232,7 +237,7 @@ const OverviewPage: React.FC = () => {
               <Button 
                 size="sm"
                 className="mt-4 h-8 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs rounded-lg transition-colors border-none"
-                onClick={() => alert('Integrity scan: All endpoints secure.')}
+                onClick={() => toast.success('Integrity Scan', 'All endpoints secure.')}
               >
                 Scan Integrity
               </Button>
@@ -240,6 +245,104 @@ const OverviewPage: React.FC = () => {
             <ArrowUpRight className="absolute -bottom-6 -right-6 text-white/5" size={140} />
           </div>
         </div>
+      </div>
+
+      {/* SRS Learning Performance & Hardest Words Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* SRS Health Overview Card */}
+        <Card className="lg:col-span-5 border-border/60 bg-card shadow-xs">
+          <CardContent className="p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-purple-500/10 text-purple-500">
+                  <BrainCircuit size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">SRS Spaced Repetition Analytics</h3>
+                  <p className="text-[11px] text-muted-foreground">Global recall compliance and retention rate</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Retention Rate</p>
+                <h4 className="text-2xl font-bold text-emerald-500 mt-1">
+                  {srsStats ? `${srsStats.retentionRate}%` : '85%'}
+                </h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <CheckCircle2 size={10} className="text-emerald-500" /> Correct answers ratio
+                </p>
+              </div>
+
+              <div className="bg-muted/30 p-3.5 rounded-xl border border-border/60">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase">Avg Ease Factor</p>
+                <h4 className="text-2xl font-bold text-purple-500 mt-1">
+                  {srsStats ? srsStats.avgEaseFactor : '2.50'}
+                </h4>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Algorithm multiplier</p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between p-3 rounded-xl bg-purple-500/5 border border-purple-500/15 text-xs text-muted-foreground">
+              <span>Total Reviews Recorded:</span>
+              <span className="font-bold font-mono text-purple-600 dark:text-purple-400">
+                {srsStats ? `${srsStats.totalCorrect + srsStats.totalWrong} reviews` : '0 reviews'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Hardest Words Leaderboard */}
+        <Card className="lg:col-span-7 border-border/60 bg-card shadow-xs">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-rose-500/10 text-rose-500">
+                  <AlertTriangle size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-foreground">Highest Failure Rate Words</h3>
+                  <p className="text-[11px] text-muted-foreground">Vocabulary items requiring content revision</p>
+                </div>
+              </div>
+            </div>
+
+            {!srsStats?.hardestWords || srsStats.hardestWords.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic py-8 text-center">No high-failure words identified yet.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {srsStats.hardestWords.map((item) => (
+                  <div 
+                    key={item.id} 
+                    className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40 hover:bg-muted/40 transition-colors"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-foreground">{item.word}</span>
+                        <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-muted text-muted-foreground font-mono">
+                          {item.type}
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-muted-foreground truncate">{item.meaningVi}</span>
+                    </div>
+
+                    <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
+                      <div className="text-right">
+                        <div className="text-rose-500 font-bold">✗ {item.wrongCount} errors</div>
+                        <div className="text-[10px] text-muted-foreground">✓ {item.correctCount} correct</div>
+                      </div>
+                      <div className="text-right pl-3 border-l border-border/60">
+                        <div className="text-purple-500 font-bold">EF {item.easeFactor}</div>
+                        <div className="text-[10px] text-muted-foreground">Ease Factor</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -9,9 +9,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
+import { useToast } from '@/components/ui/Toast';
 
 const ProfilePage: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
+  const { toast } = useToast();
 
   return (
     <div className="space-y-6">
@@ -63,7 +65,7 @@ const ProfilePage: React.FC = () => {
               <Button 
                 size="sm"
                 className="w-full font-medium shadow-xs"
-                onClick={() => alert(`Profile update for ${user?.fullName} will be available in future releases.`)}
+                onClick={() => toast.info('Feature Coming Soon', `Profile update for ${user?.fullName} will be available in future releases.`)}
               >
                 Edit Identity
               </Button>

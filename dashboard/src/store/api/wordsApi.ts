@@ -1,5 +1,14 @@
 import { dashboardApi } from './dashboardApi';
 
+export interface WordRelationItem {
+  id: number;
+  wordId: number;
+  type: string; // synonym, antonym, collocation
+  value: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface WordReview {
   id: number;
   wordId: number;
@@ -31,6 +40,7 @@ export interface WordItem {
   updatedAt: string;
   owner?: WordOwner;
   reviews?: WordReview[];
+  relations?: WordRelationItem[];
 }
 
 export type Word = WordItem;
@@ -72,11 +82,28 @@ export const wordsApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Words'],
     }),
+    addWordRelation: builder.mutation<WordRelationItem, { wordId: number; type: string; value: string }>({
+      query: ({ wordId, type, value }) => ({
+        url: `/words/${wordId}/relations`,
+        method: 'POST',
+        body: { type, value },
+      }),
+      invalidatesTags: ['Words'],
+    }),
+    deleteWordRelation: builder.mutation<{ id: number }, number>({
+      query: (relationId) => ({
+        url: `/words/relations/${relationId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Words'],
+    }),
   }),
 });
 
 export const { 
   useGetWordsQuery, 
   useDeleteWordMutation,
-  useUpdateWordMutation 
+  useUpdateWordMutation,
+  useAddWordRelationMutation,
+  useDeleteWordRelationMutation
 } = wordsApi;

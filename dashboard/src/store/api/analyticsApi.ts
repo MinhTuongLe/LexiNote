@@ -1,5 +1,23 @@
 import { dashboardApi } from './dashboardApi';
 
+export interface HardestWord {
+  id: number;
+  word: string;
+  meaningVi: string;
+  type: string;
+  correctCount: number;
+  wrongCount: number;
+  easeFactor: number;
+}
+
+export interface SrsStats {
+  totalCorrect: number;
+  totalWrong: number;
+  retentionRate: number;
+  avgEaseFactor: number;
+  hardestWords: HardestWord[];
+}
+
 export interface AnalyticsSummary {
   totalUsers?: number;
   totalWords?: number;
@@ -9,6 +27,7 @@ export interface AnalyticsSummary {
   userChange?: string;
   wordChange?: string;
   retentionRate?: number;
+  srsStats?: SrsStats;
   [key: string]: unknown;
 }
 

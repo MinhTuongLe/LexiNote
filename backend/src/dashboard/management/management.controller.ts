@@ -105,4 +105,13 @@ export class ManagementController {
   async revokeSession(@Param('sessionId', ParseIntPipe) sessionId: number) {
     return this.managementService.revokeSession(sessionId);
   }
+
+  @Patch('users/:id/role')
+  @ApiOperation({ summary: 'Update user role (ADMIN or MEMBER)' })
+  async updateUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { role: Role },
+  ) {
+    return this.managementService.updateUserRole(id, body.role);
+  }
 }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
 
 @Injectable()
 export class ManagementService {
@@ -12,9 +12,7 @@ export class ManagementService {
 
   async getAllUsers(page = 1, limit = 10, search?: string, isActive?: boolean) {
     const skip = (page - 1) * limit;
-    const where: Prisma.UserWhereInput = {
-      role: 'MEMBER',
-    };
+    const where: Prisma.UserWhereInput = {};
 
     if (search) {
       where.OR = [
@@ -307,5 +305,28 @@ export class ManagementService {
     });
 
     return deleted;
+  }
+
+  async updateUserRole(id: number, role: Role) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) return null;
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: { role },
+    });
+
+    await this.auditService.logAction({
+      action: 'USER_UPDATE_ROLE',
+      targetType: 'USER',
+      targetId: String(id),
+      details: {
+        previousRole: user.role,
+        newRole: updated.role,
+        email: user.email,
+      },
+    });
+
+    return updated;
   }
 }

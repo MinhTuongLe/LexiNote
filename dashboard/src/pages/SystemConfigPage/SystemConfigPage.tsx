@@ -12,8 +12,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useGetConfigQuery, useUpdateConfigMutation } from '@/store/api/configApi';
+import { useToast } from '@/components/ui/Toast';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 const SystemConfigPage: React.FC = () => {
+  const { toast } = useToast();
   const { data: config, isLoading } = useGetConfigQuery();
   const [updateConfig] = useUpdateConfigMutation();
 
@@ -21,14 +24,14 @@ const SystemConfigPage: React.FC = () => {
   const [corsEnabled, setCorsEnabled] = useState(true);
   const [autoBackup, setAutoBackup] = useState(true);
   const [debugMode, setDebugMode] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-  const handleReset = () => {
-    if (confirm('Revert all infrastructure parameters to factory defaults?')) {
-      setRateLimit(100);
-      setCorsEnabled(true);
-      setAutoBackup(true);
-      setDebugMode(false);
-    }
+  const confirmReset = () => {
+    setRateLimit(100);
+    setCorsEnabled(true);
+    setAutoBackup(true);
+    setDebugMode(false);
+    toast.info('Parameters Reverted', 'Infrastructure parameters reverted to factory defaults.');
   };
 
   const handleApply = async () => {
@@ -40,9 +43,9 @@ const SystemConfigPage: React.FC = () => {
           debugMode,
           timestamp: Date.now() 
       }).unwrap();
-      alert('System configuration updated safely.');
+      toast.success('Config Saved', 'System configuration updated safely.');
     } catch {
-      alert('Failed to update config.');
+      toast.error('Update Failed', 'Failed to update system config.');
     }
   };
 
@@ -73,7 +76,7 @@ const SystemConfigPage: React.FC = () => {
             variant="outline" 
             size="sm"
             className="h-9 border-border/80 text-muted-foreground hover:text-foreground"
-            onClick={handleReset}
+            onClick={() => setIsResetModalOpen(true)}
           >
             <RefreshCw size={14} className="mr-1.5" /> Reset Default
           </Button>
@@ -237,6 +240,16 @@ const SystemConfigPage: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={confirmReset}
+        title="Reset System Configuration"
+        description="Are you sure you want to revert all infrastructure parameters to factory default values?"
+        confirmText="Reset Defaults"
+        variant="warning"
+      />
     </div>
   );
 };

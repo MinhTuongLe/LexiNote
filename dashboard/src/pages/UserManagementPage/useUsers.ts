@@ -3,7 +3,8 @@ import {
   useToggleUserStatusMutation, 
   useCreateUserMutation,
   useUpdateUserMutation,
-  useDeleteUserMutation 
+  useDeleteUserMutation,
+  useUpdateUserRoleMutation 
 } from '@/store/api/usersApi';
 import { useState } from 'react';
 
@@ -42,6 +43,7 @@ export function useUsers() {
   const [createUser] = useCreateUserMutation();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
+  const [updateUserRole] = useUpdateUserRoleMutation();
 
   const users: DashboardUserItem[] = data?.data || [];
   const totalPages = data?.meta?.totalPages || 1;
@@ -68,6 +70,10 @@ export function useUsers() {
     return deleteUser(id).unwrap();
   };
 
+  const handleUpdateRole = async (id: number, role: 'ADMIN' | 'MEMBER') => {
+    return updateUserRole({ id, role }).unwrap();
+  };
+
   const formatDate = (epoch: number | string | undefined | null) => {
     if (!epoch) return 'N/A';
     return new Date(Number(epoch)).toLocaleDateString('en-US', {
@@ -92,6 +98,7 @@ export function useUsers() {
     handleCreateUser,
     handleUpdateUser,
     handleDeleteUser,
+    handleUpdateRole,
     formatDate
   };
 }

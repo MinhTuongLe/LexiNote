@@ -133,6 +133,14 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, userId) => [{ type: 'Users', id: `sessions-${userId}` }],
     }),
+    updateUserRole: builder.mutation<ApiUser, { id: number; role: 'ADMIN' | 'MEMBER' }>({
+      query: ({ id, role }) => ({
+        url: `/management/users/${id}/role`,
+        method: 'PATCH',
+        body: { role },
+      }),
+      invalidatesTags: ['Users'],
+    }),
   }),
 });
 
@@ -147,4 +155,5 @@ export const {
   useGetUserSessionsQuery,
   useRevokeUserSessionMutation,
   useRevokeAllUserSessionsMutation,
+  useUpdateUserRoleMutation,
 } = usersApi;

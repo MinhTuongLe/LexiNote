@@ -61,6 +61,7 @@ export function useOverview() {
 
   return {
     kpis,
+    srsStats: stats?.srsStats,
     chartData: chartData || [],
     isLoading: isSummaryLoading || isChartLoading,
     error: summaryError || chartError

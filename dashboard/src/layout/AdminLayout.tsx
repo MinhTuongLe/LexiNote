@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { logout } from '../store/slices/authSlice';
+import { useTheme } from '../context/ThemeContext';
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -28,24 +29,8 @@ const AdminLayout: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const { isDark, toggleTheme } = useTheme();
 
-  const [isDark, setIsDark] = React.useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark') || 
-        localStorage.getItem('lexinote-theme') === 'dark';
-    }
-    return false;
-  });
-
-  React.useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('lexinote-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('lexinote-theme', 'light');
-    }
-  }, [isDark]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -269,7 +254,7 @@ const AdminLayout: React.FC = () => {
           <div className="flex items-center gap-2.5">
             {/* Theme Toggle (Dark / Light) */}
             <button
-              onClick={() => setIsDark(!isDark)}
+              onClick={toggleTheme}
               className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
               title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
             >
