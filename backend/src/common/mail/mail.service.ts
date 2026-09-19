@@ -19,9 +19,14 @@ import {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter | null = null;
+  private fallbackSslTransporter: nodemailer.Transporter | null = null;
   private fromEmail: string;
+  private resendApiKey: string | null = null;
 
   constructor(private configService: ConfigService) {
+    const rawResendKey = this.configService.get<string>('RESEND_API_KEY');
+    this.resendApiKey = rawResendKey ? rawResendKey.trim() : null;
+
     const host = this.configService.get<string>('SMTP_HOST');
     const port = Number(this.configService.get<number | string>('SMTP_PORT', 587));
     const user = this.configService.get<string>('SMTP_USER');
@@ -29,32 +34,88 @@ export class MailService {
     const pass = rawPass ? rawPass.replace(/["'\s]/g, '') : '';
     const rawSecure = this.configService.get<string | boolean>('SMTP_SECURE', false);
     const secure = String(rawSecure).toLowerCase() === 'true' || port === 465;
-    
+
     const rawFrom = this.configService.get<string>('MAIL_FROM');
     this.fromEmail = rawFrom
       ? rawFrom.replace(/^['"]+|['"]+$/g, '')
-      : '"LexiNote App" <no-reply@lexinote.app>';
+      : '"LexiNote App" <onboarding@resend.dev>';
 
-    if (host && user && pass) {
-      const transportOptions: SMTPTransport.Options & { family?: number } = {
+    if (this.resendApiKey) {
+      this.logger.log(`🚀 MailService initialized with Resend HTTPS API (Port 443 - Bypasses Cloud SMTP restrictions)`);
+    } else if (host && user && pass) {
+      const transportOptions: SMTPTransport.Options = {
         host,
         port,
         secure,
         auth: { user, pass },
-        family: 4, // Force IPv4 to prevent Cloud/Render IPv6 SMTP connection timeouts
-        connectionTimeout: 15000,
-        socketTimeout: 15000,
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 8000,
+        dnsTimeout: 8000,
+        tls: {
+          rejectUnauthorized: false,
+        },
       };
-      this.transporter = nodemailer.createTransport(transportOptions as SMTPTransport.Options);
+      this.transporter = nodemailer.createTransport(transportOptions);
       this.logger.log(`📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`);
+
+      // If primary port is 587 or not 465, create a fallback SSL (Port 465) transporter for Cloud environments (Render/AWS)
+      if (port !== 465) {
+        const fallbackOptions: SMTPTransport.Options = {
+          host: host.includes('gmail') ? 'smtp.gmail.com' : host,
+          port: 465,
+          secure: true,
+          auth: { user, pass },
+          connectionTimeout: 8000,
+          greetingTimeout: 8000,
+          socketTimeout: 8000,
+          dnsTimeout: 8000,
+          tls: {
+            rejectUnauthorized: false,
+          },
+        };
+        this.fallbackSslTransporter = nodemailer.createTransport(fallbackOptions);
+      }
     } else {
       this.logger.warn(
-        `⚠️ SMTP configuration missing (SMTP_HOST/SMTP_USER/SMTP_PASS). Email service will operate in CONSOLE LOG fallback mode.`,
+        `⚠️ SMTP / Resend configuration missing. Email service will operate in CONSOLE LOG fallback mode.`,
       );
     }
   }
 
   async sendMail(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+    // 1. Try Resend HTTPS API first (Bypasses Render/Cloud SMTP port blocks)
+    if (this.resendApiKey) {
+      try {
+        const response = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${this.resendApiKey}`,
+          },
+          body: JSON.stringify({
+            from: this.fromEmail || 'LexiNote <onboarding@resend.dev>',
+            to: [to],
+            subject,
+            html,
+            text: text || html.replace(/<[^>]*>?/gm, ''),
+          }),
+        });
+
+        if (response.ok) {
+          this.logger.log(`📧 Email sent successfully via Resend HTTPS API to ${to} (Subject: "${subject}")`);
+          return true;
+        } else {
+          const errData = (await response.json().catch(() => ({}))) as { message?: string };
+          this.logger.error(`❌ Resend API Error: ${JSON.stringify(errData)}`);
+        }
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        this.logger.error(`❌ Resend API Request Failed: ${error?.message}`);
+      }
+    }
+
+    // 2. Try Nodemailer Primary SMTP Transporter
     if (this.transporter) {
       try {
         await this.transporter.sendMail({
@@ -66,16 +127,40 @@ export class MailService {
         });
         this.logger.log(`📧 Email sent successfully to ${to} (Subject: "${subject}")`);
         return true;
-      } catch (error) {
-        this.logger.error(`❌ Failed to send email to ${to}: ${error.message}`, error.stack);
-        // Fall back to console logging so workflow isn't completely blocked
+      } catch (err: unknown) {
+        const error = err as { message?: string; stack?: string };
+        this.logger.error(`❌ Primary SMTP failed (${error.message}). Cloud host (Render) may block port 587.`);
+
+        // Fallback to Port 465 SSL if Port 587 timed out on Render
+        if (this.fallbackSslTransporter) {
+          this.logger.warn(`🔄 Retrying email delivery via SSL Port 465 (smtp.gmail.com:465)...`);
+          try {
+            await this.fallbackSslTransporter.sendMail({
+              from: this.fromEmail,
+              to,
+              subject,
+              text: text || html.replace(/<[^>]*>?/gm, ''),
+              html,
+            });
+            this.logger.log(`✅ Email successfully sent using fallback SSL Port 465 to ${to}`);
+            // Promote fallback SSL to primary for future requests
+            this.transporter = this.fallbackSslTransporter;
+            this.fallbackSslTransporter = null;
+            return true;
+          } catch (sslErr: unknown) {
+            const sslError = sslErr as { message?: string };
+            this.logger.error(`❌ Fallback SSL Port 465 also failed: ${sslError.message}`);
+          }
+        }
+
         this.logFallback(to, subject, html);
         return false;
       }
-    } else {
-      this.logFallback(to, subject, html);
-      return true;
     }
+
+    // 3. Fallback to Console Log
+    this.logFallback(to, subject, html);
+    return true;
   }
 
   private logFallback(to: string, subject: string, html: string) {
