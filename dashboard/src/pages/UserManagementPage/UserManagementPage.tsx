@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Search, 
   Eye, 
@@ -17,14 +17,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import Skeleton from '@/components/ui/Skeleton';
 import { useUsers } from './useUsers';
 import type { DashboardUserItem } from './useUsers';
-import ReModal from '@/components/ui/ReModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
 import { UserDetailModal } from './UserDetailModal';
+import { UserFormModal } from './UserFormModal';
 import { useNavigate } from 'react-router-dom';
 import { useResetUserPasswordMutation } from '@/store/api/usersApi';
 import Tooltip from '@/components/ui/Tooltip';
+import PageHeader from '@/components/common/PageHeader';
+import Pagination from '@/components/common/Pagination';
+import StatusBadge from '@/components/common/StatusBadge';
+import UserRoleBadge from '@/components/common/UserRoleBadge';
 
 const UserManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,16 +53,17 @@ const UserManagementPage: React.FC = () => {
 
   const { toast } = useToast();
 
-  const [isAddModalOpen, setIsAddModalOpen] = React.useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
-  const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
-  const [inspectUserId, setInspectUserId] = React.useState<number | null>(null);
-  const [selectedUser, setSelectedUser] = React.useState<DashboardUserItem | null>(null);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [inspectUserId, setInspectUserId] = useState<number | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DashboardUserItem | null>(null);
 
-  const [roleConfirmUser, setRoleConfirmUser] = React.useState<DashboardUserItem | null>(null);
-  const [resetConfirmUser, setResetConfirmUser] = React.useState<DashboardUserItem | null>(null);
+  const [roleConfirmUser, setRoleConfirmUser] = useState<DashboardUserItem | null>(null);
+  const [resetConfirmUser, setResetConfirmUser] = useState<DashboardUserItem | null>(null);
   const [resetPassword, { isLoading: isResettingPassword }] = useResetUserPasswordMutation();
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const handleConfirmResetPassword = async () => {
     if (!resetConfirmUser) return;
@@ -87,42 +92,27 @@ const UserManagementPage: React.FC = () => {
       toast.error('Action Failed', 'Could not update user role.');
     }
   };
-  
-  const [newUserData, setNewUserData] = React.useState({ fullName: '', email: '' });
-  const [editUserData, setEditUserData] = React.useState({ fullName: '' });
-  const [isActionLoading, setIsActionLoading] = React.useState(false);
 
-  const handleExport = () => {
-    exportToCSV(users as unknown as Record<string, unknown>[], 'lexinote_users');
-    toast({ type: 'info', title: 'Export Initiated', message: 'User database is being exported to CSV.' });
-  };
-
-  const onAddMember = async () => {
-    if (!newUserData.fullName || !newUserData.email) return;
-
+  const handleAddSubmit = async (data: { fullName: string; email?: string }) => {
     setIsActionLoading(true);
     try {
-      await handleCreateUser(newUserData);
-      setIsAddModalOpen(false);
-      setNewUserData({ fullName: '', email: '' });
-      toast({ type: 'success', title: 'Member Created', message: `${newUserData.fullName} has been added.` });
+      await handleCreateUser(data.fullName, data.email || '');
+      toast.success('Account Created', `Created account for ${data.fullName}`);
     } catch {
-      toast({ type: 'error', title: 'Action Failed', message: 'User creation failed. Please check inputs.' });
+      toast.error('Creation Failed', 'Could not create new user account.');
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  const onUpdateMember = async () => {
-    if (!selectedUser || !editUserData.fullName) return;
-
+  const handleEditSubmit = async (data: { fullName: string }) => {
+    if (!selectedUser) return;
     setIsActionLoading(true);
     try {
-      await handleUpdateUser(selectedUser.id, editUserData);
-      setIsEditModalOpen(false);
-      toast({ type: 'success', title: 'User Updated', message: 'User metadata has been synchronized.' });
+      await handleUpdateUser(selectedUser.id, data.fullName);
+      toast.success('Profile Updated', 'User information saved.');
     } catch {
-      toast({ type: 'error', title: 'Sync Failed', message: 'Could not update user.' });
+      toast.error('Update Failed', 'Could not update user information.');
     } finally {
       setIsActionLoading(false);
     }
@@ -130,161 +120,98 @@ const UserManagementPage: React.FC = () => {
 
   const onDeleteMember = async () => {
     if (!selectedUser) return;
-
     setIsActionLoading(true);
     try {
       await handleDeleteUser(selectedUser.id);
+      toast.success('User Purged', 'User record archived safely.');
       setIsDeleteModalOpen(false);
-      toast({ type: 'success', title: 'Member Removed', message: 'Entry has been removed from database.' });
     } catch {
-      toast({ type: 'error', title: 'Delete Failed', message: 'Security constraint prevented deletion.' });
+      toast.error('Delete Failed', 'Security constraint prevented deletion.');
     } finally {
       setIsActionLoading(false);
     }
   };
 
+  const handleExport = () => {
+    const exportData = users.map(u => ({
+      ID: u.id,
+      FullName: u.fullName,
+      Email: u.email,
+      Role: u.role,
+      IsActive: u.isActive,
+      WordsCount: u.wordCount || 0,
+      CreatedAt: formatDate(u.createdAt)
+    }));
+    exportToCSV(exportData, `lexinote-users-page${page}`);
+    toast.info('CSV Exported', 'Downloaded current page user entries.');
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">User Management</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Control access tiers, learner progress, and accounts.</p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="h-9 border-border/80 text-muted-foreground hover:text-foreground"
-            onClick={handleExport}
-          >
-            <Download size={14} className="mr-1.5" /> Export CSV
-          </Button>
-          <Button 
-            size="sm"
-            className="h-9 font-medium shadow-xs" 
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <Plus size={16} className="mr-1.5" /> Add Member
-          </Button>
-        </div>
-      </div>
+      {/* Page Header Component */}
+      <PageHeader
+        title="User Management"
+        description="Control access tiers, learner progress, and accounts."
+        action={
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-9 border-border/80 text-muted-foreground hover:text-foreground"
+              onClick={handleExport}
+            >
+              <Download size={14} className="mr-1.5" /> Export CSV
+            </Button>
+            <Button 
+              size="sm"
+              className="h-9 font-medium shadow-xs" 
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus size={16} className="mr-1.5" /> Add Member
+            </Button>
+          </>
+        }
+      />
 
-      {/* Add Modal */}
-      <ReModal
+      {/* Add User Modal Component */}
+      <UserFormModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Add New Member"
-        description="Initialize a new administrative or student account."
-        footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>Cancel</Button>
-            <Button 
-              size="sm"
-              onClick={onAddMember}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? 'Creating...' : 'Create Account'}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Full Name</label>
-            <Input 
-              placeholder="e.g. Linh Nguyen"
-              value={newUserData.fullName}
-              onChange={(e) => setNewUserData({...newUserData, fullName: e.target.value})}
-              className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email Address</label>
-            <Input 
-              type="email"
-              placeholder="e.g. linh@lexinote.com"
-              value={newUserData.email}
-              onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-              className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
-            />
-          </div>
-        </div>
-      </ReModal>
+        onSubmit={handleAddSubmit}
+        isLoading={isActionLoading}
+      />
 
-      {/* Edit Modal */}
-      <ReModal
+      {/* Edit User Modal Component */}
+      <UserFormModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
-        title="Update User Profile"
-        description={`Modify parameters for: ${selectedUser?.email}`}
-        footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-            <Button 
-              size="sm"
-              onClick={onUpdateMember}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? 'Saving...' : 'Save Changes'}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Full Name</label>
-            <Input 
-              placeholder="e.g. Linh Nguyen"
-              value={editUserData.fullName}
-              onChange={(e) => setEditUserData({...editUserData, fullName: e.target.value})}
-              className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
-            />
-          </div>
-        </div>
-      </ReModal>
+        onSubmit={handleEditSubmit}
+        user={selectedUser}
+        isLoading={isActionLoading}
+      />
 
-      {/* Delete Confirmation Modal */}
-      <ReModal
+      {/* Delete User Confirmation Modal */}
+      <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={onDeleteMember}
         title="Confirm User Removal"
-        description="This action will permanently delete the user account and associated progress."
-        footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setIsDeleteModalOpen(false)}>Cancel</Button>
-            <Button 
-              variant="destructive" 
-              size="sm"
-              onClick={onDeleteMember}
-              disabled={isActionLoading}
-            >
-              {isActionLoading ? 'Deleting...' : 'Delete User'}
-            </Button>
-          </>
-        }
-      >
-        <div className="p-4 bg-destructive/10 rounded-xl border border-destructive/20 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-destructive/15 flex items-center justify-center text-destructive shrink-0">
-            <Trash2 size={20} />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground">Irreversible Action</p>
-            <p className="text-xs font-medium text-destructive mt-0.5">{selectedUser?.fullName} ({selectedUser?.email})</p>
-          </div>
-        </div>
-      </ReModal>
+        description={`This action will permanently delete ${selectedUser?.fullName || 'the user'} and associate progress records.`}
+        confirmText="Delete Account"
+        variant="danger"
+        isLoading={isActionLoading}
+      />
 
-      <Card className="border-border/60 bg-card shadow-xs overflow-hidden">
-        {/* Table Filter Bar */}
-        <div className="p-4 border-b border-border/60 flex flex-wrap items-center justify-between gap-4">
-          <div className="relative max-w-sm w-full group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" size={15} />
+      <Card className="border-border/60 bg-card shadow-xs overflow-hidden rounded-xl">
+        {/* Search & Status Filter Toolbar */}
+        <div className="p-4 border-b border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-muted/20">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
             <Input 
-              type="text" 
               placeholder="Search by name or email..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-muted/40 border-border/80 rounded-lg h-9 pl-9 pr-3 text-xs font-medium focus-visible:ring-1 focus-visible:ring-primary transition-all"
+              className="pl-9 h-9 bg-background border-border/80 text-xs font-medium text-foreground focus-visible:ring-1 focus-visible:ring-primary"
             />
           </div>
           
@@ -383,36 +310,34 @@ const UserManagementPage: React.FC = () => {
                         </div>
                       </div>
                     </TableCell>
+
                     <TableCell className="px-6 py-3.5">
-                      <Tooltip content={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`} side="top">
-                        <button
-                          onClick={() => onToggleRole(user)}
-                          className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md hover:opacity-80 transition-all cursor-pointer ${
-                            user.role === 'ADMIN' 
-                              ? 'bg-primary/15 text-primary border border-primary/30 font-bold' 
-                              : 'bg-muted text-muted-foreground border border-border/60'
-                          }`}
-                        >
-                          {user.role || 'MEMBER'}
-                        </button>
-                      </Tooltip>
+                      <UserRoleBadge
+                        role={user.role}
+                        onClick={() => onToggleRole(user)}
+                        tooltipContent={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`}
+                      />
                     </TableCell>
+
                     <TableCell className="px-6 py-3.5 text-center">
-                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
-                        user.isActive 
-                          ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' 
-                          : 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border border-rose-500/20'
-                      }`}>
-                        <span className={`w-1.5 h-1.5 rounded-full ${user.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
-                        {user.isActive ? 'Active' : 'Inactive'}
-                      </span>
+                      <StatusBadge
+                        isActive={user.isActive}
+                        onClick={async () => {
+                          await handleToggleStatus(user.id);
+                          toast.success('Status Updated', `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.`);
+                        }}
+                        tooltipContent={user.isActive ? "Click to deactivate user" : "Click to activate user"}
+                      />
                     </TableCell>
+
                     <TableCell className="px-6 py-3.5 text-center font-mono text-xs font-medium text-foreground">
                       {(user.wordCount ?? 0).toLocaleString()}
                     </TableCell>
+
                     <TableCell className="px-6 py-3.5 text-xs text-muted-foreground">
                       {formatDate(user.createdAt)}
                     </TableCell>
+
                     <TableCell className="px-6 py-3.5 text-right">
                       <div className="flex justify-end gap-1">
                         <Tooltip content="Inspect Details & SRS Progress" side="top">
@@ -446,7 +371,6 @@ const UserManagementPage: React.FC = () => {
                             size="icon" 
                             onClick={() => {
                               setSelectedUser(user);
-                              setEditUserData({ fullName: user.fullName });
                               setIsEditModalOpen(true);
                             }}
                             className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -461,7 +385,7 @@ const UserManagementPage: React.FC = () => {
                             size="icon" 
                             onClick={async () => {
                               await handleToggleStatus(user.id);
-                              toast({ type: 'success', title: 'Status Updated', message: `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.` });
+                              toast.success('Status Updated', `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.`);
                             }}
                             className={`h-7 w-7 ${
                               user.isActive 
@@ -495,49 +419,13 @@ const UserManagementPage: React.FC = () => {
           </Table>
         </div>
 
-        {/* Action Bar Footer (Rendered only when totalPages > 1) */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-border/60 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Showing <span className="font-semibold text-foreground">{users.length}</span> of <span className="font-semibold text-foreground">{totalUsers}</span> entries
-            </p>
-            <div className="flex gap-2 items-center">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setPage((p: number) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Previous
-              </Button>
-              <div className="flex gap-1 items-center">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                  <button 
-                    key={num} 
-                    onClick={() => setPage(num)}
-                    className={`w-7 h-7 rounded-md text-xs font-semibold transition-all ${
-                      page === num 
-                        ? 'bg-primary text-primary-foreground shadow-xs' 
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    {num}
-                  </button>
-                ))}
-              </div>
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setPage((p: number) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Reusable Pagination Component */}
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          totalItems={totalUsers}
+        />
       </Card>
 
       <UserDetailModal

@@ -22,6 +22,8 @@ import {
 } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
 import Tooltip from '@/components/ui/Tooltip';
+import PageHeader from '@/components/common/PageHeader';
+import Pagination from '@/components/common/Pagination';
 
 export interface ArchiveRecordItem {
   id: number;
@@ -91,20 +93,16 @@ const TrashPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <Trash2 className="text-rose-500" size={24} /> Database Trash & Archive Recovery
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Safely inspect soft-deleted records from the archive table and restore them to live tables with 1-click.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()} className="h-9 gap-1.5">
-          <RefreshCw size={14} /> Refresh Trash
-        </Button>
-      </div>
+      <PageHeader
+        title="Database Trash & Archive Recovery"
+        description="Safely inspect soft-deleted records from the archive table and restore them to live tables with 1-click."
+        icon={<Trash2 className="text-rose-500" size={22} />}
+        action={
+          <Button variant="outline" size="sm" onClick={() => refetch()} className="h-9 gap-1.5">
+            <RefreshCw size={14} /> Refresh Trash
+          </Button>
+        }
+      />
 
       {/* JSON Payload Inspector Modal */}
       <ReModal
@@ -268,33 +266,12 @@ const TrashPage: React.FC = () => {
           </Table>
         </div>
 
-        {meta.totalPages > 1 && (
-          <div className="p-4 border-t border-border/60 flex items-center justify-between">
-            <p className="text-xs text-muted-foreground">
-              Page <span className="font-semibold text-foreground">{page}</span> of <span className="font-semibold text-foreground">{meta.totalPages}</span>
-            </p>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p: number) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="h-8 text-xs"
-              >
-                Previous
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPage((p: number) => Math.min(meta.totalPages, p + 1))}
-                disabled={page === meta.totalPages}
-                className="h-8 text-xs"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        )}
+        <Pagination
+          page={page}
+          totalPages={meta.totalPages}
+          onPageChange={setPage}
+          totalItems={meta.total}
+        />
       </Card>
 
       <ConfirmModal

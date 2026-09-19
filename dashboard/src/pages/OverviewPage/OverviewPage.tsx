@@ -19,6 +19,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import { useOverview } from './useOverview';
 import { useGetRecentActivityQuery } from '@/store/api/analyticsApi';
 import { useToast } from '@/components/ui/Toast';
+import PageHeader from '@/components/common/PageHeader';
 
 const OverviewPage: React.FC = () => {
   const { toast } = useToast();
@@ -36,35 +37,34 @@ const OverviewPage: React.FC = () => {
 
   return (
     <div className="space-y-6" id="overview-container">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">System Overview</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">Real-time learning metrics and vocabulary acquisition.</p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="h-9 px-3.5 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
-            onClick={() => toast.info('Cluster Map Initialized', 'Cluster Map initialization sequence started.')}
-          >
-            <Layers size={14} className="mr-1.5" /> View Clusters
-          </Button>
-          <Button 
-            size="sm"
-            className="h-9 px-4 min-w-[130px] font-semibold transition-all shadow-xs"
-            onClick={handleScan}
-            disabled={isScanning}
-          >
-            {isScanning ? (
-              <><RefreshCw size={14} className="mr-1.5 animate-spin" /> Analyzing...</>
-            ) : (
-              <><Zap size={14} className="mr-1.5 fill-current" /> System Scan</>
-            )}
-          </Button>
-        </div>
-      </div>
+      <PageHeader
+        title="System Overview"
+        description="Real-time learning metrics and vocabulary acquisition."
+        action={
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-9 px-3.5 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+              onClick={() => toast.info('Cluster Map Initialized', 'Cluster Map initialization sequence started.')}
+            >
+              <Layers size={14} className="mr-1.5" /> View Clusters
+            </Button>
+            <Button 
+              size="sm"
+              className="h-9 px-4 min-w-[130px] font-semibold transition-all shadow-xs"
+              onClick={handleScan}
+              disabled={isScanning}
+            >
+              {isScanning ? (
+                <><RefreshCw size={14} className="mr-1.5 animate-spin" /> Analyzing...</>
+              ) : (
+                <><Zap size={14} className="mr-1.5 fill-current" /> System Scan</>
+              )}
+            </Button>
+          </>
+        }
+      />
 
       {/* KPI Cards Bento Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-grid">
