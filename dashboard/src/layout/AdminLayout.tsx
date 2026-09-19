@@ -85,10 +85,15 @@ const AdminLayout: React.FC = () => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex justify-between items-center mb-8">
               <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
-                <img src="/logo.png" alt="LexiNote Logo" className="w-9 h-9 object-contain rounded-xl shadow-xs" />
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-rose-500 to-purple-600 rounded-xl blur-xs opacity-60 group-hover:opacity-100 transition duration-300"></div>
+                  <img src="/admin-logo.png" alt="LexiNote Admin" className="relative w-9 h-9 object-cover rounded-xl border border-primary/20 shadow-md" />
+                </div>
                 <div className="flex flex-col">
-                  <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Portal</span>
+                  <span className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
+                    LexiNote <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">PRO</span>
+                  </span>
+                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Command Center</span>
                 </div>
               </Link>
               <button 
@@ -148,10 +153,15 @@ const AdminLayout: React.FC = () => {
       <aside className="w-[260px] border-r border-border bg-sidebar hidden lg:flex flex-col sticky top-0 h-screen z-30 select-none">
         <div className="p-6 pb-4">
           <Link to="/dashboard" className="flex items-center gap-3 mb-8 group">
-            <img src="/logo.png" alt="LexiNote Logo" className="w-9 h-9 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform" />
+            <div className="relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-rose-500 to-purple-600 rounded-xl blur-xs opacity-60 group-hover:opacity-100 transition duration-300"></div>
+              <img src="/admin-logo.png" alt="LexiNote Admin" className="relative w-9 h-9 object-cover rounded-xl border border-primary/20 shadow-md group-hover:scale-105 transition-transform duration-200" />
+            </div>
             <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Workspace</span>
+              <span className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
+                LexiNote <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">PRO</span>
+              </span>
+              <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Command Center</span>
             </div>
           </Link>
           
