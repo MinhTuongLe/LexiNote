@@ -98,7 +98,7 @@ const UserManagementPage: React.FC = () => {
   const handleAddSubmit = async (data: { fullName: string; email?: string }) => {
     setIsActionLoading(true);
     try {
-      await handleCreateUser(data.fullName, data.email || '');
+      await handleCreateUser({ fullName: data.fullName, email: data.email || '' });
       toast.success('Account Created', `Created account for ${data.fullName}`);
     } catch {
       toast.error('Creation Failed', 'Could not create new user account.');
@@ -111,7 +111,7 @@ const UserManagementPage: React.FC = () => {
     if (!selectedUser) return;
     setIsActionLoading(true);
     try {
-      await handleUpdateUser(selectedUser.id, data.fullName);
+      await handleUpdateUser(selectedUser.id, { fullName: data.fullName });
       toast.success('Profile Updated', 'User information saved.');
     } catch {
       toast.error('Update Failed', 'Could not update user information.');
@@ -333,7 +333,7 @@ const UserManagementPage: React.FC = () => {
 
                     <TableCell className="px-6 py-3.5">
                       <UserRoleBadge
-                        role={user.role}
+                        role={user.role || 'MEMBER'}
                         onClick={() => onToggleRole(user)}
                         tooltipContent={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`}
                       />
