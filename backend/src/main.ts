@@ -1,5 +1,10 @@
 import 'dotenv/config'; // Add this at the top
 import { NestFactory } from '@nestjs/core';
+
+// Global BigInt serialization fix for Fastify/JSON.stringify
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
 import {
   FastifyAdapter,
   NestFastifyApplication,
@@ -37,44 +42,15 @@ async function bootstrap() {
   await app.register(compression, { encodings: ['gzip', 'deflate'] });
 
   // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
-  await app.register(helmet, {
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: [`'self'`],
-        styleSrc: [`'self'`, `'unsafe-inline'`],
-        imgSrc: [`'self'`, 'data:', 'validator.swagger.io'],
-        scriptSrc: [`'self'`, `https: 'unsafe-inline'`],
-      },
-    },
-  });
+  // await app.register(helmet, { ... });
 
-  // 🛡️ Security: Enable CORS with tighter origins
-  const isProd = process.env.NODE_ENV === 'production';
-  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',').map(o => o.trim()).filter(Boolean) || [];
-  
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : true;
+
   app.enableCors({
-    origin: (origin, callback) => {
-      // 1. Allow if no Origin header (e.g. Render Health Check, cURL, Postman)
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      // 2. Allow all in dev if no constraints provided
-      if (!isProd && allowedOrigins.length === 0) {
-        return callback(null, true);
-      }
-      
-      // 3. Strict check against allowed whitelist
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        const error = new Error(`Origin ${origin} not allowed by CORS`);
-        callback(error, false);
-      }
-    },
+    origin: allowedOrigins,
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, Accept-Language, x-custom-lang',
   });
 
   // Swagger Documentation Setup
@@ -94,4 +70,3 @@ async function bootstrap() {
 }
 bootstrap();
 // Trigger rebuild
-

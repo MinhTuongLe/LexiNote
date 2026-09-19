@@ -28,6 +28,7 @@ import { useCuteDialog } from './context/DialogContext';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized, logout } from './store/authSlice';
+import { checkHasSeenGuide } from './utils/authUtils';
 
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
@@ -46,7 +47,7 @@ function App() {
   
   const { user, isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
-  const { showAlert } = useCuteDialog();
+  const { showAlert, closeDialog } = useCuteDialog();
   const { t } = useTranslation();
 
   // Always sync user profile when authenticated
@@ -82,17 +83,14 @@ function App() {
   // Redirect new users to full-screen guide
   useEffect(() => {
     if (isAuthenticated && isInitialized && user) {
-      const storageKey = `hasSeenGuide_${user.id ?? user._id ?? user.email ?? 'unknown'}`;
-      const locallySeen = localStorage.getItem(storageKey) === 'true';
+      const hasSeen = checkHasSeenGuide(user);
       
-      const rawSettings = user.settings || {};
-      const remotelySeen = rawSettings.preferences?.hasSeenGuide === true || rawSettings.hasSeenGuide === true;
-      
-      if (!locallySeen && !remotelySeen && location.pathname !== '/welcome') {
+      if (!hasSeen && location.pathname !== '/welcome') {
+        closeDialog();
         navigate('/welcome', { replace: true });
       }
     }
-  }, [isAuthenticated, isInitialized, user, navigate, location.pathname]);
+  }, [isAuthenticated, isInitialized, user, navigate, location.pathname, closeDialog]);
 
   // Reset entirely UI state on Logout so the next person gets a clean slate 
   useEffect(() => {

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useUpdateSettingsMutation } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
+import { useCuteDialog } from '../../context/DialogContext';
+import { markGuideAsSeenLocal } from '../../utils/authUtils';
 import Button from '../../components/Button';
 import './WelcomePage.css';
 
@@ -11,17 +13,22 @@ const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('welcome');
   const { user } = useSelector((state: any) => state.auth);
+  const { closeDialog } = useCuteDialog();
   const [updateSettings] = useUpdateSettingsMutation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
+
+  // Guarantee that no lingering dialogs (such as welcome back) are displayed on the intro guide
+  useEffect(() => {
+    closeDialog();
+  }, [closeDialog]);
 
   const handleFinish = () => {
     if (isFinishing) return;
     setIsFinishing(true);
     
     // Save to local storage for immediate persistence
-    const storageKey = `hasSeenGuide_${user?.id ?? user?._id ?? user?.email ?? 'unknown'}`;
-    localStorage.setItem(storageKey, 'true');
+    markGuideAsSeenLocal(user);
     
     // Fire update API in the background without blocking navigation
     const rawSettings = user?.settings || {};

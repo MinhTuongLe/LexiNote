@@ -1,7 +1,7 @@
 import { Controller, Get, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { WordService } from '../word/word.service';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { WordService } from '../client/word/word.service';
+import { JwtAuthGuard } from '../client/auth/jwt-auth.guard';
 
 @ApiTags('Meta')
 @Controller() // Under /api prefix -> /api
@@ -21,5 +21,4 @@ export class MetaController {
   async getDashboardStats(@Request() req: any) {
     return this.wordService.getDashboardStats(req.user.userId);
   }
-
 }

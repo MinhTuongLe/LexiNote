@@ -13,6 +13,7 @@ interface DialogConfig {
 interface DialogContextType {
   showAlert: (title: string, message: string, type?: 'alert' | 'success' | 'error') => void;
   showConfirm: (title: string, message: string, onConfirm: () => void, config?: Partial<DialogConfig>) => void;
+  closeDialog: () => void;
 }
 
 const DialogContext = createContext<DialogContextType | undefined>(undefined);
@@ -30,6 +31,10 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     setIsOpen(true);
   };
 
+  const closeDialog = () => {
+    setIsOpen(false);
+  };
+
   const showConfirm = (title: string, message: string, onConfirm: () => void, extra?: Partial<DialogConfig>) => {
     setConfig({ 
       title, 
@@ -42,7 +47,7 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
   };
 
   return (
-    <DialogContext.Provider value={{ showAlert, showConfirm }}>
+    <DialogContext.Provider value={{ showAlert, showConfirm, closeDialog }}>
       {children}
       <Dialog 
         isOpen={isOpen}

@@ -18,16 +18,15 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
-  const { data: settingsData } = useGetSettingsQuery();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { showAlert } = useCuteDialog();
+  const { data: settingsData } = useGetSettingsQuery();
   const [updateSettings] = useUpdateSettingsMutation();
+  const { showAlert } = useCuteDialog();
 
   // Settings state from user profile or defaults
   const [isSoundEnabled, setIsSoundEnabled] = useState(true);
-
-  const language = i18n.language?.startsWith('vi') ? 'vi' : 'en';
+  const currentLang = i18n?.language?.startsWith('vi') ? 'vi' : (i18n?.language || 'en');
 
   useEffect(() => {
     if (settingsData) {
@@ -36,7 +35,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   }, [settingsData]);
 
   const handleLanguageChange = (lng: string) => {
-    i18n.changeLanguage(lng);
+    i18n?.changeLanguage(lng);
+    handleSaveSetting('language', lng);
   };
 
   const handleSaveSetting = async (key: string, value: any) => {
@@ -100,7 +100,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                 </div>
                 <CuteSelect 
                   options={langOptions} 
-                  value={language} 
+                  value={currentLang} 
                   onChange={handleLanguageChange} 
                   className="settings-cute-select" 
                 />
@@ -110,7 +110,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
           <div className="settings-divider"></div>
 
-          {/* New: Language & Study Link */}
+          {/* Language & Study Link */}
           <div className="settings-group clickable-group" onClick={() => navigate('/settings/language')}>
             <div className="settings-header">
               <Languages className="settings-icon" size={20} />
