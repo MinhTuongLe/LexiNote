@@ -70,11 +70,16 @@ const LoginPage: React.FC = () => {
 
       <div className="w-full max-w-md animate-in fade-in-50 duration-300">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20 bg-card border border-border/80">
-            <img src="/logo.png" alt="LexiNote Logo" className="w-10 h-10 object-contain" />
+          <div className="relative mb-4 group">
+            <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 via-purple-600 to-amber-500 rounded-2xl blur-sm opacity-70 group-hover:opacity-100 transition duration-300 animate-pulse"></div>
+            <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center bg-slate-950 border border-primary/30 shadow-xl overflow-hidden">
+              <img src="/admin-logo.png" alt="LexiNote Admin Command Center" className="w-full h-full object-cover" />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">LexiNote Admin</h1>
-          <p className="text-xs text-muted-foreground mt-1">Sign in to manage your vocabulary platform</p>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            LexiNote <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded-md bg-primary/10 text-primary border border-primary/20">Admin Command</span>
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1">Authenticate to access LexiNote Infrastructure & Operations</p>
         </div>
 
         <Card className="border-border/60 bg-card shadow-lg shadow-black/5 rounded-2xl overflow-hidden">
