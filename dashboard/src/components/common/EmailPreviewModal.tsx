@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { X, Mail, ShieldCheck, KeyRound, Lock, Send, RefreshCw, UserPlus, AlertTriangle, Trash2, Award, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Mail, ShieldCheck, KeyRound, Lock, RefreshCw, UserPlus, AlertTriangle, Trash2, Award, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/components/ui/Toast';
-import { useLazyGetMailPreviewQuery } from '@/store/api/usersApi';
+import { useGetMailPreviewQuery } from '@/store/api/usersApi';
 
 export type TemplateType =
   | 'verification'
@@ -33,50 +32,37 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
   defaultRecipientEmail = 'user@example.com',
   defaultCode = '123456',
 }) => {
-  const { toast } = useToast();
   const [templateType, setTemplateType] = useState<TemplateType>(defaultType);
   const [fullName, setFullName] = useState(defaultRecipientName);
   const [sampleCode, setSampleCode] = useState(defaultCode);
-  const [htmlContent, setHtmlContent] = useState('');
-  const [subject, setSubject] = useState('');
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  const [triggerGetMailPreview, { isLoading }] = useLazyGetMailPreviewQuery();
-
-  useEffect(() => {
+  // Sync state when modal opens (React recommended pattern for state reset on prop change)
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
     if (isOpen) {
       setTemplateType(defaultType);
       setFullName(defaultRecipientName || 'Nguyễn Văn A');
       setSampleCode(defaultCode || '123456');
     }
-  }, [isOpen, defaultType, defaultRecipientName, defaultCode]);
+  }
 
-  const fetchPreview = async () => {
-    try {
-      const res = await triggerGetMailPreview({
-        type: templateType,
-        fullName: fullName.trim() || 'Nguyễn Văn A',
-        code: sampleCode.trim() || '123456',
-      }).unwrap();
-      setHtmlContent(res.html || '');
-      setSubject(res.subject || '');
-    } catch (error: any) {
-      toast({
-        title: 'Lỗi tải preview!',
-        description: error?.data?.message || 'Không thể lấy HTML template.',
-        variant: 'destructive',
-      });
-    }
-  };
-
-  useEffect(() => {
-    if (isOpen) {
-      fetchPreview();
-    }
-  }, [isOpen, templateType, fullName, sampleCode]);
+  // Declarative data fetching via RTK Query (No useEffect setState needed)
+  const { data: previewData, isLoading } = useGetMailPreviewQuery(
+    {
+      type: templateType,
+      fullName: fullName.trim() || 'Nguyễn Văn A',
+      code: sampleCode.trim() || '123456',
+    },
+    { skip: !isOpen }
+  );
 
   if (!isOpen) return null;
 
-  const templateTabs: { id: TemplateType; label: string; icon: any; activeClass: string }[] = [
+  const htmlContent = previewData?.html || '';
+  const subject = previewData?.subject || '';
+
+  const templateTabs: { id: TemplateType; label: string; icon: React.ElementType; activeClass: string }[] = [
     { id: 'verification', label: '1. Xác Thực Đăng Ký', icon: Lock, activeClass: 'bg-purple-600 text-white shadow-purple-500/20' },
     { id: 'forgot_password', label: '2. Quên Mật Khẩu', icon: KeyRound, activeClass: 'bg-rose-600 text-white shadow-rose-500/20' },
     { id: 'admin_reset', label: '3. Admin Reset Pass', icon: ShieldCheck, activeClass: 'bg-sky-600 text-white shadow-sky-500/20' },

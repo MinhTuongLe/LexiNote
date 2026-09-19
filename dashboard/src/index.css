@@ -178,3 +178,9 @@
     @apply bg-border rounded-full hover:bg-muted-foreground/30 transition-colors;
   }
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

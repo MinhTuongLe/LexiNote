@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ReModal from '@/components/ui/ReModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,18 +20,21 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
   isLoading = false,
 }) => {
   const isEditing = !!user;
-  const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  const [fullName, setFullName] = useState(user?.fullName || '');
+  const [email, setEmail] = useState(user?.email || '');
 
-  useEffect(() => {
-    if (user) {
-      setFullName(user.fullName || '');
-      setEmail(user.email || '');
-    } else {
-      setFullName('');
-      setEmail('');
+  const [prevUser, setPrevUser] = useState(user);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  // Sync state during rendering when props change (React recommended pattern for state reset)
+  if (user !== prevUser || isOpen !== prevIsOpen) {
+    setPrevUser(user);
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setFullName(user?.fullName || '');
+      setEmail(user?.email || '');
     }
-  }, [user, isOpen]);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

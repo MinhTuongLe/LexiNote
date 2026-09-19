@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useGetConfigQuery, useUpdateConfigMutation } from '@/store/api/configApi';
 import { useToast } from '@/components/ui/Toast';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import { ConfigPageSkeleton } from '@/components/ui/skeletons';
 
 const SystemConfigPage: React.FC = () => {
   const { toast } = useToast();
@@ -50,11 +51,7 @@ const SystemConfigPage: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-      </div>
-    );
+    return <ConfigPageSkeleton />;
   }
 
   return (

@@ -1,7 +1,10 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import OverviewPage from './OverviewPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Provider } from 'react-redux';
+import { store } from '@/store';
+import { ToastProvider } from '@/components/ui/Toast';
 
 // Mocking recharts because it doesn't work well in jsdom
 vi.mock('recharts', () => ({
@@ -17,6 +20,20 @@ vi.mock('recharts', () => ({
   stop: () => <div />,
 }));
 
+// Mock useOverview hook
+vi.mock('./useOverview', () => ({
+  useOverview: vi.fn(() => ({
+    kpis: [
+      { label: 'Total Users', value: '1,000', change: '+12.5%', icon: () => null, bg: '#fff', theme: '#000' },
+      { label: 'Word Count', value: '5,000', change: '+5.2%', icon: () => null, bg: '#fff', theme: '#000' },
+    ],
+    srsStats: undefined,
+    chartData: [],
+    isLoading: false,
+    error: null,
+  })),
+}));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,16 +43,17 @@ const queryClient = new QueryClient({
 });
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
-  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+  <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
+      <ToastProvider>{children}</ToastProvider>
+    </QueryClientProvider>
+  </Provider>
 );
 
 describe('OverviewPage', () => {
   beforeEach(() => {
     queryClient.clear();
     vi.clearAllMocks();
-    
-    // Mock global fetch
-    globalThis.fetch = vi.fn();
   });
 
   it('renders correctly and shows heading', () => {
@@ -43,20 +61,9 @@ describe('OverviewPage', () => {
     expect(screen.getByText('System Overview')).toBeInTheDocument();
   });
 
-  it('displays loading state or initial stats', async () => {
-    vi.mocked(globalThis.fetch).mockResolvedValue({
-      ok: true,
-      json: async () => ({ totalUsers: 1000, totalWords: 5000 }),
-    } as Response);
-
+  it('displays loading state or initial stats', () => {
     render(<OverviewPage />, { wrapper });
-    
-    // Check if stats are rendered after fetch (using wait since it's in useEffect now)
-    // Note: The current implementation uses fetch in useEffect, 
-    // we want to move it to React Query.
-    await waitFor(() => {
-      expect(screen.getByText('1,000')).toBeInTheDocument();
-      expect(screen.getByText('5,000')).toBeInTheDocument();
-    });
+    expect(screen.getByText('1,000')).toBeInTheDocument();
+    expect(screen.getByText('5,000')).toBeInTheDocument();
   });
 });

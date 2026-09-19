@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ReModal from '@/components/ui/ReModal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,15 +20,21 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
   word,
   isLoading = false,
 }) => {
-  const [meaningVi, setMeaningVi] = useState('');
-  const [example, setExample] = useState('');
+  const [meaningVi, setMeaningVi] = useState(word?.meaningVi || '');
+  const [example, setExample] = useState(word?.example || '');
 
-  useEffect(() => {
-    if (word) {
-      setMeaningVi(word.meaningVi || '');
-      setExample(word.example || '');
+  const [prevWord, setPrevWord] = useState(word);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  // Sync state during rendering when props change
+  if (word !== prevWord || isOpen !== prevIsOpen) {
+    setPrevWord(word);
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setMeaningVi(word?.meaningVi || '');
+      setExample(word?.example || '');
     }
-  }, [word, isOpen]);
+  }
 
   const handleSubmit = async () => {
     if (!meaningVi.trim()) return;

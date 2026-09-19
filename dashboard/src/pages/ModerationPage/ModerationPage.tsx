@@ -15,7 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import Skeleton from '@/components/ui/Skeleton';
+import { ModerationCardSkeleton } from '@/components/ui/skeletons';
 import { useGetWordsQuery, useDeleteWordMutation, useUpdateWordMutation } from '@/store/api/wordsApi';
 import type { Word } from '@/store/api/wordsApi';
 import { useToast } from '@/components/ui/Toast';
@@ -196,7 +196,7 @@ const ModerationPage: React.FC = () => {
       {/* Moderation Queue Grid */}
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-40 w-full rounded-xl" />)}
+          <ModerationCardSkeleton count={4} />
         </div>
       ) : filteredWords.length === 0 ? (
         <div className="p-12 text-center border-2 border-dashed border-border/80 rounded-xl bg-card">

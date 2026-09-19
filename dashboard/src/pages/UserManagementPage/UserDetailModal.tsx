@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import ReModal from '@/components/ui/ReModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import Skeleton from '@/components/ui/Skeleton';
+import { UserDetailModalSkeleton } from '@/components/ui/skeletons';
 import { 
   useGetUserDetailsQuery, 
   useToggleUserStatusMutation, 
@@ -166,11 +166,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
     >
       <div className="space-y-5">
         {isLoading ? (
-          <div className="space-y-4 py-4">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-40 w-full" />
-          </div>
+          <UserDetailModalSkeleton />
         ) : !user ? (
           <div className="text-center py-8 text-muted-foreground">User not found.</div>
         ) : (

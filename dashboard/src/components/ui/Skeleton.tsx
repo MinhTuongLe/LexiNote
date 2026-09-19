@@ -1,13 +1,16 @@
 import React from 'react';
 
-interface SkeletonProps {
+interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-const Skeleton: React.FC<SkeletonProps> = ({ className }) => {
+const Skeleton: React.FC<SkeletonProps> = ({ className = '', ...props }) => {
   return (
-    <div className={`animate-pulse bg-[#f1faff]/80 rounded-lg ${className}`}>
-      <div className="w-full h-full bg-gradient-to-r from-transparent via-white/50 to-transparent -translate-x-full animate-[shimmer_1.5s_infinite]"></div>
+    <div 
+      className={`relative overflow-hidden rounded-lg bg-muted/80 dark:bg-muted/50 animate-pulse ${className}`}
+      {...props}
+    >
+      <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-foreground/5 to-transparent animate-[shimmer_2s_infinite]" />
     </div>
   );
 };

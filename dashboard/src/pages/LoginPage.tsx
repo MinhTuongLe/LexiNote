@@ -6,7 +6,6 @@ import {
   ArrowRight, 
   Eye, 
   EyeOff, 
-  Sparkles,
   AlertCircle,
   Sun,
   Moon

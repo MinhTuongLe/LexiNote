@@ -12,7 +12,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import Skeleton from '@/components/ui/Skeleton';
+import { TrashTableSkeleton } from '@/components/ui/skeletons';
 import ReModal from '@/components/ui/ReModal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { 
@@ -181,11 +181,7 @@ const TrashPage: React.FC = () => {
             </TableHeader>
             <TableBody className="divide-y divide-border/60">
               {isLoading ? (
-                [1, 2, 3].map(i => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={5} className="px-6 py-3.5"><Skeleton className="h-8 w-full" /></TableCell>
-                  </TableRow>
-                ))
+                <TrashTableSkeleton rows={4} />
               ) : archives.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-36 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">

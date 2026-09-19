@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import Skeleton from '@/components/ui/Skeleton';
+import { UserTableSkeleton } from '@/components/ui/skeletons';
 import { useUsers } from './useUsers';
 import type { DashboardUserItem } from './useUsers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -290,16 +290,7 @@ const UserManagementPage: React.FC = () => {
             </TableHeader>
             <TableBody className="divide-y divide-border/60">
               {isLoading ? (
-                [1, 2, 3, 4, 5].map((i) => (
-                  <TableRow key={i}>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-10 w-full" /></TableCell>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-4 w-20" /></TableCell>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-4 w-16" /></TableCell>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-4 w-24" /></TableCell>
-                    <TableCell className="px-6 py-3.5"><Skeleton className="h-8 w-24 ml-auto" /></TableCell>
-                  </TableRow>
-                ))
+                <UserTableSkeleton rows={5} />
               ) : users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-32 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">

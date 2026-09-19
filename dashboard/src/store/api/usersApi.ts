@@ -170,5 +170,6 @@ export const {
   useRevokeAllUserSessionsMutation,
   useUpdateUserRoleMutation,
   useResetUserPasswordMutation,
+  useGetMailPreviewQuery,
   useLazyGetMailPreviewQuery,
 } = usersApi;

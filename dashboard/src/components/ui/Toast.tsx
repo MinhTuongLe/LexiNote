@@ -61,21 +61,21 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   };
 
   const toastInstance = useMemo<ToastFunction>(() => {
-    const fn = ((payload: ToastPayload) => {
+    const mainFn = (payload: ToastPayload) => {
       addToast(payload);
+    };
+
+    return Object.assign(mainFn, {
+      success: (title: string, message?: string) => {
+        addToast({ type: 'success', title, message });
+      },
+      error: (title: string, message?: string) => {
+        addToast({ type: 'error', title, message });
+      },
+      info: (title: string, message?: string) => {
+        addToast({ type: 'info', title, message });
+      },
     }) as ToastFunction;
-
-    fn.success = (title: string, message?: string) => {
-      addToast({ type: 'success', title, message });
-    };
-    fn.error = (title: string, message?: string) => {
-      addToast({ type: 'error', title, message });
-    };
-    fn.info = (title: string, message?: string) => {
-      addToast({ type: 'info', title, message });
-    };
-
-    return fn;
   }, [addToast]);
 
   return (

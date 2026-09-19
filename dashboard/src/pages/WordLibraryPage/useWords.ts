@@ -68,6 +68,8 @@ export function useWords() {
     setSearch: handleSearchChange,
     filter,
     setFilter,
+    type: filter,
+    setType: setFilter,
     ownerId: ownerIdParam,
     setOwnerId: handleOwnerChange,
     page,
@@ -76,6 +78,7 @@ export function useWords() {
     totalWords: meta.total,
     handleDelete,
     handleUpdate,
+    handleUpdateWord: handleUpdate,
     handleAddRelation,
     handleDeleteRelation
   };

@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import Skeleton from '@/components/ui/Skeleton';
+import { AuditTableSkeleton } from '@/components/ui/skeletons';
 import ReModal from '@/components/ui/ReModal';
 import { useGetAuditLogsQuery, useGetArchiveLogsQuery } from '@/store/api/auditApi';
 import type { AuditLogItem, ArchiveRecordItem } from '@/store/api/auditApi';
@@ -238,11 +238,7 @@ const AuditLogPage: React.FC = () => {
               </TableHeader>
               <TableBody className="divide-y divide-border/60">
                 {isAuditLoading ? (
-                  [1, 2, 3, 4, 5].map((i) => (
-                    <TableRow key={i}>
-                      <TableCell colSpan={6} className="px-6 py-3.5"><Skeleton className="h-8 w-full" /></TableCell>
-                    </TableRow>
-                  ))
+                  <AuditTableSkeleton rows={5} />
                 ) : logs.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="h-32 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -330,11 +326,7 @@ const AuditLogPage: React.FC = () => {
               </TableHeader>
               <TableBody className="divide-y divide-border/60">
                 {isArchiveLoading ? (
-                  [1, 2, 3].map((i) => (
-                    <TableRow key={i}>
-                      <TableCell colSpan={4} className="px-6 py-3.5"><Skeleton className="h-8 w-full" /></TableCell>
-                    </TableRow>
-                  ))
+                  <AuditTableSkeleton rows={3} />
                 ) : archives.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={4} className="h-32 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">

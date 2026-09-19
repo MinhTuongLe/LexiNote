@@ -1,24 +1,19 @@
 import React, { useState } from 'react';
 import { 
   Search, 
-  AlertCircle,
   Plus,
   Edit2,
   Trash2,
-  FileText,
-  Clock,
-  ExternalLink,
   User,
   BrainCircuit,
   X,
   Tag,
-  Layers,
-  Sparkles
+  Layers
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Skeleton from '@/components/ui/Skeleton';
+import { WordCardSkeleton } from '@/components/ui/skeletons';
 import { useWords } from './useWords';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
@@ -255,13 +250,7 @@ const WordLibraryPage: React.FC = () => {
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {isLoading ? (
-              [1, 2, 3, 4].map((i) => (
-                <Card key={i} className="border-border/60 p-4">
-                  <Skeleton className="h-6 w-32 mb-2" />
-                  <Skeleton className="h-4 w-full mb-4" />
-                  <Skeleton className="h-16 w-full" />
-                </Card>
-              ))
+              <WordCardSkeleton count={4} />
             ) : words.length === 0 ? (
               <div className="col-span-full bg-card border border-border/60 rounded-xl p-12 text-center text-muted-foreground text-xs">
                 No vocabulary records matched your filter criteria.
