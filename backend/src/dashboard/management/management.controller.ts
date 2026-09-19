@@ -120,4 +120,18 @@ export class ManagementController {
   ) {
     return this.managementService.updateUserRole(id, body.role);
   }
+
+  @Get('mail-preview')
+  @ApiOperation({ summary: 'Get rendered HTML preview of email templates' })
+  async getMailPreview(
+    @Query('type') type?: string,
+    @Query('fullName') fullName?: string,
+    @Query('code') code?: string,
+  ) {
+    return this.managementService.getMailPreview(
+      type || 'admin_reset',
+      fullName,
+      code,
+    );
+  }
 }

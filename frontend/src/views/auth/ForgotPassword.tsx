@@ -44,11 +44,11 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
     
     try {
       const result = await forgotPassword({ email }).unwrap();
-      showAlert('Code Sent! 📬', result.message, 'success');
+      showAlert(t('common.success'), result.message, 'success');
       setStep('code');
       setCountdown(60);
     } catch (err: any) {
-      showAlert('Error! 😿', err.data?.message || 'Something went wrong.', 'error');
+      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
     }
   };
 
@@ -56,21 +56,21 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
     e.preventDefault();
 
     if (newPassword.length < 6) {
-      showAlert('Too Short! 🔑', 'Password must be at least 6 characters.', 'error');
+      showAlert(t('common.error'), t('auth.password_too_short') || 'Password must be at least 6 characters.', 'error');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert('Mismatch! 🔑', 'Passwords do not match.', 'error');
+      showAlert(t('common.error'), t('auth.passwords_do_not_match') || 'Passwords do not match.', 'error');
       return;
     }
 
     try {
       await resetPassword({ email, resetToken: resetCode, newPassword }).unwrap();
-      showAlert('Success! 🎉', 'Your password has been reset!', 'success');
+      showAlert(t('common.success'), t('auth.password_reset_success') || 'Your password has been reset!', 'success');
       setStep('done');
     } catch (err: any) {
-      showAlert('Error! 😿', err.data?.message || 'Invalid or expired code.', 'error');
+      showAlert(t('common.error'), err.data?.message || t('auth.invalid_reset_code'), 'error');
     }
   };
 

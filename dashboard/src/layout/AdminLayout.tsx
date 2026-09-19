@@ -85,9 +85,7 @@ const AdminLayout: React.FC = () => {
           <div className="p-6 flex flex-col h-full">
             <div className="flex justify-between items-center mb-8">
               <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setIsMobileMenuOpen(false)}>
-                <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm shadow-primary/30">
-                  <Sparkles className="text-primary-foreground" size={18} />
-                </div>
+                <img src="/logo.png" alt="LexiNote Logo" className="w-9 h-9 object-contain rounded-xl shadow-xs" />
                 <div className="flex flex-col">
                   <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
                   <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Portal</span>
@@ -150,9 +148,7 @@ const AdminLayout: React.FC = () => {
       <aside className="w-[260px] border-r border-border bg-sidebar hidden lg:flex flex-col sticky top-0 h-screen z-30 select-none">
         <div className="p-6 pb-4">
           <Link to="/dashboard" className="flex items-center gap-3 mb-8 group">
-            <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-md shadow-primary/25 group-hover:scale-105 transition-transform">
-              <Sparkles className="text-primary-foreground" size={18} />
-            </div>
+            <img src="/logo.png" alt="LexiNote Logo" className="w-9 h-9 object-contain rounded-xl shadow-xs group-hover:scale-105 transition-transform" />
             <div className="flex flex-col">
               <span className="text-base font-bold tracking-tight text-foreground">LexiNote</span>
               <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Admin Workspace</span>

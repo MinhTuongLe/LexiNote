@@ -71,8 +71,8 @@ const LoginPage: React.FC = () => {
 
       <div className="w-full max-w-md animate-in fade-in-50 duration-300">
         <div className="mb-8 flex flex-col items-center text-center">
-          <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/25">
-            <Sparkles className="text-primary-foreground" size={24} />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-primary/20 bg-card border border-border/80">
+            <img src="/logo.png" alt="LexiNote Logo" className="w-10 h-10 object-contain" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">LexiNote Admin</h1>
           <p className="text-xs text-muted-foreground mt-1">Sign in to manage your vocabulary platform</p>

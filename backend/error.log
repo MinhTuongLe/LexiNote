@@ -175,3 +175,55 @@ UnauthorizedException: error.auth.not_admin_access
 [2026-09-15T18:03:54.269Z] /api/v1/dashboard/auth/login
 UnauthorizedException: error.auth.not_admin_access
     at DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:21:13)
+
+[2026-09-19T08:39:18.610Z] /api/v1/dashboard/management/mail-preview?type=admin_reset&fullName=Nguy%E1%BB%85n+V%C4%83n+A&code=123456
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:106:33
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:190:16
+    at getSecret (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:97:14)
+    at module.exports [as verify] (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\jsonwebtoken\verify.js:101:10)
+
+[2026-09-19T08:39:18.628Z] /api/v1/dashboard/client/auth/refresh
+NotFoundException: Cannot POST /api/v1/dashboard/client/auth/refresh
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at onDone (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\content-type-parser.js:229:5)
+    at AsyncResource.runInAsyncScope (node:async_hooks:211:14)
+    at bound (node:async_hooks:242:16)
+
+[2026-09-19T08:39:28.692Z] /api/v1/dashboard/management/mail-preview?type=admin_reset&fullName=Nguy%E1%BB%85n+V%C4%83n+A&code=123456
+UnauthorizedException: Unauthorized
+    at JwtAuthGuard.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:60:30)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:44:124
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:83:24
+    at allFailed (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:110:18)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:183:28)
+    at strategy.fail (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:314:9)
+    at JwtStrategy.authenticate (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport-jwt\lib\strategy.js:96:21)
+    at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:378:16)
+    at authenticate (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:379:7)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:88:3
+
+[2026-09-19T08:39:28.708Z] /api/v1/dashboard/client/auth/refresh
+NotFoundException: Cannot POST /api/v1/dashboard/client/auth/refresh
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at onDone (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\content-type-parser.js:229:5)
+    at AsyncResource.runInAsyncScope (node:async_hooks:211:14)
+    at bound (node:async_hooks:242:16)

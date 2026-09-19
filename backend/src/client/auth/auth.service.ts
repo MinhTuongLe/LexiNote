@@ -14,6 +14,7 @@ import * as crypto from 'crypto';
 import { VALID_WORD_TYPES } from '../word/word.constants';
 
 import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../../common/mail/mail.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +23,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private prisma: PrismaService,
+    private mailService: MailService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -112,15 +114,28 @@ export class AuthService {
       throw new BadRequestException('error.auth.email_exists');
     }
 
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+    const hashedVerification = await bcrypt.hash(verificationCode, 10);
+    const verificationExpires = BigInt(Date.now() + 30 * 60 * 1000); // 30 mins
+
     const newUser = await this.userService.create({
       email: email.toLowerCase().trim(),
       password,
       fullName: fullName.trim(),
       isEmailVerified: false,
+      emailVerificationToken: hashedVerification,
+      emailVerificationExpires: verificationExpires,
     });
 
     console.info(
-      `👤 New user registered: ${newUser.email} (unverified). Use MASTER_VERIFY_CODE to verify.`,
+      `👤 New user registered: ${newUser.email} (Verification code: ${verificationCode}).`,
+    );
+
+    // Send verification email via MailService
+    await this.mailService.sendAccountVerificationCode(
+      newUser.email,
+      newUser.fullName,
+      verificationCode,
     );
 
     return {
@@ -290,28 +305,27 @@ export class AuthService {
       };
     }
 
+    const resetToken = crypto.randomInt(100000, 999999).toString();
+    const resetExpires = Date.now() + 15 * 60 * 1000; // 15 mins
+    const hashedToken = await bcrypt.hash(resetToken, 10);
+
+    await this.userService.update(user.id, {
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: BigInt(resetExpires),
+    });
+
     const masterCode = this.configService.get('MASTER_VERIFY_CODE');
     if (masterCode) {
-      const hashedMaster = await bcrypt.hash(masterCode, 10);
-      await this.userService.update(user.id, {
-        resetPasswordToken: hashedMaster,
-        resetPasswordExpires: BigInt(Date.now() + 30 * 60 * 1000), // 30 mins
-      });
       console.info(
-        `🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE to reset.`,
-      );
-    } else {
-      const resetToken = crypto.randomInt(100000, 999999).toString();
-      const resetExpires = Date.now() + 5 * 60 * 1000;
-      const hashedToken = await bcrypt.hash(resetToken, 10);
-      await this.userService.update(user.id, {
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: BigInt(resetExpires),
-      });
-      console.info(
-        `🔑 Reset token generated for ${user.email}: ${resetToken} (no email service)`,
+        `🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE or emailed code to reset.`,
       );
     }
+
+    await this.mailService.sendForgotPasswordCode(
+      user.email,
+      user.fullName,
+      resetToken,
+    );
 
     return {
       message: 'success.auth.reset_code_generated',
@@ -348,12 +362,17 @@ export class AuthService {
       throw new BadRequestException('error.auth.reset_expired');
     }
 
-    const isValidToken = await bcrypt.compare(
-      resetToken,
-      user.resetPasswordToken,
-    );
-    if (!isValidToken) {
-      throw new BadRequestException('error.auth.invalid_reset_code');
+    const masterCode = this.configService.get('MASTER_VERIFY_CODE');
+    const isMasterCode = masterCode && resetToken === masterCode;
+
+    if (!isMasterCode) {
+      const isValidToken = await bcrypt.compare(
+        resetToken,
+        user.resetPasswordToken,
+      );
+      if (!isValidToken) {
+        throw new BadRequestException('error.auth.invalid_reset_code');
+      }
     }
 
     // Update password (hashing handled in UserService)
@@ -408,8 +427,19 @@ export class AuthService {
       throw new BadRequestException('error.auth.already_verified');
     }
 
-    console.info(
-      `🔁 Resend verification requested for: ${user.email} (use MASTER_VERIFY_CODE)`,
+    const verificationCode = crypto.randomInt(100000, 999999).toString();
+    const hashedVerification = await bcrypt.hash(verificationCode, 10);
+    const verificationExpires = BigInt(Date.now() + 30 * 60 * 1000);
+
+    await this.userService.update(user.id, {
+      emailVerificationToken: hashedVerification,
+      emailVerificationExpires: verificationExpires,
+    });
+
+    await this.mailService.sendAccountVerificationCode(
+      user.email,
+      user.fullName,
+      verificationCode,
     );
 
     return {

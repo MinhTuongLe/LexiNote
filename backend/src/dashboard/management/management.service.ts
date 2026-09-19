@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { MailService } from '../../common/mail/mail.service';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
@@ -9,6 +10,7 @@ export class ManagementService {
   constructor(
     private prisma: PrismaService,
     private auditService: AuditService,
+    private mailService: MailService,
   ) {}
 
   async getAllUsers(page = 1, limit = 10, search?: string, isActive?: boolean) {
@@ -277,6 +279,13 @@ export class ManagementService {
       },
     });
 
+    // Send email notification to user
+    await this.mailService.sendAdminPasswordResetNotification(
+      user.email,
+      user.fullName,
+      defaultPassword,
+    );
+
     return {
       message: 'Password reset successfully to default (123456). Active sessions revoked.',
       defaultPassword,
@@ -376,5 +385,9 @@ export class ManagementService {
     });
 
     return updated;
+  }
+
+  getMailPreview(type: string, fullName?: string, sampleCodeOrPass?: string) {
+    return this.mailService.getTemplatePreview(type, fullName, sampleCodeOrPass);
   }
 }

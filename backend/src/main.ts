@@ -44,8 +44,12 @@ async function bootstrap() {
   // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
   // await app.register(helmet, { ... });
 
+  const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : true;
+
   app.enableCors({
-    origin: true,
+    origin: allowedOrigins,
     credentials: true,
   });
 

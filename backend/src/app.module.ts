@@ -16,12 +16,15 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 import { AuditModule } from './dashboard/audit/audit.module';
 
+import { MailModule } from './common/mail/mail.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     PrismaModule,
+    MailModule,
     // Client
     AuthModule,
     UserModule,

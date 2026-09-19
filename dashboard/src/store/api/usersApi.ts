@@ -148,6 +148,12 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, id) => ['Users', { type: 'Users', id }, { type: 'Users', id: `sessions-${id}` }],
     }),
+    getMailPreview: builder.query<{ html: string; subject: string }, { type?: string; fullName?: string; code?: string }>({
+      query: (params) => ({
+        url: '/management/mail-preview',
+        params,
+      }),
+    }),
   }),
 });
 
@@ -164,4 +170,5 @@ export const {
   useRevokeAllUserSessionsMutation,
   useUpdateUserRoleMutation,
   useResetUserPasswordMutation,
+  useLazyGetMailPreviewQuery,
 } = usersApi;

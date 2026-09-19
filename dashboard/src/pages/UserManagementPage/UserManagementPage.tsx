@@ -8,7 +8,8 @@ import {
   Edit2,
   ShieldCheck,
   BadgeCheck,
-  Key
+  Key,
+  Mail
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
 import StatusBadge from '@/components/common/StatusBadge';
 import UserRoleBadge from '@/components/common/UserRoleBadge';
+import { EmailPreviewModal } from '@/components/common/EmailPreviewModal';
 
 const UserManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -146,6 +148,25 @@ const UserManagementPage: React.FC = () => {
     toast.info('CSV Exported', 'Downloaded current page user entries.');
   };
 
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [previewType, setPreviewType] = useState<'verification' | 'forgot_password' | 'admin_reset'>('admin_reset');
+  const [previewRecipientName, setPreviewRecipientName] = useState('Nguyễn Văn A');
+  const [previewRecipientEmail, setPreviewRecipientEmail] = useState('user@example.com');
+  const [previewCode, setPreviewCode] = useState('123456');
+
+  const openMailPreview = (
+    type: 'verification' | 'forgot_password' | 'admin_reset' = 'admin_reset',
+    name = 'Nguyễn Văn A',
+    email = 'user@example.com',
+    code = '123456'
+  ) => {
+    setPreviewType(type);
+    setPreviewRecipientName(name);
+    setPreviewRecipientEmail(email);
+    setPreviewCode(code);
+    setIsPreviewModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       {/* Page Header Component */}
@@ -154,6 +175,14 @@ const UserManagementPage: React.FC = () => {
         description="Control access tiers, learner progress, and accounts."
         action={
           <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="h-9 border-border/80 text-muted-foreground hover:text-foreground"
+              onClick={() => openMailPreview('admin_reset')}
+            >
+              <Mail size={14} className="mr-1.5 text-primary" /> Preview Email
+            </Button>
             <Button 
               variant="outline" 
               size="sm"
@@ -453,10 +482,19 @@ const UserManagementPage: React.FC = () => {
         onClose={() => setResetConfirmUser(null)}
         onConfirm={handleConfirmResetPassword}
         title="Reset Mật Khẩu Người Dùng"
-        description={`Bạn có chắc chắn muốn reset mật khẩu của ${resetConfirmUser?.fullName || 'người dùng này'} về 123456? Tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
+        description={`Bạn có chắc chắn muốn reset mật khẩu của ${resetConfirmUser?.fullName || 'người dùng này'} về 123456? Tất cả phiên đăng nhập hiện tại sẽ bị hủy và hệ thống sẽ tự động gửi Email thông báo kèm mật khẩu mặc định mới.`}
         confirmText="Reset Về 123456"
         variant="warning"
         isLoading={isResettingPassword}
+      />
+
+      <EmailPreviewModal
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+        defaultType={previewType}
+        defaultRecipientName={previewRecipientName}
+        defaultRecipientEmail={previewRecipientEmail}
+        defaultCode={previewCode}
       />
     </div>
   );
