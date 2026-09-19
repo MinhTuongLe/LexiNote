@@ -68,7 +68,7 @@ const WordLibraryPage: React.FC = () => {
     if (!editingWord) return;
     setIsProcessing(true);
     try {
-      await handleUpdateWord(editingWord.id, data.meaningVi, data.example);
+      await handleUpdateWord(editingWord.id, data);
       toast.success('Word Updated', `Updated definition for "${editingWord.word}"`);
       setIsEditModalOpen(false);
     } catch {

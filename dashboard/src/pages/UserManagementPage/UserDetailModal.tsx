@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ReModal from '@/components/ui/ReModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Skeleton from '@/components/ui/Skeleton';
 import { UserDetailModalSkeleton } from '@/components/ui/skeletons';
 import { 
   useGetUserDetailsQuery, 
