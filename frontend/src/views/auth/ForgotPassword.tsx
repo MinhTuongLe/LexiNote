@@ -17,7 +17,7 @@ interface ForgotPasswordProps {
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
   const [step, setStep] = useState<ForgotStep>('email');
   const [email, setEmail] = useState('');
-  const [resetCode, setResetCode] = useState(import.meta.env.VITE_MASTER_VERIFY_CODE || '');
+  const [resetCode, setResetCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [countdown, setCountdown] = useState(0);

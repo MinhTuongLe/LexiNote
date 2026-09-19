@@ -5,6 +5,12 @@ import {
   renderVerificationEmailTemplate,
   renderForgotPasswordTemplate,
   renderAdminPasswordResetTemplate,
+  renderWelcomeNewUserTemplate,
+  renderPasswordChangedTemplate,
+  renderAccountStatusChangedTemplate,
+  renderAccountDeletedTemplate,
+  renderUserRoleUpdatedTemplate,
+  renderSessionsRevokedTemplate,
 } from './mail.templates';
 
 @Injectable()
@@ -103,6 +109,62 @@ export class MailService {
   }
 
   /**
+   * Send Welcome Email to New User Created by Admin
+   */
+  async sendWelcomeNewUserEmail(to: string, fullName: string, rawPassword: string) {
+    const subject = '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công';
+    const html = renderWelcomeNewUserTemplate(fullName, to, rawPassword);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send Security Notice when User Changes Password
+   */
+  async sendPasswordChangedNotification(to: string, fullName: string) {
+    const subject = '🛡️ [LexiNote] Cảnh báo bảo mật: Mật khẩu vừa được thay đổi';
+    const html = renderPasswordChangedTemplate(fullName);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send Account Status Changed (Deactivated / Reactivated) Notification
+   */
+  async sendAccountStatusChangedNotification(to: string, fullName: string, isActive: boolean) {
+    const subject = isActive
+      ? '🎉 [LexiNote] Thông báo: Tài khoản của bạn đã được kích hoạt lại'
+      : '🚨 [LexiNote] Cảnh báo: Tài khoản của bạn đã bị tạm khóa';
+    const html = renderAccountStatusChangedTemplate(fullName, isActive);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send Account Deleted Notification
+   */
+  async sendAccountDeletedNotification(to: string, fullName: string) {
+    const subject = '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống';
+    const html = renderAccountDeletedTemplate(fullName);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send User Role Updated Notification
+   */
+  async sendUserRoleUpdatedNotification(to: string, fullName: string, newRole: string) {
+    const subject = '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật';
+    const html = renderUserRoleUpdatedTemplate(fullName, newRole);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send Sessions Revoked Notification
+   */
+  async sendSessionsRevokedNotification(to: string, fullName: string) {
+    const subject = '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi';
+    const html = renderSessionsRevokedTemplate(fullName);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
    * Generate rendered HTML preview for email templates
    */
   getTemplatePreview(type: string, fullName = 'Nguyễn Văn A', sampleCodeOrPass = '123456') {
@@ -116,6 +178,36 @@ export class MailService {
         return {
           subject: '🔑 [LexiNote] Mã khôi phục mật khẩu tài khoản',
           html: renderForgotPasswordTemplate(fullName, sampleCodeOrPass),
+        };
+      case 'welcome':
+        return {
+          subject: '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công',
+          html: renderWelcomeNewUserTemplate(fullName, 'user@example.com', sampleCodeOrPass),
+        };
+      case 'password_changed':
+        return {
+          subject: '🛡️ [LexiNote] Cảnh báo bảo mật: Mật khẩu vừa được thay đổi',
+          html: renderPasswordChangedTemplate(fullName),
+        };
+      case 'status_changed':
+        return {
+          subject: '🚨 [LexiNote] Cảnh báo: Tài khoản của bạn đã bị tạm khóa',
+          html: renderAccountStatusChangedTemplate(fullName, false),
+        };
+      case 'account_deleted':
+        return {
+          subject: '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống',
+          html: renderAccountDeletedTemplate(fullName),
+        };
+      case 'role_updated':
+        return {
+          subject: '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật',
+          html: renderUserRoleUpdatedTemplate(fullName, 'ADMIN'),
+        };
+      case 'sessions_revoked':
+        return {
+          subject: '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi',
+          html: renderSessionsRevokedTemplate(fullName),
         };
       case 'admin_reset':
       default:

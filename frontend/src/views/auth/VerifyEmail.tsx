@@ -23,7 +23,7 @@ const VerifyEmail: React.FC = () => {
   const initialEmail = queryParams.get('email') || '';
 
   const [email] = useState(initialEmail);
-  const [token, setToken] = useState(import.meta.env.VITE_MASTER_VERIFY_CODE || '');
+  const [token, setToken] = useState('');
   const [countdown, setCountdown] = useState(0);
   const [isVerified, setIsVerified] = useState(false);
 

@@ -131,3 +131,140 @@ export const renderAdminPasswordResetTemplate = (fullName: string, newDefaultPas
   `;
   return renderBaseTemplate(content);
 };
+
+/**
+ * Welcome New User Created by Admin Template
+ */
+export const renderWelcomeNewUserTemplate = (fullName: string, email: string, rawPassword: string): string => {
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Chào mừng bạn đến với hệ thống LexiNote! 🎉</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      Tài khoản của bạn đã được Quản trị viên khởi tạo thành công trên hệ thống LexiNote. Thông tin đăng nhập tài khoản của bạn như sau:
+    </p>
+    
+    <div style="background: linear-gradient(180deg, #FFF0F4 0%, #FFE4EC 100%); border: 2px dashed #FF8BA7; border-radius: 16px; padding: 22px; text-align: left; margin: 24px 0;">
+      <div style="font-size: 14px; color: #33272A; margin-bottom: 10px;"><strong>📧 Email đăng nhập:</strong> <span style="color: #C23355;">${email}</span></div>
+      <div style="font-size: 14px; color: #33272A;"><strong>🔑 Mật khẩu ban đầu:</strong> <span style="font-family: monospace; font-size: 18px; font-weight: 800; color: #C23355; background: #ffffff; padding: 2px 8px; border-radius: 6px; border: 1px solid #FF8BA7;">${rawPassword}</span></div>
+    </div>
+
+    <div style="background-color: #FFF5E6; border: 1.5px solid #FFD3B6; border-radius: 12px; padding: 14px 16px; color: #8A4F2A; font-size: 13px; font-weight: 600; margin-top: 20px;">
+      🔒 <strong>Lưu ý bảo mật:</strong> Vui lòng đăng nhập và chủ động đổi lại mật khẩu cá nhân tại phần Cài đặt Profile sau khi sử dụng lần đầu tiên.
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+/**
+ * User Changed Password Security Notice Template
+ */
+export const renderPasswordChangedTemplate = (fullName: string): string => {
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Thông báo Bảo mật: Mật khẩu vừa thay đổi 🛡️</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      Chúng tôi gửi email này để xác nhận rằng mật khẩu cho tài khoản LexiNote của bạn vừa được thay đổi thành công.
+    </p>
+
+    <div style="background-color: #FFF0F4; border: 1.5px solid #FF7096; border-radius: 12px; padding: 16px; color: #D64567; font-size: 13px; font-weight: 600; margin: 20px 0;">
+      ⚠️ <strong>Nếu bạn KHÔNG thực hiện thay đổi này:</strong> Tài khoản của bạn có thể đã bị truy cập trái phép. Vui lòng sử dụng ngay chức năng <em>"Quên mật khẩu"</em> trên trang đăng nhập để khôi phục lại mật khẩu ngay lập tức.
+    </div>
+
+    <p style="color: #7A696D; font-size: 13px; line-height: 1.5;">
+      Tất cả các phiên đăng nhập cũ trên các thiết bị khác đã được hệ thống đăng xuất tự động để đảm bảo an toàn tối đa.
+    </p>
+  `;
+  return renderBaseTemplate(content);
+};
+
+/**
+ * Account Status Changed (Deactivated / Reactivated) Template
+ */
+export const renderAccountStatusChangedTemplate = (fullName: string, isActive: boolean): string => {
+  const isDeactivated = !isActive;
+  const title = isDeactivated
+    ? 'Thông báo Tạm khóa Tài khoản 🚨'
+    : 'Thông báo Kích hoạt lại Tài khoản 🎉';
+  
+  const alertBg = isDeactivated ? '#FFF0F4' : '#F0FFF8';
+  const alertBorder = isDeactivated ? '#FF7096' : '#4EBA97';
+  const alertColor = isDeactivated ? '#D64567' : '#2C7A60';
+
+  const bodyText = isDeactivated
+    ? 'Tài khoản LexiNote của bạn vừa bị <strong>Tạm khóa (Deactivated)</strong> bởi Quản trị viên hệ thống. Bạn sẽ tạm thời không thể đăng nhập vào ứng dụng.'
+    : 'Tài khoản LexiNote của bạn vừa được <strong>Kích hoạt trở lại (Reactivated)</strong> bởi Quản trị viên. Bạn hiện đã có thể đăng nhập và sử dụng ứng dụng bình thường.';
+
+  const noteText = isDeactivated
+    ? 'Nếu bạn cho rằng đây là một sự nhầm lẫn, vui lòng liên hệ trực tiếp với bộ phận hỗ trợ của LexiNote để được trợ giúp.'
+    : 'Cảm ơn bạn đã đồng hành cùng LexiNote. Chúc bạn có những giờ phút học từ vựng thật hiệu quả!';
+
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">${title}</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      ${bodyText}
+    </p>
+
+    <div style="background-color: ${alertBg}; border: 1.5px solid ${alertBorder}; border-radius: 12px; padding: 16px; color: ${alertColor}; font-size: 13px; font-weight: 600; margin: 20px 0;">
+      ℹ️ ${noteText}
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+/**
+ * Account Deleted Notification Template
+ */
+export const renderAccountDeletedTemplate = (fullName: string): string => {
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Thông báo Xóa tài khoản 🗑️</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      Tài khoản LexiNote của bạn vừa được xóa khỏi hệ thống bởi Quản trị viên.
+    </p>
+
+    <div style="background-color: #FFF0F4; border: 1.5px solid #FF7096; border-radius: 12px; padding: 16px; color: #D64567; font-size: 13px; font-weight: 600; margin: 20px 0;">
+      📦 Toàn bộ thông tin tài khoản đã được lưu trữ an toàn theo quy định lưu trữ dữ liệu người dùng. Nếu bạn cần hỗ trợ thêm thông tin, vui lòng liên hệ với Quản trị viên.
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+/**
+ * User Role Updated Template
+ */
+export const renderUserRoleUpdatedTemplate = (fullName: string, newRole: string): string => {
+  const isTargetAdmin = newRole === 'ADMIN';
+  const roleTitle = isTargetAdmin ? 'Quản trị viên (ADMIN)' : 'Thành viên (MEMBER)';
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Cập nhật Quyền hạn Tài khoản 🎖️</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      Quyền hạn tài khoản LexiNote của bạn vừa được Quản trị viên cập nhật thành: <strong>${roleTitle}</strong>.
+    </p>
+
+    <div style="background-color: #FFF0F4; border: 1.5px dashed #FF8BA7; border-radius: 16px; padding: 20px; text-align: center; margin: 20px 0;">
+      <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: #D64567; letter-spacing: 1px; margin-bottom: 6px;">QUYỀN HẠN MỚI CỦA BẠN</div>
+      <div style="font-size: 26px; font-weight: 800; color: #C23355;">${roleTitle}</div>
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+/**
+ * All Active Sessions Revoked Template
+ */
+export const renderSessionsRevokedTemplate = (fullName: string): string => {
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Cảnh báo Bảo mật: Thu hồi tất cả phiên đăng nhập 🔐</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Xin chào <strong>${fullName}</strong>,<br>
+      Tất cả các phiên đăng nhập của bạn trên các thiết bị vừa bị <strong>Đăng xuất từ xa / Thu hồi (Revoked)</strong> bởi Quản trị viên vì lý do bảo mật.
+    </p>
+
+    <div style="background-color: #FFF5E6; border: 1.5px solid #FFD3B6; border-radius: 12px; padding: 14px 16px; color: #8A4F2A; font-size: 13px; font-weight: 600; margin-top: 20px;">
+      🔑 Vui lòng đăng nhập lại tài khoản bằng ứng dụng LexiNote để tạo phiên làm việc an toàn mới.
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};

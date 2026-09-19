@@ -412,6 +412,12 @@ export class AuthService {
     // Invalidate ALL sessions on password change for security
     await this.prisma.refreshToken.deleteMany({ where: { userId } });
 
+    // Send security notification email
+    await this.mailService.sendPasswordChangedNotification(
+      user.email,
+      user.fullName,
+    );
+
     return { message: 'success.auth.password_changed' };
   }
 

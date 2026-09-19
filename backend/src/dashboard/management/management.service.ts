@@ -195,6 +195,7 @@ export class ManagementService {
   }
 
   async revokeAllUserSessions(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
     const result = await this.prisma.refreshToken.deleteMany({
       where: { userId },
     });
@@ -204,6 +205,9 @@ export class ManagementService {
       targetId: String(userId),
       details: { revokedCount: result.count },
     });
+    if (user) {
+      await this.mailService.sendSessionsRevokedNotification(user.email, user.fullName);
+    }
     return result;
   }
 
@@ -243,6 +247,13 @@ export class ManagementService {
       targetId: String(user.id),
       details: { email: user.email, fullName: user.fullName, role: user.role },
     });
+
+    // Send Welcome Email with default credentials to new user
+    await this.mailService.sendWelcomeNewUserEmail(
+      user.email,
+      user.fullName,
+      rawPassword,
+    );
 
     return user;
   }
@@ -313,6 +324,13 @@ export class ManagementService {
       },
     });
 
+    // Send status change email notification
+    await this.mailService.sendAccountStatusChangedNotification(
+      updated.email,
+      updated.fullName,
+      updated.isActive,
+    );
+
     return updated;
   }
 
@@ -361,6 +379,10 @@ export class ManagementService {
       details: { email: user?.email },
     });
 
+    if (user) {
+      await this.mailService.sendAccountDeletedNotification(user.email, user.fullName);
+    }
+
     return deleted;
   }
 
@@ -383,6 +405,12 @@ export class ManagementService {
         email: user.email,
       },
     });
+
+    await this.mailService.sendUserRoleUpdatedNotification(
+      updated.email,
+      updated.fullName,
+      updated.role,
+    );
 
     return updated;
   }
