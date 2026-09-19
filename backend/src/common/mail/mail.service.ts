@@ -2,6 +2,16 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodemailer from 'nodemailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import * as dns from 'dns';
+
+// Force IPv4 resolution first in Node.js to prevent IPv6 connection timeouts on Cloud hosts (Render/AWS)
+try {
+  if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+  }
+} catch {
+  // Ignore if not supported in older node environments
+}
 
 import {
   renderVerificationEmailTemplate,
@@ -22,13 +32,17 @@ export class MailService {
   private fallbackSslTransporter: nodemailer.Transporter | null = null;
   private fromEmail: string;
   private resendApiKey: string | null = null;
+  private smtpHost = '';
+  private smtpPort = 587;
 
   constructor(private configService: ConfigService) {
     const rawResendKey = this.configService.get<string>('RESEND_API_KEY');
     this.resendApiKey = rawResendKey ? rawResendKey.trim() : null;
 
-    const host = this.configService.get<string>('SMTP_HOST');
-    const port = Number(this.configService.get<number | string>('SMTP_PORT', 587));
+    this.smtpHost = this.configService.get<string>('SMTP_HOST') || '';
+    this.smtpPort = Number(this.configService.get<number | string>('SMTP_PORT', 587));
+    const host = this.smtpHost;
+    const port = this.smtpPort;
     const user = this.configService.get<string>('SMTP_USER');
     const rawPass = this.configService.get<string>('SMTP_PASS');
     const pass = rawPass ? rawPass.replace(/["'\s]/g, '') : '';
@@ -129,7 +143,7 @@ export class MailService {
         return true;
       } catch (err: unknown) {
         const error = err as { message?: string; stack?: string };
-        this.logger.error(`❌ Primary SMTP failed (${error.message}). Cloud host (Render) may block port 587.`);
+        this.logger.error(`❌ Primary SMTP failed (${error.message}) on ${this.smtpHost}:${this.smtpPort}.`);
 
         // Fallback to Port 465 SSL if Port 587 timed out on Render
         if (this.fallbackSslTransporter) {
