@@ -18,6 +18,7 @@ import { useLoginMutation } from '../store/api/authApi';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
+import Tooltip from '@/components/ui/Tooltip';
 
 import { getErrorMessage } from '../utils/errors';
 
@@ -46,24 +47,27 @@ const LoginPage: React.FC = () => {
   return (
     <div className="relative min-h-screen bg-background flex items-center justify-center p-6 selection:bg-primary/20 selection:text-primary">
       {/* Floating Theme Toggle */}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="absolute top-5 right-5 sm:top-6 sm:right-6 flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 bg-card/80 backdrop-blur-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all shadow-xs text-xs font-medium cursor-pointer group"
-        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-      >
-        {isDark ? (
-          <>
-            <Sun size={16} className="text-amber-400 group-hover:rotate-45 transition-transform" />
-            <span>Light Mode</span>
-          </>
-        ) : (
-          <>
-            <Moon size={16} className="text-foreground group-hover:-rotate-12 transition-transform" />
-            <span>Dark Mode</span>
-          </>
-        )}
-      </button>
+      <div className="absolute top-5 right-5 sm:top-6 sm:right-6">
+        <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} side="left">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border/60 bg-card/80 backdrop-blur-md hover:bg-muted text-muted-foreground hover:text-foreground transition-all shadow-xs text-xs font-medium cursor-pointer group"
+          >
+            {isDark ? (
+              <>
+                <Sun size={16} className="text-amber-400 group-hover:rotate-45 transition-transform" />
+                <span>Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon size={16} className="text-foreground group-hover:-rotate-12 transition-transform" />
+                <span>Dark Mode</span>
+              </>
+            )}
+          </button>
+        </Tooltip>
+      </div>
 
       <div className="w-full max-w-md animate-in fade-in-50 duration-300">
         <div className="mb-8 flex flex-col items-center text-center">

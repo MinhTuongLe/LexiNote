@@ -9,7 +9,8 @@ import {
   useToggleEmailVerifiedMutation,
   useGetUserSessionsQuery,
   useRevokeUserSessionMutation,
-  useRevokeAllUserSessionsMutation
+  useRevokeAllUserSessionsMutation,
+  useResetUserPasswordMutation
 } from '@/store/api/usersApi';
 import { 
   Mail, 
@@ -21,9 +22,12 @@ import {
   Sparkles,
   Layers,
   LogOut,
-  Globe
+  Globe,
+  Key
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import ConfirmModal from '@/components/ui/ConfirmModal';
+import Tooltip from '@/components/ui/Tooltip';
 
 export interface UserWordReview {
   correctCount: number;
@@ -78,6 +82,8 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
   const [toggleVerify, { isLoading: isTogglingVerify }] = useToggleEmailVerifiedMutation();
   const [revokeSession] = useRevokeUserSessionMutation();
   const [revokeAllSessions, { isLoading: isRevokingAll }] = useRevokeAllUserSessionsMutation();
+  const [resetPassword, { isLoading: isResettingPassword }] = useResetUserPasswordMutation();
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   if (!isOpen || !userId) return null;
 
@@ -122,6 +128,20 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       refetchSessions();
     } catch {
       toast({ type: 'error', title: 'Revoke Failed', message: 'Could not terminate user sessions.' });
+    }
+  };
+
+  const handleConfirmResetPassword = async () => {
+    try {
+      await resetPassword(userId).unwrap();
+      toast.success(
+        'Đã Reset Mật Khẩu!',
+        'Mật khẩu mặc định của người dùng đã đặt về 123456. Tất cả phiên làm việc đã bị hủy.'
+      );
+      refetch();
+      if (activeTab === 'sessions') refetchSessions();
+    } catch {
+      toast.error('Reset Thất Bại', 'Không thể đặt lại mật khẩu người dùng.');
     }
   };
 
@@ -204,6 +224,19 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   <ShieldCheck size={12} />
                   {user.isEmailVerified ? 'Verified' : 'Unverified'}
                 </Button>
+
+                <Tooltip content="Set default password to 123456 & force logout" side="top">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-amber-500/30 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10"
+                    onClick={() => setIsResetConfirmOpen(true)}
+                    disabled={isResettingPassword}
+                  >
+                    <Key size={12} />
+                    Reset Password (123456)
+                  </Button>
+                </Tooltip>
               </div>
             </div>
 
@@ -423,6 +456,17 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
           </>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={isResetConfirmOpen}
+        onClose={() => setIsResetConfirmOpen(false)}
+        onConfirm={handleConfirmResetPassword}
+        title="Reset Mật Khẩu Người Dùng"
+        description={`Bạn có chắc chắn muốn reset mật khẩu của ${user?.fullName || 'người dùng này'} về mật khẩu mặc định (123456)? Tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
+        confirmText="Reset Về 123456"
+        variant="warning"
+        isLoading={isResettingPassword}
+      />
     </ReModal>
   );
 };

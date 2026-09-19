@@ -21,6 +21,7 @@ import {
   useDeleteArchiveRecordMutation 
 } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
+import Tooltip from '@/components/ui/Tooltip';
 
 export interface ArchiveRecordItem {
   id: number;
@@ -232,25 +233,31 @@ const TrashPage: React.FC = () => {
                           >
                             <Eye size={12} /> Inspect
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleRestore(arch.id)}
-                            disabled={isRestoring}
-                            className="h-7 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-semibold"
-                          >
-                            <RotateCcw size={12} /> Restore
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handlePermanentDelete(arch.id)}
-                            disabled={isDeleting}
-                            className="h-7 text-xs text-rose-500 hover:bg-rose-500/10"
-                            title="Permanently Purge"
-                          >
-                            <Trash2 size={12} />
-                          </Button>
+                          <div className="flex justify-end gap-1">
+                            <Tooltip content="Restore Record to Database" side="top">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRestore(arch.id)}
+                                disabled={isRestoring}
+                                className="h-7 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-semibold"
+                              >
+                                <RotateCcw size={12} /> Restore
+                              </Button>
+                            </Tooltip>
+
+                            <Tooltip content="Permanently Delete Record" side="top">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handlePermanentDelete(arch.id)}
+                                disabled={isDeleting}
+                                className="h-7 text-xs text-rose-500 hover:bg-rose-500/10"
+                              >
+                                <Trash2 size={12} />
+                              </Button>
+                            </Tooltip>
+                          </div>
                         </div>
                       </TableCell>
                     </TableRow>

@@ -7,7 +7,8 @@ import {
   Trash2, 
   Edit2,
   ShieldCheck,
-  BadgeCheck
+  BadgeCheck,
+  Key
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,8 @@ import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
 import { UserDetailModal } from './UserDetailModal';
 import { useNavigate } from 'react-router-dom';
+import { useResetUserPasswordMutation } from '@/store/api/usersApi';
+import Tooltip from '@/components/ui/Tooltip';
 
 const UserManagementPage: React.FC = () => {
   const navigate = useNavigate();
@@ -54,6 +57,21 @@ const UserManagementPage: React.FC = () => {
   const [selectedUser, setSelectedUser] = React.useState<DashboardUserItem | null>(null);
 
   const [roleConfirmUser, setRoleConfirmUser] = React.useState<DashboardUserItem | null>(null);
+  const [resetConfirmUser, setResetConfirmUser] = React.useState<DashboardUserItem | null>(null);
+  const [resetPassword, { isLoading: isResettingPassword }] = useResetUserPasswordMutation();
+
+  const handleConfirmResetPassword = async () => {
+    if (!resetConfirmUser) return;
+    try {
+      await resetPassword(resetConfirmUser.id).unwrap();
+      toast.success(
+        'Đã Reset Mật Khẩu!',
+        `Mật khẩu mặc định của ${resetConfirmUser.fullName} đã chuyển về 123456. Các phiên làm việc hiện tại đã bị thu hồi.`
+      );
+    } catch {
+      toast.error('Reset Thất Bại', 'Không thể đặt lại mật khẩu người dùng.');
+    }
+  };
 
   const onToggleRole = (user: DashboardUserItem) => {
     setRoleConfirmUser(user);
@@ -354,9 +372,11 @@ const UserManagementPage: React.FC = () => {
                               {user.fullName}
                             </span>
                             {user.isEmailVerified && (
-                              <span title="Verified Email Account" className="inline-flex items-center">
-                                <BadgeCheck size={14} className="text-emerald-500 shrink-0" />
-                              </span>
+                              <Tooltip content="Verified Email Account" side="top">
+                                <span className="inline-flex items-center">
+                                  <BadgeCheck size={14} className="text-emerald-500 shrink-0" />
+                                </span>
+                              </Tooltip>
                             )}
                           </div>
                           <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
@@ -364,17 +384,18 @@ const UserManagementPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell className="px-6 py-3.5">
-                      <button
-                        onClick={() => onToggleRole(user)}
-                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md hover:opacity-80 transition-all ${
-                          user.role === 'ADMIN' 
-                            ? 'bg-primary/15 text-primary border border-primary/30 font-bold' 
-                            : 'bg-muted text-muted-foreground border border-border/60'
-                        }`}
-                        title="Click to toggle user role (ADMIN / MEMBER)"
-                      >
-                        {user.role || 'MEMBER'}
-                      </button>
+                      <Tooltip content={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`} side="top">
+                        <button
+                          onClick={() => onToggleRole(user)}
+                          className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md hover:opacity-80 transition-all cursor-pointer ${
+                            user.role === 'ADMIN' 
+                              ? 'bg-primary/15 text-primary border border-primary/30 font-bold' 
+                              : 'bg-muted text-muted-foreground border border-border/60'
+                          }`}
+                        >
+                          {user.role || 'MEMBER'}
+                        </button>
+                      </Tooltip>
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-center">
                       <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold ${
@@ -394,59 +415,77 @@ const UserManagementPage: React.FC = () => {
                     </TableCell>
                     <TableCell className="px-6 py-3.5 text-right">
                       <div className="flex justify-end gap-1">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
-                            setInspectUserId(user.id);
-                            setIsDetailModalOpen(true);
-                          }}
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="Inspect User Details & SRS Progress"
-                        >
-                          <Eye size={14} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setEditUserData({ fullName: user.fullName });
-                            setIsEditModalOpen(true);
-                          }}
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="Edit User"
-                        >
-                          <Edit2 size={14} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={async () => {
-                            await handleToggleStatus(user.id);
-                            toast({ type: 'success', title: 'Status Updated', message: `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.` });
-                          }}
-                          className={`h-7 w-7 ${
-                            user.isActive 
-                              ? 'text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10' 
-                              : 'text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10'
-                          }`}
-                          title="Toggle Status"
-                        >
-                          <ShieldCheck size={14} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          title="Delete User"
-                        >
-                          <Trash2 size={14} />
-                        </Button>
+                        <Tooltip content="Inspect Details & SRS Progress" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              setInspectUserId(user.id);
+                              setIsDetailModalOpen(true);
+                            }}
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            <Eye size={14} />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Reset Password to 123456" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => setResetConfirmUser(user)}
+                            className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
+                          >
+                            <Key size={14} />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Edit User Profile" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setEditUserData({ fullName: user.fullName });
+                              setIsEditModalOpen(true);
+                            }}
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            <Edit2 size={14} />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content={user.isActive ? "Deactivate User" : "Activate User"} side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={async () => {
+                              await handleToggleStatus(user.id);
+                              toast({ type: 'success', title: 'Status Updated', message: `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.` });
+                            }}
+                            className={`h-7 w-7 ${
+                              user.isActive 
+                                ? 'text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10' 
+                                : 'text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10'
+                            }`}
+                          >
+                            <ShieldCheck size={14} />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Delete User" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => {
+                              setSelectedUser(user);
+                              setIsDeleteModalOpen(true);
+                            }}
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </Tooltip>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -519,6 +558,17 @@ const UserManagementPage: React.FC = () => {
         description={`Are you sure you want to change ${roleConfirmUser?.fullName || 'this user'}'s role to ${roleConfirmUser?.role === 'ADMIN' ? 'MEMBER' : 'ADMIN'}?`}
         confirmText="Change Role"
         variant="warning"
+      />
+
+      <ConfirmModal
+        isOpen={!!resetConfirmUser}
+        onClose={() => setResetConfirmUser(null)}
+        onConfirm={handleConfirmResetPassword}
+        title="Reset Mật Khẩu Người Dùng"
+        description={`Bạn có chắc chắn muốn reset mật khẩu của ${resetConfirmUser?.fullName || 'người dùng này'} về 123456? Tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
+        confirmText="Reset Về 123456"
+        variant="warning"
+        isLoading={isResettingPassword}
       />
     </div>
   );

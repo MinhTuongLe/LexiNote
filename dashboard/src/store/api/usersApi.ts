@@ -141,6 +141,13 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Users'],
     }),
+    resetUserPassword: builder.mutation<{ message: string; defaultPassword?: string; revokedSessionsCount?: number }, number>({
+      query: (id) => ({
+        url: `/management/users/${id}/reset-password`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, id) => ['Users', { type: 'Users', id }, { type: 'Users', id: `sessions-${id}` }],
+    }),
   }),
 });
 
@@ -156,4 +163,5 @@ export const {
   useRevokeUserSessionMutation,
   useRevokeAllUserSessionsMutation,
   useUpdateUserRoleMutation,
+  useResetUserPasswordMutation,
 } = usersApi;

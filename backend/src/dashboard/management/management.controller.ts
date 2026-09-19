@@ -43,8 +43,14 @@ export class ManagementController {
 
   @Post('users')
   @ApiOperation({ summary: 'Create new user' })
-  async createUser(@Body() body: { fullName: string; email: string }) {
+  async createUser(@Body() body: { fullName: string; email: string; password?: string; role?: Role }) {
     return this.managementService.createUser(body);
+  }
+
+  @Post('users/:id/reset-password')
+  @ApiOperation({ summary: 'Reset user password to default (123456) and revoke active sessions' })
+  async resetPassword(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.resetPassword(id);
   }
 
   @Get('users/:id')
@@ -65,7 +71,7 @@ export class ManagementController {
   @ApiOperation({ summary: 'Update user data' })
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { fullName?: string; email?: string },
+    @Body() body: { fullName?: string; email?: string; role?: Role; isActive?: boolean },
   ) {
     return this.managementService.update(id, body);
   }

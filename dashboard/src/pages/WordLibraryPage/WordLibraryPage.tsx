@@ -23,6 +23,7 @@ import { useWords } from './useWords';
 import ReModal from '@/components/ui/ReModal';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/Toast';
+import Tooltip from '@/components/ui/Tooltip';
 import type { Word } from '@/store/api/wordsApi';
 
 const WordLibraryPage: React.FC = () => {
@@ -462,37 +463,42 @@ const WordLibraryPage: React.FC = () => {
                       </div>
                       
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => { e.stopPropagation(); handleRelationTrigger(word); }}
-                          className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                          title="Manage Relations (Synonyms/Antonyms)"
-                        >
-                          <Tag size={13}/>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => { e.stopPropagation(); handleEditTrigger(word); }}
-                          className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          title="Edit Meaning & Example"
-                        >
-                          <Edit2 size={13}/>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => { 
-                            e.stopPropagation(); 
-                            setEditingWord(word);
-                            setIsDeleteModalOpen(true);
-                          }}
-                          title="Delete Word"
-                        >
-                          <Trash2 size={13}/>
-                        </Button>
+                        <Tooltip content="Manage Relations (Synonyms/Antonyms)" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => { e.stopPropagation(); handleRelationTrigger(word); }}
+                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          >
+                            <Tag size={13}/>
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Edit Meaning & Example" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => { e.stopPropagation(); handleEditTrigger(word); }}
+                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          >
+                            <Edit2 size={13}/>
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Delete Word" side="top">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setEditingWord(word);
+                              setIsDeleteModalOpen(true);
+                            }}
+                          >
+                            <Trash2 size={13}/>
+                          </Button>
+                        </Tooltip>
                       </div>
                     </div>
 

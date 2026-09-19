@@ -22,6 +22,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../store';
 import { logout } from '../store/slices/authSlice';
 import { useTheme } from '../context/ThemeContext';
+import { Tooltip } from '../components/ui/Tooltip';
 
 const AdminLayout: React.FC = () => {
   const navigate = useNavigate();
@@ -253,22 +254,24 @@ const AdminLayout: React.FC = () => {
           
           <div className="flex items-center gap-2.5">
             {/* Theme Toggle (Dark / Light) */}
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
-              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            >
-              {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
-            </button>
+            <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} side="bottom">
+              <button
+                onClick={toggleTheme}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+              >
+                {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
+              </button>
+            </Tooltip>
 
             {/* Settings Quick Access */}
-            <button 
-              onClick={() => navigate('/dashboard/settings')}
-              className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all"
-              title="Settings"
-            >
-              <Settings size={17} />
-            </button>
+            <Tooltip content="System Settings" side="bottom">
+              <button 
+                onClick={() => navigate('/dashboard/settings')}
+                className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+              >
+                <Settings size={17} />
+              </button>
+            </Tooltip>
 
             <div className="h-5 w-px bg-border/80 mx-1 hidden sm:block"></div>
 

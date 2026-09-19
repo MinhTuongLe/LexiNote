@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { Prisma, Role } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class ManagementService {
@@ -218,22 +219,69 @@ export class ManagementService {
     return updated;
   }
 
-  async createUser(data: { fullName: string; email: string }) {
+  async createUser(data: { fullName: string; email: string; password?: string; role?: Role }) {
+    const rawPassword = data.password || '123456';
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(rawPassword, salt);
+
     const user = await this.prisma.user.create({
       data: {
-        ...data,
-        password: 'hashed_password_placeholder',
-        role: 'MEMBER',
+        fullName: data.fullName,
+        email: data.email,
+        password: hashedPassword,
+        role: data.role || 'MEMBER',
         isActive: true,
+        isEmailVerified: true,
       },
     });
+
     await this.auditService.logAction({
       action: 'USER_CREATE',
       targetType: 'USER',
       targetId: String(user.id),
-      details: { email: user.email, fullName: user.fullName },
+      details: { email: user.email, fullName: user.fullName, role: user.role },
     });
+
     return user;
+  }
+
+  async resetPassword(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const defaultPassword = '123456';
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(defaultPassword, salt);
+
+    // Update password
+    await this.prisma.user.update({
+      where: { id },
+      data: { password: hashedPassword },
+    });
+
+    // Revoke all active sessions / refresh tokens
+    const revoked = await this.prisma.refreshToken.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.auditService.logAction({
+      action: 'USER_RESET_PASSWORD',
+      targetType: 'USER',
+      targetId: String(id),
+      details: {
+        email: user.email,
+        defaultPasswordSet: true,
+        revokedSessionsCount: revoked.count,
+      },
+    });
+
+    return {
+      message: 'Password reset successfully to default (123456). Active sessions revoked.',
+      defaultPassword,
+      revokedSessionsCount: revoked.count,
+    };
   }
 
   async toggleStatus(id: number) {
