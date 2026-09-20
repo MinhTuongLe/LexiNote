@@ -32,12 +32,16 @@ export class MailService {
   private fallbackSslTransporter: nodemailer.Transporter | null = null;
   private fromEmail: string;
   private resendApiKey: string | null = null;
+  private brevoApiKey: string | null = null;
   private smtpHost = '';
   private smtpPort = 587;
 
   constructor(private configService: ConfigService) {
     const rawResendKey = this.configService.get<string>('RESEND_API_KEY');
     this.resendApiKey = rawResendKey ? rawResendKey.trim() : null;
+
+    const rawBrevoKey = this.configService.get<string>('BREVO_API_KEY');
+    this.brevoApiKey = rawBrevoKey ? rawBrevoKey.trim() : null;
 
     this.smtpHost = this.configService.get<string>('SMTP_HOST') || '';
     this.smtpPort = Number(this.configService.get<number | string>('SMTP_PORT', 587));
@@ -54,7 +58,9 @@ export class MailService {
       ? rawFrom.replace(/^['"]+|['"]+$/g, '')
       : '"LexiNote App" <onboarding@resend.dev>';
 
-    if (this.resendApiKey) {
+    if (this.brevoApiKey) {
+      this.logger.log(`🚀 MailService initialized with Brevo HTTPS API (300 mails/day to any recipient over Port 443)`);
+    } else if (this.resendApiKey) {
       this.logger.log(`🚀 MailService initialized with Resend HTTPS API (Port 443 - Bypasses Cloud SMTP restrictions)`);
     } else if (host && user && pass) {
       const transportOptions: SMTPTransport.Options = {
@@ -92,13 +98,51 @@ export class MailService {
       }
     } else {
       this.logger.warn(
-        `⚠️ SMTP / Resend configuration missing. Email service will operate in CONSOLE LOG fallback mode.`,
+        `⚠️ SMTP / Resend / Brevo configuration missing. Email service will operate in CONSOLE LOG fallback mode.`,
       );
     }
   }
 
   async sendMail(to: string, subject: string, html: string, text?: string): Promise<boolean> {
-    // 1. Try Resend HTTPS API first (Bypasses Render/Cloud SMTP port blocks)
+    // 1. Try Brevo HTTPS API first (Allows sending to ANY email recipient without domain verification, 300 mails/day)
+    if (this.brevoApiKey) {
+      try {
+        const match = this.fromEmail.match(/<([^>]+)>/);
+        const senderEmail = (this.configService.get<string>('SMTP_USER') || (match ? match[1] : null) || 'leminhtuong091202@gmail.com').trim();
+
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            'api-key': this.brevoApiKey,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: 'LexiNote App',
+              email: senderEmail,
+            },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+            textContent: text || html.replace(/<[^>]*>?/gm, ''),
+          }),
+        });
+
+        if (response.ok) {
+          this.logger.log(`📧 Email sent successfully via Brevo HTTPS API to ${to} (Subject: "${subject}")`);
+          return true;
+        } else {
+          const errData = (await response.json().catch(() => ({}))) as { message?: string };
+          this.logger.error(`❌ Brevo API Error: ${JSON.stringify(errData)}`);
+        }
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        this.logger.error(`❌ Brevo API Request Failed: ${error?.message}`);
+      }
+    }
+
+    // 2. Try Resend HTTPS API
     if (this.resendApiKey) {
       try {
         let resendFrom = this.fromEmail;
@@ -130,8 +174,18 @@ export class MailService {
           return true;
         }
 
-        // If domain restriction error occurs, auto-fallback to onboarding@resend.dev
-        const errData = (await response.json().catch(() => ({}))) as { message?: string };
+        // Handle Resend error response
+        const errData = (await response.json().catch(() => ({}))) as { statusCode?: number; message?: string; name?: string };
+
+        if (errData.statusCode === 403 || errData.message?.includes('testing emails')) {
+          this.logger.warn(
+            `⚠️ Resend Free Tier restriction: ${errData.message}\n` +
+            `👉 NOTE: Resend (unverified domain) ONLY allows sending to your owner email. For testing with other email accounts, use BREVO_API_KEY or verify a domain at resend.com/domains.`,
+          );
+          this.logFallback(to, subject, html);
+          return false;
+        }
+
         this.logger.warn(`⚠️ Resend API initial attempt failed: ${JSON.stringify(errData)}`);
 
         if (resendFrom !== 'LexiNote App <onboarding@resend.dev>') {
