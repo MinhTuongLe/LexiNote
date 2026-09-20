@@ -52,7 +52,7 @@ export class MailService {
     const rawFrom = this.configService.get<string>('MAIL_FROM');
     this.fromEmail = rawFrom
       ? rawFrom.replace(/^['"]+|['"]+$/g, '')
-      : '"LexiNote App" <leminhtuong091202@gmail.com>';
+      : '"LexiNote App" <mt09122002@gmail.com>';
 
     if (this.brevoApiKey) {
       this.logger.log(`🚀 MailService initialized with Brevo HTTPS API (Port 443 - Unrestricted delivery)`);
@@ -101,42 +101,61 @@ export class MailService {
     if (this.brevoApiKey) {
       try {
         let senderName = 'LexiNote App';
-        let senderEmail = (this.configService.get<string>('SENDER_EMAIL') || 'leminhtuong091202@gmail.com').trim();
+        let senderEmail = (this.configService.get<string>('SENDER_EMAIL') || 'mt09122002@gmail.com').trim();
 
-        const match = this.fromEmail.match(/^"?([^"<]+)"?\s*<([^>]+)>/);
-        if (match) {
-          if (match[1]?.trim()) senderName = match[1].trim();
-          if (match[2]?.trim()) senderEmail = match[2].trim();
-        } else if (this.fromEmail.includes('@')) {
-          senderEmail = this.fromEmail.replace(/["'\s]/g, '');
+        if (this.configService.get<string>('MAIL_FROM')) {
+          const match = this.fromEmail.match(/^"?([^"<]+)"?\s*<([^>]+)>/);
+          if (match) {
+            if (match[1]?.trim()) senderName = match[1].trim();
+            if (match[2]?.trim()) senderEmail = match[2].trim();
+          } else if (this.fromEmail.includes('@')) {
+            senderEmail = this.fromEmail.replace(/["'\s]/g, '');
+          }
         }
 
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            accept: 'application/json',
-            'api-key': this.brevoApiKey,
-            'content-type': 'application/json',
-          },
-          body: JSON.stringify({
-            sender: {
-              name: senderName,
-              email: senderEmail,
+        const sendBrevo = async (email: string) => {
+          return fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+              accept: 'application/json',
+              'api-key': this.brevoApiKey || '',
+              'content-type': 'application/json',
             },
-            to: [{ email: to }],
-            subject,
-            htmlContent: html,
-            textContent: text || html.replace(/<[^>]*>?/gm, ''),
-          }),
-        });
+            body: JSON.stringify({
+              sender: {
+                name: senderName,
+                email,
+              },
+              to: [{ email: to }],
+              subject,
+              htmlContent: html,
+              textContent: text || html.replace(/<[^>]*>?/gm, ''),
+            }),
+          });
+        };
+
+        let response = await sendBrevo(senderEmail);
 
         if (response.ok) {
           this.logger.log(`📧 Email sent successfully via Brevo HTTPS API to ${to} (Subject: "${subject}")`);
           return true;
-        } else {
-          const errData = (await response.json().catch(() => ({}))) as { message?: string };
-          this.logger.error(`❌ Brevo API Error: ${JSON.stringify(errData)}`);
         }
+
+        const errData = (await response.json().catch(() => ({}))) as { message?: string; code?: string };
+        this.logger.error(`❌ Brevo API Error (${response.status}): ${JSON.stringify(errData)}`);
+
+        // If sender email is rejected, retry with alternative sender email
+        const altEmail = senderEmail === 'mt09122002@gmail.com' ? 'leminhtuong091202@gmail.com' : 'mt09122002@gmail.com';
+        this.logger.warn(`🔄 Retrying Brevo API with alternative sender "${altEmail}"...`);
+
+        response = await sendBrevo(altEmail);
+        if (response.ok) {
+          this.logger.log(`📧 Email sent successfully via Brevo HTTPS API to ${to} using sender "${altEmail}"`);
+          return true;
+        }
+
+        const retryErr = (await response.json().catch(() => ({}))) as { message?: string };
+        this.logger.error(`❌ Brevo API Retry Error (${response.status}): ${JSON.stringify(retryErr)}`);
       } catch (err: unknown) {
         const error = err as { message?: string };
         this.logger.error(`❌ Brevo API Request Failed: ${error?.message}`);
