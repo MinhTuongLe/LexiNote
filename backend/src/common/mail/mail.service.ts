@@ -101,7 +101,7 @@ export class MailService {
     if (this.brevoApiKey) {
       try {
         let senderName = 'LexiNote App';
-        let senderEmail = 'leminhtuong091202@gmail.com';
+        let senderEmail = (this.configService.get<string>('SENDER_EMAIL') || 'leminhtuong091202@gmail.com').trim();
 
         const match = this.fromEmail.match(/^"?([^"<]+)"?\s*<([^>]+)>/);
         if (match) {
