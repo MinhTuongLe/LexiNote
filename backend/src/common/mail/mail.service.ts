@@ -31,15 +31,11 @@ export class MailService {
   private transporter: nodemailer.Transporter | null = null;
   private fallbackSslTransporter: nodemailer.Transporter | null = null;
   private fromEmail: string;
-  private resendApiKey: string | null = null;
   private brevoApiKey: string | null = null;
   private smtpHost = '';
   private smtpPort = 587;
 
   constructor(private configService: ConfigService) {
-    const rawResendKey = this.configService.get<string>('RESEND_API_KEY');
-    this.resendApiKey = rawResendKey ? rawResendKey.trim() : null;
-
     const rawBrevoKey = this.configService.get<string>('BREVO_API_KEY');
     this.brevoApiKey = rawBrevoKey ? rawBrevoKey.trim() : null;
 
@@ -56,12 +52,10 @@ export class MailService {
     const rawFrom = this.configService.get<string>('MAIL_FROM');
     this.fromEmail = rawFrom
       ? rawFrom.replace(/^['"]+|['"]+$/g, '')
-      : '"LexiNote App" <onboarding@resend.dev>';
+      : '"LexiNote App" <leminhtuong091202@gmail.com>';
 
     if (this.brevoApiKey) {
-      this.logger.log(`🚀 MailService initialized with Brevo HTTPS API (300 mails/day to any recipient over Port 443)`);
-    } else if (this.resendApiKey) {
-      this.logger.log(`🚀 MailService initialized with Resend HTTPS API (Port 443 - Bypasses Cloud SMTP restrictions)`);
+      this.logger.log(`🚀 MailService initialized with Brevo HTTPS API (Port 443 - Unrestricted delivery)`);
     } else if (host && user && pass) {
       const transportOptions: SMTPTransport.Options = {
         host,
@@ -79,7 +73,6 @@ export class MailService {
       this.transporter = nodemailer.createTransport(transportOptions);
       this.logger.log(`📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`);
 
-      // If primary port is 587 or not 465, create a fallback SSL (Port 465) transporter for Cloud environments (Render/AWS)
       if (port !== 465) {
         const fallbackOptions: SMTPTransport.Options = {
           host: host.includes('gmail') ? 'smtp.gmail.com' : host,
@@ -98,7 +91,7 @@ export class MailService {
       }
     } else {
       this.logger.warn(
-        `⚠️ SMTP / Resend / Brevo configuration missing. Email service will operate in CONSOLE LOG fallback mode.`,
+        `⚠️ BREVO_API_KEY missing. Email service will operate in CONSOLE LOG fallback mode.`,
       );
     }
   }
@@ -107,8 +100,16 @@ export class MailService {
     // 1. Try Brevo HTTPS API first (Allows sending to ANY email recipient without domain verification, 300 mails/day)
     if (this.brevoApiKey) {
       try {
-        const match = this.fromEmail.match(/<([^>]+)>/);
-        const senderEmail = (this.configService.get<string>('SMTP_USER') || (match ? match[1] : null) || 'leminhtuong091202@gmail.com').trim();
+        let senderName = 'LexiNote App';
+        let senderEmail = 'leminhtuong091202@gmail.com';
+
+        const match = this.fromEmail.match(/^"?([^"<]+)"?\s*<([^>]+)>/);
+        if (match) {
+          if (match[1]?.trim()) senderName = match[1].trim();
+          if (match[2]?.trim()) senderEmail = match[2].trim();
+        } else if (this.fromEmail.includes('@')) {
+          senderEmail = this.fromEmail.replace(/["'\s]/g, '');
+        }
 
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
@@ -119,7 +120,7 @@ export class MailService {
           },
           body: JSON.stringify({
             sender: {
-              name: 'LexiNote App',
+              name: senderName,
               email: senderEmail,
             },
             to: [{ email: to }],
@@ -139,68 +140,6 @@ export class MailService {
       } catch (err: unknown) {
         const error = err as { message?: string };
         this.logger.error(`❌ Brevo API Request Failed: ${error?.message}`);
-      }
-    }
-
-    // 2. Try Resend HTTPS API
-    if (this.resendApiKey) {
-      try {
-        let resendFrom = this.fromEmail;
-        if (!resendFrom || resendFrom.includes('@gmail.com')) {
-          resendFrom = 'LexiNote App <onboarding@resend.dev>';
-        }
-
-        const sendWithResend = async (fromSender: string) => {
-          return fetch('https://api.resend.com/emails', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${this.resendApiKey}`,
-            },
-            body: JSON.stringify({
-              from: fromSender,
-              to: [to],
-              subject,
-              html,
-              text: text || html.replace(/<[^>]*>?/gm, ''),
-            }),
-          });
-        };
-
-        let response = await sendWithResend(resendFrom);
-
-        if (response.ok) {
-          this.logger.log(`📧 Email sent successfully via Resend HTTPS API to ${to} (Subject: "${subject}")`);
-          return true;
-        }
-
-        // Handle Resend error response
-        const errData = (await response.json().catch(() => ({}))) as { statusCode?: number; message?: string; name?: string };
-
-        if (errData.statusCode === 403 || errData.message?.includes('testing emails')) {
-          this.logger.warn(
-            `⚠️ Resend Free Tier restriction: ${errData.message}\n` +
-            `👉 NOTE: Resend (unverified domain) ONLY allows sending to your owner email. For testing with other email accounts, use BREVO_API_KEY or verify a domain at resend.com/domains.`,
-          );
-          this.logFallback(to, subject, html);
-          return false;
-        }
-
-        this.logger.warn(`⚠️ Resend API initial attempt failed: ${JSON.stringify(errData)}`);
-
-        if (resendFrom !== 'LexiNote App <onboarding@resend.dev>') {
-          this.logger.warn(`🔄 Retrying Resend API with fallback sender "LexiNote App <onboarding@resend.dev>"...`);
-          response = await sendWithResend('LexiNote App <onboarding@resend.dev>');
-          if (response.ok) {
-            this.logger.log(`📧 Email sent successfully via Resend HTTPS API to ${to} using fallback sender`);
-            return true;
-          }
-          const retryErr = await response.json().catch(() => ({}));
-          this.logger.error(`❌ Resend API Fallback Error: ${JSON.stringify(retryErr)}`);
-        }
-      } catch (err: unknown) {
-        const error = err as { message?: string };
-        this.logger.error(`❌ Resend API Request Failed: ${error?.message}`);
       }
     }
 
