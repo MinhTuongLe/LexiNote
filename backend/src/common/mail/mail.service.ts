@@ -101,27 +101,48 @@ export class MailService {
     // 1. Try Resend HTTPS API first (Bypasses Render/Cloud SMTP port blocks)
     if (this.resendApiKey) {
       try {
-        const response = await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${this.resendApiKey}`,
-          },
-          body: JSON.stringify({
-            from: this.fromEmail || 'LexiNote <onboarding@resend.dev>',
-            to: [to],
-            subject,
-            html,
-            text: text || html.replace(/<[^>]*>?/gm, ''),
-          }),
-        });
+        let resendFrom = this.fromEmail;
+        if (!resendFrom || resendFrom.includes('@gmail.com')) {
+          resendFrom = 'LexiNote App <onboarding@resend.dev>';
+        }
+
+        const sendWithResend = async (fromSender: string) => {
+          return fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${this.resendApiKey}`,
+            },
+            body: JSON.stringify({
+              from: fromSender,
+              to: [to],
+              subject,
+              html,
+              text: text || html.replace(/<[^>]*>?/gm, ''),
+            }),
+          });
+        };
+
+        let response = await sendWithResend(resendFrom);
 
         if (response.ok) {
           this.logger.log(`📧 Email sent successfully via Resend HTTPS API to ${to} (Subject: "${subject}")`);
           return true;
-        } else {
-          const errData = (await response.json().catch(() => ({}))) as { message?: string };
-          this.logger.error(`❌ Resend API Error: ${JSON.stringify(errData)}`);
+        }
+
+        // If domain restriction error occurs, auto-fallback to onboarding@resend.dev
+        const errData = (await response.json().catch(() => ({}))) as { message?: string };
+        this.logger.warn(`⚠️ Resend API initial attempt failed: ${JSON.stringify(errData)}`);
+
+        if (resendFrom !== 'LexiNote App <onboarding@resend.dev>') {
+          this.logger.warn(`🔄 Retrying Resend API with fallback sender "LexiNote App <onboarding@resend.dev>"...`);
+          response = await sendWithResend('LexiNote App <onboarding@resend.dev>');
+          if (response.ok) {
+            this.logger.log(`📧 Email sent successfully via Resend HTTPS API to ${to} using fallback sender`);
+            return true;
+          }
+          const retryErr = await response.json().catch(() => ({}));
+          this.logger.error(`❌ Resend API Fallback Error: ${JSON.stringify(retryErr)}`);
         }
       } catch (err: unknown) {
         const error = err as { message?: string };
