@@ -42,7 +42,9 @@ async function bootstrap() {
   await app.register(compression, { encodings: ['gzip', 'deflate'] });
 
   // 🛡️ Security: Add Helmet headers (HSTS, CSP, XSS protection, etc.)
-  // await app.register(helmet, { ... });
+  await app.register(helmet, {
+    contentSecurityPolicy: false,
+  });
 
   const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
