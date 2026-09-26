@@ -113,6 +113,37 @@ export class AuditService {
     };
   }
 
+  async exportAuditLogs(search?: string, action?: string) {
+    const where: Prisma.AuditLogWhereInput = {};
+    if (search) {
+      where.OR = [
+        { actorEmail: { contains: search, mode: 'insensitive' } },
+        { action: { contains: search, mode: 'insensitive' } },
+        { targetId: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    if (action && action !== 'ALL') where.action = action;
+
+    const logs = await this.prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return logs.map((log) => ({
+      id: log.id,
+      actorId: log.actorId,
+      actorEmail: log.actorEmail,
+      action: log.action,
+      targetType: log.targetType,
+      targetId: log.targetId,
+      details: log.details,
+      ipAddress: log.ipAddress,
+      createdAt: log.createdAt
+        ? new Date(Number(log.createdAt)).toISOString()
+        : null,
+    }));
+  }
+
   async getArchiveLogs(page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const [archives, total] = await Promise.all([

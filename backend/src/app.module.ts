@@ -15,6 +15,7 @@ import { DashboardWordsModule } from './dashboard/words/words.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 import { AuditModule } from './dashboard/audit/audit.module';
+import { ModerationModule } from './dashboard/moderation/moderation.module';
 
 import { MailModule } from './common/mail/mail.module';
 
@@ -38,6 +39,7 @@ import { MailModule } from './common/mail/mail.module';
     DashboardWordsModule,
     DashboardConfigModule,
     AuditModule,
+    ModerationModule,
     MetaModule,
     ThrottlerModule.forRoot([
       {
@@ -66,6 +68,7 @@ import { MailModule } from './common/mail/mail.module';
           { path: '/', module: DashboardWordsModule },
           { path: '/', module: DashboardConfigModule },
           { path: '/', module: AuditModule },
+          { path: '/', module: ModerationModule },
         ],
       },
     ]),

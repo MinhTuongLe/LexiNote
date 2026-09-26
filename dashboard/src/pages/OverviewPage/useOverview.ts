@@ -5,11 +5,12 @@ import {
   Activity, 
   TrendingUp 
 } from 'lucide-react';
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 export function useOverview() {
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('7d');
   const { data: stats, isLoading: isSummaryLoading, error: summaryError } = useGetSummaryQuery();
-  const { data: chartData, isLoading: isChartLoading, error: chartError } = useGetChartDataQuery();
+  const { data: chartData, isLoading: isChartLoading, error: chartError } = useGetChartDataQuery({ range: timeRange });
 
   const formatNumber = (num?: number | string | null) => {
     if (num == null) return '0';
@@ -33,7 +34,7 @@ export function useOverview() {
       change: String(stats?.wordChange || '+5.2%'), 
       icon: BookOpen, 
       theme: '#10b981', 
-      bg: 'rgba(168, 85, 247, 0.12)',
+      bg: 'rgba(16, 185, 129, 0.12)',
       textColor: 'text-emerald-600 dark:text-emerald-400',
       bgColor: 'bg-emerald-500/10'
     },
@@ -62,7 +63,10 @@ export function useOverview() {
   return {
     kpis,
     srsStats: stats?.srsStats,
+    rawStats: stats,
     chartData: chartData || [],
+    timeRange,
+    setTimeRange,
     isLoading: isSummaryLoading || isChartLoading,
     error: summaryError || chartError
   };

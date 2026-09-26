@@ -97,6 +97,39 @@ export const wordsApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Words'],
     }),
+    importWords: builder.mutation<{ success: boolean; importedCount: number }, { rawWords: string; type?: string; autoEnrich?: boolean }>({
+      query: (data) => ({
+        url: '/words/import',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['Words', 'Stats'],
+    }),
+    getPendingModerationWords: builder.query<
+      WordListResponse,
+      { page?: number; limit?: number; search?: string; reason?: string }
+    >({
+      query: (params) => ({
+        url: '/moderation/pending',
+        params,
+      }),
+      providesTags: ['Words'],
+    }),
+    approveWord: builder.mutation<{ success: boolean; wordId: number }, number>({
+      query: (id) => ({
+        url: `/moderation/${id}/approve`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Words', 'Stats'],
+    }),
+    batchApproveWords: builder.mutation<{ success: boolean; approvedCount: number }, number[]>({
+      query: (wordIds) => ({
+        url: '/moderation/batch-approve',
+        method: 'POST',
+        body: { wordIds },
+      }),
+      invalidatesTags: ['Words', 'Stats'],
+    }),
   }),
 });
 
@@ -105,5 +138,9 @@ export const {
   useDeleteWordMutation,
   useUpdateWordMutation,
   useAddWordRelationMutation,
-  useDeleteWordRelationMutation
+  useDeleteWordRelationMutation,
+  useImportWordsMutation,
+  useGetPendingModerationWordsQuery,
+  useApproveWordMutation,
+  useBatchApproveWordsMutation,
 } = wordsApi;

@@ -11,6 +11,17 @@ enum Role {
   ADMIN
 }
 
+enum ModerationStatus {
+  APPROVED
+  PENDING
+}
+
+enum ModerationFlagReason {
+  MISSING_EXAMPLE
+  SHORT_MEANING
+  FLAGGED
+}
+
 model User {
   id                       Int      @id @default(autoincrement())
   email                    String   @unique
@@ -42,6 +53,8 @@ model Word {
   example     String?
   type        String   @default("noun")
   ownerId     Int      @map("owner")
+  moderationStatus ModerationStatus     @default(APPROVED) @map("moderation_status")
+  flagReason       ModerationFlagReason? @map("flag_reason")
   createdAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
   updatedAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
 

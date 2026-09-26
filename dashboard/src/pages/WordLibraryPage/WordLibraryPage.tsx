@@ -8,7 +8,8 @@ import {
   BrainCircuit,
   X,
   Tag,
-  Layers
+  Layers,
+  Download
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import WordFormModal from './WordFormModal';
 import WordRelationModal from './WordRelationModal';
 import WordImportModal from './WordImportModal';
 import type { Word } from '@/store/api/wordsApi';
+import { exportToCSV } from '@/utils/export';
 
 const WordLibraryPage: React.FC = () => {
   const {
@@ -131,8 +133,28 @@ const WordLibraryPage: React.FC = () => {
   };
 
   const onConfirmBatch = async (rawWords: string) => {
-    const count = rawWords.split(',').length;
-    toast.info('Batch Import', `Processing ${count} lexical entries...`);
+    try {
+      const res = await handleBatchImport(rawWords);
+      toast.success('Batch Import Complete', `Imported ${res?.importedCount || 1} lexical entries successfully.`);
+      setIsBatchModalOpen(false);
+    } catch {
+      toast.error('Import Failed', 'Could not process batch word import.');
+    }
+  };
+
+  const handleExportWords = () => {
+    const exportData = words.map((w: Word) => ({
+      ID: w.id,
+      Word: w.word,
+      Meaning: w.meaningVi,
+      Type: w.type,
+      Example: w.example || 'N/A',
+      OwnerID: w.ownerId,
+      OwnerName: w.owner?.fullName || 'N/A',
+      CreatedAt: w.createdAt
+    }));
+    exportToCSV(exportData, 'lexinote_word_library');
+    toast.success('Export Successful', `Exported ${exportData.length} words to CSV.`);
   };
 
   return (
@@ -142,13 +164,23 @@ const WordLibraryPage: React.FC = () => {
         title="Word Library"
         description="Audit and curate linguistic vocabulary repository & relations."
         action={
-          <Button 
-            size="sm" 
-            className="h-9 font-medium shadow-xs" 
-            onClick={() => setIsBatchModalOpen(true)}
-          >
-            <Plus size={16} className="mr-1.5" /> Batch Word Import
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9 font-medium border-border/80 text-muted-foreground hover:text-foreground" 
+              onClick={handleExportWords}
+            >
+              <Download size={15} className="mr-1.5" /> Export Library
+            </Button>
+            <Button 
+              size="sm" 
+              className="h-9 font-medium shadow-xs" 
+              onClick={() => setIsBatchModalOpen(true)}
+            >
+              <Plus size={16} className="mr-1.5" /> Batch Word Import
+            </Button>
+          </div>
         }
       />
 

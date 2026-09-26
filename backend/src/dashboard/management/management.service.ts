@@ -67,6 +67,58 @@ export class ManagementService {
     };
   }
 
+  async exportUsers(isActive?: boolean, role?: Role) {
+    const where: Prisma.UserWhereInput = {};
+    if (isActive !== undefined) where.isActive = isActive;
+    if (role) where.role = role;
+
+    const users = await this.prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        isActive: true,
+        isEmailVerified: true,
+        createdAt: true,
+        words: {
+          select: {
+            reviews: {
+              select: { correctCount: true, wrongCount: true },
+            },
+          },
+        },
+      },
+    });
+
+    return users.map((user) => {
+      const totalReviews = user.words.reduce(
+        (total, word) =>
+          total +
+          word.reviews.reduce(
+            (wordTotal, review) =>
+              wordTotal + review.correctCount + review.wrongCount,
+            0,
+          ),
+        0,
+      );
+
+      return {
+        id: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        isActive: user.isActive,
+        isEmailVerified: user.isEmailVerified,
+        createdAt: new Date(Number(user.createdAt)).toISOString(),
+        wordCount: user.words.length,
+        reviewsCount: totalReviews,
+      };
+    });
+  }
+
   async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
@@ -206,7 +258,10 @@ export class ManagementService {
       details: { revokedCount: result.count },
     });
     if (user) {
-      await this.mailService.sendSessionsRevokedNotification(user.email, user.fullName);
+      await this.mailService.sendSessionsRevokedNotification(
+        user.email,
+        user.fullName,
+      );
     }
     return result;
   }
@@ -225,7 +280,12 @@ export class ManagementService {
     return updated;
   }
 
-  async createUser(data: { fullName: string; email: string; password?: string; role?: Role }) {
+  async createUser(data: {
+    fullName: string;
+    email: string;
+    password?: string;
+    role?: Role;
+  }) {
     const rawPassword = data.password || '123456';
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(rawPassword, salt);
@@ -298,7 +358,8 @@ export class ManagementService {
     );
 
     return {
-      message: 'Password reset successfully to default (123456). Active sessions revoked.',
+      message:
+        'Password reset successfully to default (123456). Active sessions revoked.',
       defaultPassword,
       revokedSessionsCount: revoked.count,
     };
@@ -380,7 +441,10 @@ export class ManagementService {
     });
 
     if (user) {
-      await this.mailService.sendAccountDeletedNotification(user.email, user.fullName);
+      await this.mailService.sendAccountDeletedNotification(
+        user.email,
+        user.fullName,
+      );
     }
 
     return deleted;
@@ -416,6 +480,10 @@ export class ManagementService {
   }
 
   getMailPreview(type: string, fullName?: string, sampleCodeOrPass?: string) {
-    return this.mailService.getTemplatePreview(type, fullName, sampleCodeOrPass);
+    return this.mailService.getTemplatePreview(
+      type,
+      fullName,
+      sampleCodeOrPass,
+    );
   }
 }

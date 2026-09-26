@@ -9,13 +9,17 @@ import {
   UseGuards,
   Query,
   ParseIntPipe,
+  Res,
 } from '@nestjs/common';
+import { FastifyReply } from 'fastify';
 import { ManagementService } from './management.service';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { toCsv } from '../../common/export/csv.util';
+import { ExportUsersQueryDto } from './dto/export-users-query.dto';
 
 @ApiTags('Dashboard Management')
 @ApiBearerAuth()
@@ -41,14 +45,56 @@ export class ManagementController {
     );
   }
 
+  @Get('users/export')
+  @ApiOperation({ summary: 'Export users and learning statistics' })
+  async exportUsers(
+    @Query() query: ExportUsersQueryDto,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ) {
+    const users = await this.managementService.exportUsers(
+      query.isActive,
+      query.role,
+    );
+    response.header('Content-Type', 'text/csv; charset=utf-8');
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="lexinote_export_users_${Date.now()}.csv"`,
+    );
+    return toCsv(
+      [
+        'id',
+        'email',
+        'fullName',
+        'role',
+        'isActive',
+        'isEmailVerified',
+        'createdAt',
+        'wordCount',
+        'reviewsCount',
+      ],
+      users,
+    );
+  }
+
   @Post('users')
   @ApiOperation({ summary: 'Create new user' })
-  async createUser(@Body() body: { fullName: string; email: string; password?: string; role?: Role }) {
+  async createUser(
+    @Body()
+    body: {
+      fullName: string;
+      email: string;
+      password?: string;
+      role?: Role;
+    },
+  ) {
     return this.managementService.createUser(body);
   }
 
   @Post('users/:id/reset-password')
-  @ApiOperation({ summary: 'Reset user password to default (123456) and revoke active sessions' })
+  @ApiOperation({
+    summary:
+      'Reset user password to default (123456) and revoke active sessions',
+  })
   async resetPassword(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.resetPassword(id);
   }
@@ -71,7 +117,13 @@ export class ManagementController {
   @ApiOperation({ summary: 'Update user data' })
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { fullName?: string; email?: string; role?: Role; isActive?: boolean },
+    @Body()
+    body: {
+      fullName?: string;
+      email?: string;
+      role?: Role;
+      isActive?: boolean;
+    },
   ) {
     return this.managementService.update(id, body);
   }
@@ -123,7 +175,7 @@ export class ManagementController {
 
   @Get('mail-preview')
   @ApiOperation({ summary: 'Get rendered HTML preview of email templates' })
-  async getMailPreview(
+  getMailPreview(
     @Query('type') type?: string,
     @Query('fullName') fullName?: string,
     @Query('code') code?: string,
