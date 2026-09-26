@@ -5,7 +5,7 @@ import Modal from '../components/Modal';
 import WordForm from '../components/WordForm';
 import { 
   Search, Trash2, RotateCcw, CheckSquare, Square, 
-  Pencil, Download, Loader2, Plus, Upload 
+  Pencil, Download, Loader2, Plus, Upload, Volume2 
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import WordImport from '../components/WordImport';
@@ -27,6 +27,7 @@ import SkeletonWordCard from '../components/SkeletonWordCard';
 import type { Word } from '../types';
 import { useTranslation } from 'react-i18next';
 import { WORD_TYPES } from '../constants/wordTypes';
+import { speakText } from '../utils/speech';
 import '../components/Skeleton.css';
 import './Library.css';
 
@@ -347,6 +348,9 @@ const Library: React.FC = () => {
                     </div>
                   </div>
                   <div className="word-card-actions">
+                    <button onClick={(e) => { e.stopPropagation(); speakText(word.word); }} className="icon-btn audio text-primary hover:scale-110" title="Listen to pronunciation">
+                      <Volume2 size={18} />
+                    </button>
                     <button onClick={(e) => { e.stopPropagation(); setEditingWord(word); }} className="icon-btn edit" title="Edit this word">
                       <Pencil size={18} />
                     </button>

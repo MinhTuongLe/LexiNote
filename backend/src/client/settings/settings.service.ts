@@ -15,7 +15,7 @@ export class SettingsService {
     if (!user) throw new NotFoundException('User not found');
 
     const currentSettings =
-      typeof user.settings === 'object' ? user.settings : {};
+      user.settings && typeof user.settings === 'object' ? user.settings : {};
 
     return {
       preferences: {
@@ -27,6 +27,12 @@ export class SettingsService {
       wordTypes: {
         system: VALID_WORD_TYPES,
         custom: currentSettings.wordTypes || [],
+      },
+      audio: {
+        autoSpeak: currentSettings.audio?.autoSpeak ?? true,
+        voiceLang: currentSettings.audio?.voiceLang ?? 'en-US',
+        rate: currentSettings.audio?.rate ?? 1,
+        pitch: currentSettings.audio?.pitch ?? 1,
       },
     };
   }
@@ -40,8 +46,19 @@ export class SettingsService {
     if (!user) throw new NotFoundException('User not found');
 
     const currentSettings =
-      typeof user.settings === 'object' ? user.settings : {};
-    const newSettings = { ...currentSettings, ...settings };
+      user.settings && typeof user.settings === 'object' ? user.settings : {};
+    const newSettings = {
+      ...currentSettings,
+      ...settings,
+      ...(settings.audio
+        ? {
+            audio: {
+              ...(currentSettings.audio || {}),
+              ...settings.audio,
+            },
+          }
+        : {}),
+    };
 
     const updatedUser = (await this.prisma.user.update({
       where: { id: userId },

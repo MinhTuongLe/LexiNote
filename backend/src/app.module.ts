@@ -16,6 +16,8 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 import { AuditModule } from './dashboard/audit/audit.module';
 import { ModerationModule } from './dashboard/moderation/moderation.module';
+import { AchievementModule } from './client/achievement/achievement.module';
+import { GameModule } from './client/game/game.module';
 
 import { MailModule } from './common/mail/mail.module';
 
@@ -32,6 +34,8 @@ import { MailModule } from './common/mail/mail.module';
     WordModule,
     ReviewModule,
     SettingsModule,
+    AchievementModule,
+    GameModule,
     // Dashboard
     AnalyticsModule,
     ManagementModule,
@@ -56,6 +60,8 @@ import { MailModule } from './common/mail/mail.module';
           { path: '/', module: WordModule },
           { path: '/', module: ReviewModule },
           { path: '/', module: SettingsModule },
+          { path: '/', module: AchievementModule },
+          { path: '/', module: GameModule },
           { path: '/', module: MetaModule },
         ],
       },

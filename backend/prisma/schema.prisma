@@ -22,6 +22,10 @@ enum ModerationFlagReason {
   FLAGGED
 }
 
+enum GameType {
+  MATCH_GAME
+}
+
 model User {
   id                       Int      @id @default(autoincrement())
   email                    String   @unique
@@ -42,6 +46,8 @@ model User {
   
   words                    Word[]
   refreshTokens            RefreshToken[]
+  achievementUnlocks       AchievementUnlock[]
+  gameSessions             GameSession[]
 
   @@map("user")
 }
@@ -121,6 +127,35 @@ model RefreshToken {
   @@index([userId])
   @@index([hashedToken])
   @@map("refresh_token")
+}
+
+model AchievementUnlock {
+  id            Int      @id @default(autoincrement())
+  userId        Int      @map("user_id")
+  achievementId String   @map("achievement_id")
+  unlockedAt    BigInt   @default(dbgenerated("extract(epoch from now()) * 1000")) @map("unlocked_at")
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+  @@map("achievement_unlock")
+}
+
+model GameSession {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @map("user_id")
+  gameType          GameType @default(MATCH_GAME) @map("game_type")
+  score             Int
+  timeSpentSeconds  Int      @map("time_spent_seconds")
+  wordIds           Json     @map("word_ids") @db.Json
+  createdAt         BigInt   @default(dbgenerated("extract(epoch from now()) * 1000")) @map("created_at")
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([gameType, createdAt])
+  @@index([userId, gameType, score])
+  @@map("game_session")
 }
 
 model AuditLog {

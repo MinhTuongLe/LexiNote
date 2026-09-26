@@ -313,3 +313,18 @@ The column `(not available)` does not exist in the current database.
     at async a (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:938:24)
     at async Promise.all (index 0)
     at async DashboardWordsService.getAllWords (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:39:28)
+
+[2026-09-26T07:58:31.933Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:39:13)
+    at async AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:40:18)
+
+[2026-09-26T07:59:47.837Z] /api/v1/client/auth/register
+BadRequestException: error.auth.email_exists
+    at AuthService.register (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:114:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-09-26T08:01:21.293Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:39:13)
+    at async AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:40:18)

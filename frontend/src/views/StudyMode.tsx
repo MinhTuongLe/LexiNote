@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { RotateCw, Check, AlertTriangle, Zap, X } from 'lucide-react';
+import { RotateCw, Check, AlertTriangle, Zap, X, Volume2, VolumeX } from 'lucide-react';
 import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
 import { useCuteDialog } from '../context/DialogContext';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../hooks/useSound';
+import { speakText } from '../utils/speech';
 import './StudyMode.css';
 
 interface StudyModeProps {
@@ -18,6 +19,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
   
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const [results, setResults] = useState<{ word: string, rating: string, color: string }[]>([]);
   const [isFinished, setIsFinished] = useState(false);
 
@@ -25,6 +27,16 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
   const [updateSRS] = useUpdateSRSMutation();
   const { showAlert } = useCuteDialog();
   const { t } = useTranslation();
+
+  const currentReview = dueReviews[currentIndex];
+  const word = currentReview && typeof currentReview.word === 'object' ? currentReview.word : null;
+
+  // Auto speak when new card is shown
+  useEffect(() => {
+    if (word && autoSpeak && !isFinished) {
+      speakText(word.word);
+    }
+  }, [currentIndex, word, autoSpeak, isFinished]);
 
   if (isFinished) {
     return (
@@ -66,10 +78,12 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
     );
   }
 
-  const currentReview = dueReviews[currentIndex];
-  const word = typeof currentReview.word === 'object' ? currentReview.word : null;
-
   if (!word) return <div>{t('common.loading')}</div>;
+
+  const handleSpeakWord = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    speakText(word.word);
+  };
 
   const handleRate = async (quality: 1 | 3 | 5) => {
     try {
@@ -111,6 +125,15 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
           ></div>
           <span>{currentIndex + 1} / {dueReviews.length}</span>
         </div>
+
+        <button 
+          className="audio-toggle-btn"
+          onClick={() => setAutoSpeak(!autoSpeak)}
+          title={autoSpeak ? "Auto-pronounce enabled" : "Auto-pronounce disabled"}
+        >
+          {autoSpeak ? <Volume2 size={18} className="text-primary" /> : <VolumeX size={18} className="text-muted" />}
+        </button>
+
         <button className="exit-study-btn" onClick={onComplete} title={t('study.exit_study')}>
           <X size={20} />
         </button>
@@ -126,8 +149,19 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
           {/* Front */}
           <div className="flashcard-face front-face">
             <Card className="flashcard-card">
-              <div className="card-hint">{t('study.front')}</div>
+              <div className="card-top-bar">
+                <span className="card-hint">{t('study.front')}</span>
+                <button 
+                  className="speaker-btn"
+                  onClick={handleSpeakWord}
+                  title="Pronounce word"
+                >
+                  <Volume2 size={22} />
+                </button>
+              </div>
+
               <h1 className="flashcard-word">{word.word}</h1>
+              {word.type && <span className="flashcard-type-tag">{word.type}</span>}
               <div className="tap-hint">{t('study.tap_to_flip')}</div>
             </Card>
           </div>
@@ -135,8 +169,19 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
           {/* Back */}
           <div className="flashcard-face back-face">
             <Card className="flashcard-card">
-              <div className="card-hint">{t('study.back')}</div>
+              <div className="card-top-bar">
+                <span className="card-hint">{t('study.back')}</span>
+                <button 
+                  className="speaker-btn"
+                  onClick={handleSpeakWord}
+                  title="Pronounce word"
+                >
+                  <Volume2 size={22} />
+                </button>
+              </div>
+
               <div className="back-content">
+                <h1 className="back-word-title">{word.word}</h1>
                 <h2 className="back-vi">{word.meaningVi}</h2>
                 {word.example && (
                   <div className="back-example">
