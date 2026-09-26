@@ -253,3 +253,78 @@ UnauthorizedException: Unauthorized
     at attempt (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:378:16)
     at authenticate (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\passport\lib\middleware\authenticate.js:379:7)
     at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\passport\dist\auth.guard.js:88:3
+
+[2026-09-26T05:37:13.136Z] /api/v1/dashboard/words?page=1&search=
+PrismaClientKnownRequestError: 
+Invalid `this.prisma.word.findMany()` invocation in
+D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:40:24
+
+  37 }
+  38 
+  39 const [words, total] = await Promise.all([
+→ 40   this.prisma.word.findMany(
+The column `(not available)` does not exist in the current database.
+    at Gr.handleRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at Gr.handleAndLogRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:183:12)
+    at Gr.request (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:152:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:938:24)
+    at async Promise.all (index 0)
+    at async DashboardWordsService.getAllWords (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:39:28)
+
+[2026-09-26T05:39:23.588Z] /api/v1/dashboard/auth/login
+UnauthorizedException: error.auth.email_not_found
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:34:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async DashboardAuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\auth\dashboard-auth.controller.ts:32:19)
+
+[2026-09-26T05:40:10.844Z] /api/v1/dashboard/words?page=1&search=
+PrismaClientKnownRequestError: 
+Invalid `this.prisma.word.findMany()` invocation in
+D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:40:24
+
+  37 }
+  38 
+  39 const [words, total] = await Promise.all([
+→ 40   this.prisma.word.findMany(
+The column `(not available)` does not exist in the current database.
+    at Gr.handleRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at Gr.handleAndLogRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:183:12)
+    at Gr.request (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:152:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:938:24)
+    at async Promise.all (index 0)
+    at async DashboardWordsService.getAllWords (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:39:28)
+
+[2026-09-26T05:40:56.339Z] /api/v1/dashboard/words?page=1&search=&limit=20
+PrismaClientKnownRequestError: 
+Invalid `this.prisma.word.findMany()` invocation in
+D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:40:24
+
+  37 }
+  38 
+  39 const [words, total] = await Promise.all([
+→ 40   this.prisma.word.findMany(
+The column `(not available)` does not exist in the current database.
+    at Gr.handleRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:237:13)
+    at Gr.handleAndLogRequestError (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:183:12)
+    at Gr.request (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\RequestHandler.ts:152:12)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async a (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@prisma\client\src\runtime\getPrismaClient.ts:938:24)
+    at async Promise.all (index 0)
+    at async DashboardWordsService.getAllWords (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:39:28)
+
+[2026-09-26T07:58:31.933Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:39:13)
+    at async AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:40:18)
+
+[2026-09-26T07:59:47.837Z] /api/v1/client/auth/register
+BadRequestException: error.auth.email_exists
+    at AuthService.register (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:114:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-09-26T08:01:21.293Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:39:13)
+    at async AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:40:18)

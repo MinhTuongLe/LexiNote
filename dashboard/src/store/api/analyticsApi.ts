@@ -50,8 +50,11 @@ export const analyticsApi = dashboardApi.injectEndpoints({
       query: () => '/analytics/summary',
       providesTags: ['Stats'],
     }),
-    getChartData: builder.query<ChartDataPoint[], void>({
-      query: () => '/analytics/chart',
+    getChartData: builder.query<ChartDataPoint[], { range?: string } | void>({
+      query: (params) => ({
+        url: '/analytics/chart',
+        params: params || undefined,
+      }),
       providesTags: ['Stats'],
     }),
     getRecentActivity: builder.query<ActivityItem[], void>({

@@ -3,9 +3,11 @@ import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { Trophy, RefreshCw } from 'lucide-react';
 import BackButton from '../../components/BackButton';
-import { useGetWordsQuery, useRecordGameSessionMutation } from '../../store/apiSlice';
+import { useGetWordsQuery, useRecordGameSessionMutation, useRecordGameSessionFullMutation } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../../hooks/useSound';
+import { speakText } from '../../utils/speech';
+import Confetti from '../../components/Confetti';
 import './MatchGame.css';
 
 interface MatchGameProps {
@@ -25,6 +27,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const { t } = useTranslation();
   const { playSound } = useSound();
   const [recordGameSession] = useRecordGameSessionMutation();
+  const [recordGameSessionFull] = useRecordGameSessionFullMutation();
 
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -84,6 +87,11 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
       // Check match
       if (selectedItem.wordId === item.wordId) {
         playSound('success');
+        
+        // Speak English word
+        const enItem = selectedItem.type === 'en' ? selectedItem : item;
+        speakText(enItem.text);
+
         setMatchedIds(prev => {
           const next = new Set(prev);
           next.add(item.wordId);
@@ -93,6 +101,12 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
             // Record game session for all matched word IDs to update stats/streak
             const wordIds = Array.from(next);
             recordGameSession(wordIds);
+            recordGameSessionFull({
+              gameType: 'MATCH_GAME',
+              score: wordIds.length * 20,
+              timeSpentSeconds: 30,
+              wordIds
+            }).catch(() => {});
             
             setTimeout(() => setGameCompleted(true), 500);
           }
@@ -158,6 +172,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
 
   return (
     <div className="match-game">
+      {gameCompleted && <Confetti />}
       <div className="page-back-wrapper" style={{ display: 'flex', alignItems: 'center', marginBottom: '16px' }}>
         <BackButton onClick={onBack} />
       </div>

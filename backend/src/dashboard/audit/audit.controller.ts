@@ -7,13 +7,17 @@ import {
   Param,
   ParseIntPipe,
   UseGuards,
+  Res,
 } from '@nestjs/common';
+import { FastifyReply } from 'fastify';
 import { AuditService } from './audit.service';
 import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { toCsv } from '../../common/export/csv.util';
+import { ExportAuditQueryDto } from './dto/export-audit-query.dto';
 
 @ApiTags('Dashboard Audit')
 @ApiBearerAuth()
@@ -22,6 +26,37 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 @Controller('audit')
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
+
+  @Get('logs/export')
+  @ApiOperation({ summary: 'Export system audit logs' })
+  async exportLogs(
+    @Query() query: ExportAuditQueryDto,
+    @Res({ passthrough: true }) response: FastifyReply,
+  ) {
+    const logs = await this.auditService.exportAuditLogs(
+      query.search,
+      query.action,
+    );
+    response.header('Content-Type', 'text/csv; charset=utf-8');
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="lexinote_export_audit_${Date.now()}.csv"`,
+    );
+    return toCsv(
+      [
+        'id',
+        'actorId',
+        'actorEmail',
+        'action',
+        'targetType',
+        'targetId',
+        'details',
+        'ipAddress',
+        'createdAt',
+      ],
+      logs,
+    );
+  }
 
   @Get('logs')
   @ApiOperation({ summary: 'Get system audit trail logs' })

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -50,19 +51,36 @@ export class ReviewService {
   }
 
   async recordGameSession(userId: number, wordIds: number[]) {
-    const now = BigInt(Date.now());
+    const verifiedWords = await this.prisma.word.findMany({
+      where: { id: { in: [...new Set(wordIds)] }, ownerId: userId },
+      select: { id: true },
+    });
+    const verifiedIds = verifiedWords.map((word) => word.id);
+    if (verifiedIds.length === 0) return { count: 0 };
 
-    // For games, we update the activity timestamp and increment correctCount.
-    // We do NOT aggressively update the SRS interval to maintain spaced repetition integrity.
-    return this.prisma.review.updateMany({
-      where: {
-        wordId: { in: wordIds },
-        word: { ownerId: userId },
-      },
-      data: {
-        lastReviewed: now,
-        correctCount: { increment: 1 },
-      },
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.review.updateMany({
+        where: {
+          wordId: { in: verifiedIds },
+          word: { ownerId: userId },
+        },
+        data: {
+          lastReviewed: BigInt(Date.now()),
+          correctCount: { increment: 1 },
+        },
+      });
+      const session = await tx.gameSession.create({
+        data: {
+          userId,
+          gameType: 'MATCH_GAME',
+          score: 0,
+          timeSpentSeconds: 0,
+          wordIds: verifiedIds as Prisma.InputJsonValue,
+        },
+        select: { id: true },
+      });
+
+      return { count: updated.count, sessionId: session.id };
     });
   }
 

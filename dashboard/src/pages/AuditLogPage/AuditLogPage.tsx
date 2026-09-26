@@ -4,7 +4,8 @@ import {
   Search, 
   Database, 
   Eye, 
-  RefreshCw
+  RefreshCw,
+  Download
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import ReModal from '@/components/ui/ReModal';
 import { useGetAuditLogsQuery, useGetArchiveLogsQuery } from '@/store/api/auditApi';
 import type { AuditLogItem, ArchiveRecordItem } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
+import { exportToCSV } from '@/utils/export';
 
 const AuditLogPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'audit' | 'archive'>('audit');
@@ -69,6 +71,31 @@ const AuditLogPage: React.FC = () => {
     return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
   };
 
+  const handleExportLogs = () => {
+    if (activeTab === 'audit') {
+      const exportData = logs.map(l => ({
+        ID: l.id,
+        ActorEmail: l.actorEmail || l.actorId || 'System',
+        Action: l.action,
+        TargetType: l.targetType || 'N/A',
+        TargetID: l.targetId || 'N/A',
+        IPAddress: l.ipAddress || '127.0.0.1',
+        Timestamp: l.createdAt
+      }));
+      exportToCSV(exportData, 'lexinote_audit_logs');
+      toast({ type: 'success', title: 'Audit Logs Downloaded', message: `Exported ${exportData.length} log items to CSV.` });
+    } else {
+      const exportData = archives.map(a => ({
+        ID: a.id,
+        FromModel: a.fromModel,
+        OriginalRecordID: a.originalRecordId || 'N/A',
+        Timestamp: a.createdAt
+      }));
+      exportToCSV(exportData, 'lexinote_archive_logs');
+      toast({ type: 'success', title: 'Archive Logs Downloaded', message: `Exported ${exportData.length} archive items to CSV.` });
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -81,18 +108,28 @@ const AuditLogPage: React.FC = () => {
             Immutable system operation logs, security event traces, and archived records.
           </p>
         </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => {
-            if (activeTab === 'audit') refetchAudit();
-            else refetchArchive();
-            toast({ type: 'info', title: 'Logs Refreshed', message: 'Audit trail synchronized.' });
-          }}
-          className="h-9 gap-1.5"
-        >
-          <RefreshCw size={14} /> Refresh Logs
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportLogs}
+            className="h-9 gap-1.5"
+          >
+            <Download size={14} /> Export CSV
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => {
+              if (activeTab === 'audit') refetchAudit();
+              else refetchArchive();
+              toast({ type: 'info', title: 'Logs Refreshed', message: 'Audit trail synchronized.' });
+            }}
+            className="h-9 gap-1.5"
+          >
+            <RefreshCw size={14} /> Refresh Logs
+          </Button>
+        </div>
       </div>
 
       {/* Audit Detail Modal */}

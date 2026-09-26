@@ -285,6 +285,32 @@ export const apiSlice = createApi({
         method: 'PATCH',
       }),
     }),
+    // Achievements & Games
+    getUserAchievements: builder.query<{ achievements: Array<{ id: string; unlocked: boolean; unlockedAt?: string }> }, void>({
+      query: () => '/user/achievements',
+      providesTags: ['User'],
+    }),
+    unlockAchievement: builder.mutation<{ success: boolean; achievementId: string }, string>({
+      query: (achievementId) => ({
+        url: `/user/achievements/${achievementId}/unlock`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['User'],
+    }),
+    recordGameSessionFull: builder.mutation<{ success: boolean; sessionId: number; newPersonalBest: boolean }, { gameType?: string; score: number; timeSpentSeconds: number; wordIds: number[] }>({
+      query: (data) => ({
+        url: '/games/session',
+        method: 'POST',
+        body: data,
+      }),
+      invalidatesTags: ['User', 'Reviews'],
+    }),
+    getGameLeaderboard: builder.query<Array<{ rank: number; user: { id: number; fullName: string; avatar?: string }; bestScore: number; bestTimeSeconds: number }>, { gameType?: string; limit?: number } | void>({
+      query: (params) => ({
+        url: '/games/leaderboard',
+        params: params || undefined,
+      }),
+    }),
   }),
 });
 
@@ -316,4 +342,8 @@ export const {
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,
+  useGetUserAchievementsQuery,
+  useUnlockAchievementMutation,
+  useRecordGameSessionFullMutation,
+  useGetGameLeaderboardQuery,
 } = apiSlice;

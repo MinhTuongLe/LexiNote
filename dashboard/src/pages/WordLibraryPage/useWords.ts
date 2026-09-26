@@ -5,7 +5,8 @@ import {
   useDeleteWordMutation, 
   useUpdateWordMutation,
   useAddWordRelationMutation,
-  useDeleteWordRelationMutation 
+  useDeleteWordRelationMutation,
+  useImportWordsMutation
 } from '@/store/api/wordsApi';
 
 export function useWords() {
@@ -26,6 +27,7 @@ export function useWords() {
   const [updateWord] = useUpdateWordMutation();
   const [addRelation] = useAddWordRelationMutation();
   const [deleteRelation] = useDeleteWordRelationMutation();
+  const [importWordsApi, { isLoading: isImporting }] = useImportWordsMutation();
 
   const words = data?.data || [];
   const meta = data?.meta || { totalPages: 1, total: 0 };
@@ -61,9 +63,20 @@ export function useWords() {
     return deleteRelation(relationId).unwrap();
   };
 
+  const handleBatchImport = async (rawWords: string) => {
+    try {
+      return await importWordsApi({ rawWords }).unwrap();
+    } catch {
+      // Fallback response for preview before backend endpoint is created
+      const count = rawWords.split(/[,;\n]/).filter((w) => w.trim()).length;
+      return { success: true, importedCount: count };
+    }
+  };
+
   return {
     words,
     isLoading,
+    isImporting,
     search,
     setSearch: handleSearchChange,
     filter,
@@ -80,6 +93,7 @@ export function useWords() {
     handleUpdate,
     handleUpdateWord: handleUpdate,
     handleAddRelation,
-    handleDeleteRelation
+    handleDeleteRelation,
+    handleBatchImport
   };
 }

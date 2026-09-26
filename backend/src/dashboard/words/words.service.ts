@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
-import { Prisma } from '@prisma/client';
+import { ModerationFlagReason, ModerationStatus, Prisma } from '@prisma/client';
+import { ImportWordsDto } from './dto/import-words.dto';
 
 @Injectable()
 export class DashboardWordsService {
@@ -77,6 +78,112 @@ export class DashboardWordsService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  async importWords(ownerId: number, dto: ImportWordsDto) {
+    const parsedWords = dto.rawWords
+      .split(/[,;\r\n]+/)
+      .map((word) => word.trim())
+      .filter(Boolean);
+    const words = [...new Set(parsedWords)];
+    if (words.length === 0) {
+      throw new BadRequestException('rawWords must contain at least one word');
+    }
+    const duplicateCount = parsedWords.length - words.length;
+    const existing = await this.prisma.word.findMany({
+      where: { ownerId, word: { in: words } },
+      select: { word: true },
+    });
+    const existingWords = new Set(existing.map((word) => word.word));
+    const importedWords: { id: number; word: string }[] = [];
+
+    for (const word of words) {
+      if (existingWords.has(word)) continue;
+
+      try {
+        const created = await this.prisma.word.create({
+          data: {
+            word,
+            meaningVi: '',
+            type: dto.type?.trim() || 'noun',
+            ownerId,
+            moderationStatus: ModerationStatus.PENDING,
+            flagReason: ModerationFlagReason.MISSING_EXAMPLE,
+          },
+          select: { id: true, word: true },
+        });
+        importedWords.push(created);
+        existingWords.add(word);
+      } catch (error) {
+        if (!this.isUniqueConstraintError(error)) throw error;
+      }
+    }
+
+    await this.auditService.logAction({
+      action: 'WORD_IMPORT',
+      targetType: 'WORD',
+      details: {
+        ownerId,
+        importedCount: importedWords.length,
+        skippedCount: duplicateCount + words.length - importedWords.length,
+        autoEnrichRequested: dto.autoEnrich === true,
+      },
+    });
+
+    return {
+      success: true,
+      importedCount: importedWords.length,
+      skippedCount: duplicateCount + words.length - importedWords.length,
+      importedWords,
+    };
+  }
+
+  async exportWords(search?: string, type?: string) {
+    const where: Prisma.WordWhereInput = {};
+    if (search) {
+      where.OR = [
+        { word: { contains: search, mode: 'insensitive' } },
+        { meaningVi: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+    if (type) where.type = type;
+
+    const words = await this.prisma.word.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        word: true,
+        meaningVi: true,
+        example: true,
+        type: true,
+        moderationStatus: true,
+        flagReason: true,
+        createdAt: true,
+        owner: { select: { id: true, fullName: true, email: true } },
+      },
+    });
+
+    return words.map((word) => ({
+      id: word.id,
+      word: word.word,
+      meaningVi: word.meaningVi,
+      example: word.example,
+      type: word.type,
+      moderationStatus: word.moderationStatus,
+      flagReason: word.flagReason,
+      createdAt: new Date(Number(word.createdAt)).toISOString(),
+      ownerId: word.owner.id,
+      ownerName: word.owner.fullName,
+      ownerEmail: word.owner.email,
+    }));
+  }
+
+  private isUniqueConstraintError(error: unknown): boolean {
+    return (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    );
   }
 
   async deleteWord(id: number) {
@@ -163,7 +270,11 @@ export class DashboardWordsService {
       action: 'WORD_RELATION_DELETE',
       targetType: 'WORD_RELATION',
       targetId: String(relationId),
-      details: { wordId: relation.wordId, type: relation.type, value: relation.value },
+      details: {
+        wordId: relation.wordId,
+        type: relation.type,
+        value: relation.value,
+      },
     });
 
     return relation;
