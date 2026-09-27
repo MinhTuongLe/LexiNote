@@ -113,5 +113,10 @@
   "type_adj": "Adjective",
   "type_adv": "Adverb",
   "type_preposition": "Preposition",
-  "type_conjunction": "Conjunction"
+  "type_conjunction": "Conjunction",
+  "leaderboard_title": "Weekly Leaderboard",
+  "leaderboard_empty_title": "No players on the leaderboard this week!",
+  "leaderboard_empty_desc": "Play the Match Game to claim the top spot!",
+  "leaderboard_error": "Unable to load the leaderboard right now.",
+  "pts": "pts"
 }

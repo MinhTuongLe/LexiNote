@@ -116,5 +116,10 @@
   "type_conjunction": "Liên từ",
   "start_journey": "Bắt đầu hành trình của bạn!",
   "no_activity_this_month": "Tháng này bạn chưa có ngày học tập nào. Hãy gieo mầm ngay nhé! 🌱",
-  "start_learning_for_analysis": "Hãy bắt đầu học để xem phân tích thế mạnh của bạn nhé! 🚀"
+  "start_learning_for_analysis": "Hãy bắt đầu học để xem phân tích thế mạnh của bạn nhé! 🚀",
+  "leaderboard_title": "Bảng Xếp Hạng Tuần",
+  "leaderboard_empty_title": "Chưa có ai lên bảng tuần này!",
+  "leaderboard_empty_desc": "Hãy tham gia chơi minigame Ghép từ để ghi danh đầu tiên nhé!",
+  "leaderboard_error": "Không thể tải bảng xếp hạng lúc này.",
+  "pts": "đ"
 }

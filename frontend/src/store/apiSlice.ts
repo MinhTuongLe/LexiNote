@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 import type { RootState } from './index';
@@ -83,7 +83,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Words', 'Reviews', 'User'],
+  tagTypes: ['Words', 'Reviews', 'User', 'Leaderboard'],
   endpoints: (builder) => ({
     // Auth
     login: builder.mutation<{ user: User; token: string; refreshToken: string }, { email: string; password: string }>({
@@ -302,19 +302,22 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    recordGameSessionFull: builder.mutation<{ success: boolean; sessionId: number; newPersonalBest: boolean }, { gameType?: string; score: number; timeSpentSeconds: number; wordIds: number[] }>({
+    recordGameSessionFull: builder.mutation<{ success: boolean; sessionId: number; newPersonalBest: boolean }, { gameType?: GameType; score: number; timeSpentSeconds: number; wordIds: number[] }>({
       query: (data) => ({
         url: '/games/session',
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['User', 'Reviews'],
+      invalidatesTags: ['User', 'Reviews', 'Leaderboard'],
     }),
-    getGameLeaderboard: builder.query<Array<{ rank: number; user: { id: number; fullName: string; avatar?: string }; bestScore: number; bestTimeSeconds: number }>, { gameType?: string; limit?: number } | void>({
+    getGameLeaderboard: builder.query<LeaderboardEntry[], LeaderboardQuery | void>({
       query: (params) => ({
         url: '/games/leaderboard',
         params: params || undefined,
       }),
+      providesTags: ['Leaderboard'],
+
+
     }),
   }),
 });

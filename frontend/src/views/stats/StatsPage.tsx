@@ -17,6 +17,7 @@ import LearningProgress from './components/dashboard/LearningProgress';
 import WeakWordsList from './components/dashboard/WeakWordsList';
 import CategoryInsights from './components/dashboard/CategoryInsights';
 import AchievementsSection from './components/dashboard/AchievementsSection';
+import LeaderboardSection from './components/dashboard/LeaderboardSection';
 
 // Detail Components
 import ActivityDetail from './components/details/ActivityDetail';
@@ -147,6 +148,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack, detail }) => {
         </div>
 
         <AchievementsSection stats={stats} mounted={mounted} />
+        <LeaderboardSection mounted={mounted} />
       </div>
     </div>
   );

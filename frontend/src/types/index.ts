@@ -112,3 +112,22 @@ export interface DashboardStats {
   accuracy: number;
   totalTimeSpentMinutes: number;
 }
+
+export interface LeaderboardEntry {
+  rank: number;
+  user: {
+    id: number;
+    fullName: string;
+    avatar?: string | null;
+  };
+  bestScore: number;
+  bestTimeSeconds: number;
+}
+
+export const GAME_TYPES = ['MATCH_GAME'] as const;
+export type GameType = (typeof GAME_TYPES)[number];
+
+export interface LeaderboardQuery {
+  gameType?: GameType;
+  limit?: number;
+}
