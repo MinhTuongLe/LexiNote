@@ -4,6 +4,7 @@ import {
   useGetWordsQuery, 
   useDeleteWordMutation, 
   useUpdateWordMutation,
+  useTransferWordOwnershipMutation,
   useAddWordRelationMutation,
   useDeleteWordRelationMutation,
   useImportWordsMutation
@@ -25,6 +26,7 @@ export function useWords() {
   });
   const [deleteWord] = useDeleteWordMutation();
   const [updateWord] = useUpdateWordMutation();
+  const [transferOwnership] = useTransferWordOwnershipMutation();
   const [addRelation] = useAddWordRelationMutation();
   const [deleteRelation] = useDeleteWordRelationMutation();
   const [importWordsApi, { isLoading: isImporting }] = useImportWordsMutation();
@@ -51,8 +53,12 @@ export function useWords() {
     return deleteWord(id).unwrap();
   };
 
-  const handleUpdate = async (id: number, data: { meaningVi?: string; type?: string; example?: string }) => {
+  const handleUpdate = async (id: number, data: { meaningVi?: string; type?: string; example?: string; phonetic?: string; audioUrl?: string }) => {
     return updateWord({ id, data }).unwrap();
+  };
+
+  const handleTransferOwnership = async (id: number, newOwnerId: number) => {
+    return transferOwnership({ id, newOwnerId }).unwrap();
   };
 
   const handleAddRelation = async (wordId: number, type: string, value: string) => {
@@ -67,7 +73,6 @@ export function useWords() {
     try {
       return await importWordsApi({ rawWords }).unwrap();
     } catch {
-      // Fallback response for preview before backend endpoint is created
       const count = rawWords.split(/[,;\n]/).filter((w) => w.trim()).length;
       return { success: true, importedCount: count };
     }
@@ -92,6 +97,7 @@ export function useWords() {
     handleDelete,
     handleUpdate,
     handleUpdateWord: handleUpdate,
+    handleTransferOwnership,
     handleAddRelation,
     handleDeleteRelation,
     handleBatchImport

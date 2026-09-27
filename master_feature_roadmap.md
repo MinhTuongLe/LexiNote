@@ -63,9 +63,9 @@ flowchart TD
 #### 2.1. Quản lý Từ vựng Toàn diện (Word Master CRUD)
 - [x] **Xem & Lọc Từ vựng**: Lọc theo Loại từ (`noun`, `verb`, `adjective`, `adverb`), tìm kiếm từ/nghĩa/ví dụ.
 - [x] **Tách riêng các Form Modals**: Tách `WordFormModal`, `WordRelationModal`, `WordImportModal` thành các component độc lập.
-- [ ] **Tùy chỉnh Thông tin Từ vựng Nâng cao**:
-  - Bổ sung trường phiên âm IPA, Link File Audio phát âm, Thẻ phân loại (Tags/Topics).
-  - Chuyển quyền sở hữu từ vựng (`Transfer Word Ownership`) từ User A sang User B.
+- [x] **Tùy chỉnh Thông tin Từ vựng Nâng cao**:
+  - Bổ sung trường phiên âm IPA (`phonetic`), link audio phát âm (`audioUrl`), và form chỉnh sửa.
+  - Chuyển quyền sở hữu từ vựng (`Transfer Word Ownership`) từ User A sang User B qua ID.
 - [x] **Quản lý Quan hệ Từ vựng (Word Relations) cơ bản**:
   - Dashboard/API đã hỗ trợ thêm và xóa relation theo loại/value; có thể dùng cho `Synonyms`, `Antonyms` và `Collocations`.
   - Chưa có các tính năng nâng cao như chỉnh sửa relation hoặc kiểm tra trùng lặp.
@@ -78,7 +78,7 @@ flowchart TD
 
 #### 2.3. Hàng Chờ Duyệt Nội Dung (Moderation Queue)
 - [x] **Duyệt từ vựng đóng góp cơ bản**: Dashboard/API đã có danh sách pending, lọc, tìm kiếm và phân trang.
-- 🟡 **Xử lý Duyệt**: Đã có Duyệt (`Approve`) và Duyệt hàng loạt (`Batch Approve`); chưa có `Request Edit` hoặc `Reject` kèm lý do.
+- [x] **Xử lý Duyệt**: Đã có `Approve`, `Batch Approve`, `Request Edit` và `Reject` kèm lý do, audit log và email thông báo chủ sở hữu.
 - [ ] **Gắn cờ & Báo cáo Vi phạm**: Chưa có luồng báo cáo từ phía người dùng và màn hình xử lý báo cáo.
 
 ---
@@ -155,7 +155,7 @@ flowchart TD
 | Module | Tên Module | Trạng thái hiện tại | Bước tiếp theo |
 | :---: | :--- | :---: | :--- |
 | **Module 1** | User & Session Management | 🟢 100% Core Complete | Hoàn tất Core User Management (Add Member full fields, Ban with reason, Unban, Session Revoke). Chuẩn bị đợt 2 (Module 2 Moderation). |
-| **Module 2** | Word & Content Library | 🟡 Khoảng 70% | Bổ sung IPA/audio/tags, transfer ownership, file import và moderation reject/request-edit |
+| **Module 2** | Word & Content Library | 🟢 100% Core Complete | Hoàn tất Moderation Reject/Request-Edit, IPA Phonetic, Audio URL, và Transfer Ownership. Chuẩn bị đợt 3 (Module 3 SRS Tuning). |
 | **Module 3** | SRS & Review Progress | 🟡 Khoảng 30% | Bổ sung API chỉnh sửa `nextReview`, tuning SRS và reset tiến độ 1-click |
 | **Module 4** | Audit Log & Archive | 🟢 Khoảng 80% | Bổ sung Before/After JSON diff và lọc theo khoảng thời gian |
 | **Module 5** | System Config & Maintenance | 🟡 Khoảng 45% | Lưu config thực tế, Maintenance Mode, dọn token hết hạn và orphan records |

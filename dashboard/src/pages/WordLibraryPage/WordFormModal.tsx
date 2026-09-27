@@ -8,7 +8,7 @@ import type { Word } from '@/store/api/wordsApi';
 interface WordFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { meaningVi: string; example: string }) => Promise<void>;
+  onSubmit: (data: { meaningVi: string; example: string; phonetic?: string; audioUrl?: string }) => Promise<void>;
   word: Word | null;
   isLoading?: boolean;
 }
@@ -22,6 +22,8 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
 }) => {
   const [meaningVi, setMeaningVi] = useState(word?.meaningVi || '');
   const [example, setExample] = useState(word?.example || '');
+  const [phonetic, setPhonetic] = useState(word?.phonetic || '');
+  const [audioUrl, setAudioUrl] = useState(word?.audioUrl || '');
 
   const [prevWord, setPrevWord] = useState(word);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -33,12 +35,14 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
     if (isOpen) {
       setMeaningVi(word?.meaningVi || '');
       setExample(word?.example || '');
+      setPhonetic(word?.phonetic || '');
+      setAudioUrl(word?.audioUrl || '');
     }
   }
 
   const handleSubmit = async () => {
     if (!meaningVi.trim()) return;
-    await onSubmit({ meaningVi, example });
+    await onSubmit({ meaningVi, example, phonetic, audioUrl });
     onClose();
   };
 
@@ -47,7 +51,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={`Edit Word: ${word?.word?.toUpperCase() || ''}`}
-      description="Modify the semantic definition and example sentence."
+      description="Modify the semantic definition, IPA phonetic spelling, audio URL, and example sentence."
       footer={
         <>
           <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
@@ -62,7 +66,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
       <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Semantic Meaning (VI)
+            Semantic Meaning (VI) <span className="text-destructive">*</span>
           </label>
           <Input
             value={meaningVi}
@@ -70,6 +74,32 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
             className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
             required
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Phonetic IPA (Pronunciation)
+            </label>
+            <Input
+              placeholder="e.g. /ˈlex.ɪ.noʊt/"
+              value={phonetic}
+              onChange={(e) => setPhonetic(e.target.value)}
+              className="bg-muted/40 border-border/80 h-10 font-mono text-xs text-foreground"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Audio Pronunciation URL
+            </label>
+            <Input
+              placeholder="e.g. https://.../audio.mp3"
+              value={audioUrl}
+              onChange={(e) => setAudioUrl(e.target.value)}
+              className="bg-muted/40 border-border/80 h-10 font-mono text-xs text-foreground"
+            />
+          </div>
         </div>
 
         <div className="space-y-2">

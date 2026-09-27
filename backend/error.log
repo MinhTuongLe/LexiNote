@@ -356,3 +356,8 @@ NotFoundException: Cannot GET /favicon.ico
     at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
     at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
     at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-09-27T15:09:15.280Z] /api/v1/dashboard/words/944/transfer-ownership
+ConflictException: The target user already owns a word with the same spelling
+    at DashboardWordsService.transferOwnership (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:287:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

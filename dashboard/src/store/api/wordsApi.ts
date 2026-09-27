@@ -34,7 +34,12 @@ export interface WordItem {
   meaningVi: string;
   example?: string | null;
   type: string;
+  phonetic?: string | null;
+  audioUrl?: string | null;
   ownerId: number;
+  moderationStatus?: 'APPROVED' | 'PENDING' | 'REJECTED' | 'NEEDS_EDIT';
+  flagReason?: string | null;
+  rejectReason?: string | null;
   difficulty?: string;
   createdAt: string;
   updatedAt: string;
@@ -82,6 +87,14 @@ export const wordsApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Words'],
     }),
+    transferWordOwnership: builder.mutation<{ success: boolean; wordId: number }, { id: number; newOwnerId: number }>({
+      query: ({ id, newOwnerId }) => ({
+        url: `/words/${id}/transfer-ownership`,
+        method: 'POST',
+        body: { newOwnerId },
+      }),
+      invalidatesTags: ['Words'],
+    }),
     addWordRelation: builder.mutation<WordRelationItem, { wordId: number; type: string; value: string }>({
       query: ({ wordId, type, value }) => ({
         url: `/words/${wordId}/relations`,
@@ -122,6 +135,22 @@ export const wordsApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Words', 'Stats'],
     }),
+    rejectWord: builder.mutation<{ success: boolean; wordId: number }, { id: number; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/moderation/${id}/reject`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: ['Words', 'Stats'],
+    }),
+    requestEditWord: builder.mutation<{ success: boolean; wordId: number }, { id: number; note: string }>({
+      query: ({ id, note }) => ({
+        url: `/moderation/${id}/request-edit`,
+        method: 'POST',
+        body: { note },
+      }),
+      invalidatesTags: ['Words', 'Stats'],
+    }),
     batchApproveWords: builder.mutation<{ success: boolean; approvedCount: number }, number[]>({
       query: (wordIds) => ({
         url: '/moderation/batch-approve',
@@ -137,10 +166,13 @@ export const {
   useGetWordsQuery, 
   useDeleteWordMutation,
   useUpdateWordMutation,
+  useTransferWordOwnershipMutation,
   useAddWordRelationMutation,
   useDeleteWordRelationMutation,
   useImportWordsMutation,
   useGetPendingModerationWordsQuery,
   useApproveWordMutation,
+  useRejectWordMutation,
+  useRequestEditWordMutation,
   useBatchApproveWordsMutation,
 } = wordsApi;

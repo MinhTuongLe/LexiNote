@@ -23,6 +23,7 @@ import {
   renderAccountDeletedTemplate,
   renderUserRoleUpdatedTemplate,
   renderSessionsRevokedTemplate,
+  renderWordModerationNotificationTemplate,
 } from './mail.templates';
 
 @Injectable()
@@ -376,6 +377,27 @@ export class MailService {
     const subject =
       '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi';
     const html = renderSessionsRevokedTemplate(fullName);
+    return this.sendMail(to, subject, html);
+  }
+
+  /**
+   * Send moderation feedback for a word submission.
+   */
+  async sendWordModerationNotification(
+    to: string,
+    fullName: string,
+    status: 'REJECTED' | 'NEEDS_EDIT',
+    reason: string,
+  ) {
+    const subject =
+      status === 'REJECTED'
+        ? '[LexiNote] Your word submission was rejected'
+        : '[LexiNote] Your word submission needs revision';
+    const html = renderWordModerationNotificationTemplate(
+      fullName,
+      status,
+      reason,
+    );
     return this.sendMail(to, subject, html);
   }
 

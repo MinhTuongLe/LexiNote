@@ -14,6 +14,7 @@ import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { BatchApproveDto } from './dto/batch-approve.dto';
+import { RejectWordDto, RequestEditDto } from './dto/moderation-action.dto';
 import { ModerationQueryDto } from './dto/moderation-query.dto';
 import { ModerationService } from './moderation.service';
 
@@ -41,5 +42,23 @@ export class ModerationController {
   @ApiOperation({ summary: 'Approve a moderated word' })
   approve(@Param('id', ParseIntPipe) id: number) {
     return this.moderationService.approve(id);
+  }
+
+  @Post(':id/reject')
+  @ApiOperation({ summary: 'Reject a moderated word' })
+  reject(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: RejectWordDto,
+  ) {
+    return this.moderationService.reject(id, body.reason);
+  }
+
+  @Post(':id/request-edit')
+  @ApiOperation({ summary: 'Request changes to a word submission' })
+  requestEdit(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: RequestEditDto,
+  ) {
+    return this.moderationService.requestEdit(id, body.note);
   }
 }

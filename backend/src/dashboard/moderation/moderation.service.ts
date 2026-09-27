@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ModerationStatus, Prisma } from '@prisma/client';
+import { MailService } from '../../common/mail/mail.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { ModerationQueryDto } from './dto/moderation-query.dto';
@@ -9,6 +10,7 @@ export class ModerationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly auditService: AuditService,
+    private readonly mailService: MailService,
   ) {}
 
   async getPending(query: ModerationQueryDto) {
@@ -44,7 +46,11 @@ export class ModerationService {
           meaningVi: true,
           type: true,
           example: true,
+          phonetic: true,
+          audioUrl: true,
+          moderationStatus: true,
           flagReason: true,
+          rejectReason: true,
           createdAt: true,
           owner: { select: { id: true, fullName: true, email: true } },
         },
@@ -70,6 +76,7 @@ export class ModerationService {
       data: {
         moderationStatus: ModerationStatus.APPROVED,
         flagReason: null,
+        rejectReason: null,
       },
     });
     await this.auditService.logAction({
@@ -88,7 +95,11 @@ export class ModerationService {
         id: { in: wordIds },
         moderationStatus: ModerationStatus.PENDING,
       },
-      data: { moderationStatus: ModerationStatus.APPROVED, flagReason: null },
+      data: {
+        moderationStatus: ModerationStatus.APPROVED,
+        flagReason: null,
+        rejectReason: null,
+      },
     });
 
     await this.auditService.logAction({
@@ -98,5 +109,87 @@ export class ModerationService {
     });
 
     return { success: true, approvedCount: result.count };
+  }
+
+  async reject(id: number, reason: string) {
+    const normalizedReason = reason.trim();
+    if (!normalizedReason) {
+      throw new BadRequestException('reason must not be empty');
+    }
+
+    const word = await this.prisma.word.findUnique({
+      where: { id },
+      include: { owner: { select: { email: true, fullName: true } } },
+    });
+    if (!word) throw new NotFoundException(`Word with ID ${id} not found`);
+
+    await this.prisma.word.update({
+      where: { id },
+      data: {
+        moderationStatus: ModerationStatus.REJECTED,
+        rejectReason: normalizedReason,
+      },
+    });
+    await this.auditService.logAction({
+      action: 'WORD_MODERATION_REJECT',
+      targetType: 'WORD',
+      targetId: String(id),
+      details: { reason: normalizedReason },
+    });
+    await this.mailService.sendWordModerationNotification(
+      word.owner.email,
+      word.owner.fullName,
+      'REJECTED',
+      normalizedReason,
+    );
+
+    return {
+      success: true,
+      message: 'Word rejected successfully',
+      wordId: id,
+      moderationStatus: ModerationStatus.REJECTED,
+      rejectReason: normalizedReason,
+    };
+  }
+
+  async requestEdit(id: number, note: string) {
+    const normalizedNote = note.trim();
+    if (!normalizedNote) {
+      throw new BadRequestException('note must not be empty');
+    }
+
+    const word = await this.prisma.word.findUnique({
+      where: { id },
+      include: { owner: { select: { email: true, fullName: true } } },
+    });
+    if (!word) throw new NotFoundException(`Word with ID ${id} not found`);
+
+    await this.prisma.word.update({
+      where: { id },
+      data: {
+        moderationStatus: ModerationStatus.NEEDS_EDIT,
+        rejectReason: normalizedNote,
+      },
+    });
+    await this.auditService.logAction({
+      action: 'WORD_MODERATION_REQUEST_EDIT',
+      targetType: 'WORD',
+      targetId: String(id),
+      details: { note: normalizedNote },
+    });
+    await this.mailService.sendWordModerationNotification(
+      word.owner.email,
+      word.owner.fullName,
+      'NEEDS_EDIT',
+      normalizedNote,
+    );
+
+    return {
+      success: true,
+      message: 'Word edit requested successfully',
+      wordId: id,
+      moderationStatus: ModerationStatus.NEEDS_EDIT,
+      rejectReason: normalizedNote,
+    };
   }
 }

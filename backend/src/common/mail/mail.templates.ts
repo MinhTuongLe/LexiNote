@@ -289,3 +289,38 @@ export const renderSessionsRevokedTemplate = (fullName: string): string => {
   `;
   return renderBaseTemplate(content);
 };
+
+/**
+ * Word moderation decision notification template.
+ */
+export const renderWordModerationNotificationTemplate = (
+  fullName: string,
+  status: 'REJECTED' | 'NEEDS_EDIT',
+  reason: string,
+): string => {
+  const isRejected = status === 'REJECTED';
+  const title = isRejected ? 'Word submission rejected' : 'Word revision requested';
+  const statusText = isRejected
+    ? 'Your vocabulary submission was rejected by a LexiNote moderator.'
+    : 'Your vocabulary submission needs changes before it can be approved.';
+  const safeName = escapeHtml(fullName);
+  const safeReason = escapeHtml(reason);
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">${title}</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Hello <strong>${safeName}</strong>,<br>${statusText}
+    </p>
+    <div style="background-color: #FFF0F4; border: 1.5px solid #FF7096; border-radius: 12px; padding: 16px; color: #594A4E; font-size: 14px; line-height: 1.6;">
+      <strong>Moderator note:</strong><br>${safeReason}
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');

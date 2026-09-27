@@ -9,7 +9,8 @@ import {
   X,
   Tag,
   Layers,
-  Download
+  Download,
+  UserCheck
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import Pagination from '@/components/common/Pagination';
 import WordFormModal from './WordFormModal';
 import WordRelationModal from './WordRelationModal';
 import WordImportModal from './WordImportModal';
+import TransferOwnershipModal from './TransferOwnershipModal';
 import type { Word } from '@/store/api/wordsApi';
 import { exportToCSV } from '@/utils/export';
 
@@ -43,8 +45,10 @@ const WordLibraryPage: React.FC = () => {
     totalWords,
     handleUpdateWord,
     handleDelete,
+    handleTransferOwnership,
     handleAddRelation,
     handleDeleteRelation,
+    handleBatchImport
   } = useWords();
 
   const { toast } = useToast();
@@ -53,6 +57,7 @@ const WordLibraryPage: React.FC = () => {
   const [isRelationModalOpen, setIsRelationModalOpen] = useState(false);
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -66,15 +71,34 @@ const WordLibraryPage: React.FC = () => {
     setIsRelationModalOpen(true);
   };
 
-  const onConfirmUpdate = async (data: { meaningVi: string; example: string }) => {
+  const handleTransferTrigger = (word: Word) => {
+    setEditingWord(word);
+    setIsTransferModalOpen(true);
+  };
+
+  const onConfirmUpdate = async (data: { meaningVi: string; example: string; phonetic?: string; audioUrl?: string }) => {
     if (!editingWord) return;
     setIsProcessing(true);
     try {
       await handleUpdateWord(editingWord.id, data);
-      toast.success('Word Updated', `Updated definition for "${editingWord.word}"`);
+      toast.success('Word Updated', `Updated definition & phonetics for "${editingWord.word}".`);
       setIsEditModalOpen(false);
     } catch {
       toast.error('Update Failed', 'Could not update word definition.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const onConfirmTransfer = async (newOwnerId: number) => {
+    if (!editingWord) return;
+    setIsProcessing(true);
+    try {
+      await handleTransferOwnership(editingWord.id, newOwnerId);
+      toast.success('Ownership Transferred', `"${editingWord.word}" reassigned to User #${newOwnerId}.`);
+      setIsTransferModalOpen(false);
+    } catch {
+      toast.error('Transfer Failed', 'Could not reassign word ownership.');
     } finally {
       setIsProcessing(false);
     }
@@ -148,6 +172,8 @@ const WordLibraryPage: React.FC = () => {
       Word: w.word,
       Meaning: w.meaningVi,
       Type: w.type,
+      Phonetic: w.phonetic || 'N/A',
+      AudioUrl: w.audioUrl || 'N/A',
       Example: w.example || 'N/A',
       OwnerID: w.ownerId,
       OwnerName: w.owner?.fullName || 'N/A',
@@ -206,6 +232,15 @@ const WordLibraryPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={onConfirmUpdate}
+        word={editingWord}
+        isLoading={isProcessing}
+      />
+
+      {/* Transfer Ownership Modal */}
+      <TransferOwnershipModal
+        isOpen={isTransferModalOpen}
+        onClose={() => setIsTransferModalOpen(false)}
+        onConfirm={onConfirmTransfer}
         word={editingWord}
         isLoading={isProcessing}
       />
@@ -296,10 +331,15 @@ const WordLibraryPage: React.FC = () => {
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-3">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-lg font-bold text-foreground tracking-tight group-hover:text-primary transition-colors">
                             {word.word}
                           </h3>
+                          {word.phonetic && (
+                            <span className="text-xs font-mono text-muted-foreground font-medium">
+                              {word.phonetic}
+                            </span>
+                          )}
                           <span className="px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] font-semibold uppercase">
                             {word.type}
                           </span>
@@ -310,12 +350,26 @@ const WordLibraryPage: React.FC = () => {
                             onClick={() => setOwnerId(word.ownerId)}
                             className="hover:underline hover:text-foreground"
                           >
-                            Owner #{word.ownerId}
+                            Owner #{word.ownerId} ({word.owner?.fullName || 'User'})
                           </button>
                         </div>
                       </div>
 
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Tooltip content="Transfer Word Ownership" side="top">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleTransferTrigger(word);
+                            }}
+                            className="h-7 w-7 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                          >
+                            <UserCheck size={13} />
+                          </Button>
+                        </Tooltip>
+
                         <Tooltip content="Manage Relations (Synonyms/Antonyms)" side="top">
                           <Button
                             variant="ghost"
@@ -330,7 +384,7 @@ const WordLibraryPage: React.FC = () => {
                           </Button>
                         </Tooltip>
 
-                        <Tooltip content="Edit Meaning & Example" side="top">
+                        <Tooltip content="Edit Definition & Phonetics" side="top">
                           <Button
                             variant="ghost"
                             size="icon"
