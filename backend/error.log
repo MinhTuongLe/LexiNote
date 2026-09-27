@@ -328,3 +328,18 @@ BadRequestException: error.auth.email_exists
 UnauthorizedException: error.auth.wrong_password
     at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:39:13)
     at async AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:40:18)
+
+[2026-09-27T06:13:43.302Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:37:13)
+    at AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:38:18)
+
+[2026-09-27T06:20:21.680Z] /api/v1/client/auth/register
+BadRequestException: error.auth.email_exists
+    at AuthService.register (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:114:13)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+
+[2026-09-27T06:23:20.684Z] /api/v1/client/auth/login
+UnauthorizedException: error.auth.wrong_password
+    at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:37:13)
+    at AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:38:18)

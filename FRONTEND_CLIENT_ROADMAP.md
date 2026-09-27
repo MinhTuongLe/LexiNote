@@ -41,6 +41,8 @@ Tài liệu này tổng hợp phân tích chi tiết cấu trúc, đánh giá tr
 ### 🟡 Giai đoạn 3: Nâng cấp Kho Từ Vựng Cá Nhân (`Library.tsx`)
 - [x] **Icon Phát âm Nhanh trên Thẻ từ**:
   - Bổ sung nút Loa phát âm chuẩn trực tiếp trên từng thẻ từ vựng trong kho Library mà không cần vào chế độ học.
+- [x] **Bộ Lọc Cấp Độ Thuộc Từ SRS (Chưa học / Đang học / Đã thuộc)**:
+  - Tích hợp bộ lọc cấp độ SRS đồng bộ NestJS Backend & Prisma, hiển thị badge cấp độ dễ thương (🐣 Chưa học, 📖 Đang học, 🏆 Đã thuộc) trên từng thẻ từ.
 
 ### 🟢 Giai đoạn 4: Hệ thống Thành tựu & Động lực Học tập (`stats/`)
 - [x] **Hệ thống Huy hiệu (Achievements & Badges)**:

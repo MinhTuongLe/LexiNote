@@ -184,7 +184,7 @@ export const apiSlice = createApi({
     }),
 
     // Words
-    getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string } | void>({
+    getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string; status?: string } | void>({
       query: (params) => ({
         url: '/words',
         params: params || {},

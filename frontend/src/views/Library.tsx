@@ -35,6 +35,7 @@ const Library: React.FC = () => {
   const { data: settingsData } = useGetSettingsQuery();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
@@ -48,7 +49,7 @@ const Library: React.FC = () => {
   const limit = 20;
 
   // RTK Query
-  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType });
+  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType, status: filterStatus });
   const [triggerGetWords] = useLazyGetWordsQuery();
   const meta = wordsData?.meta;
 
@@ -130,7 +131,8 @@ const Library: React.FC = () => {
       const result = await triggerGetWords({ 
         limit: 'all', 
         search, 
-        type: filterType 
+        type: filterType,
+        status: filterStatus 
       }).unwrap();
       
       const allWords = result.data || [];
@@ -206,7 +208,14 @@ const Library: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, filterType]);
+  }, [search, filterType, filterStatus]);
+
+  const statusOptions = [
+    { value: 'all', label: t('library.status_all') },
+    { value: 'new', label: t('library.status_new') },
+    { value: 'learning', label: t('library.status_learning') },
+    { value: 'mastered', label: t('library.status_mastered') }
+  ];
 
   const wordTypeOptions = [
     { value: 'all', label: t('library.type_filter') },
@@ -225,6 +234,17 @@ const Library: React.FC = () => {
     if (defaultType) return t(`library.word_types.${typeValue}`);
     const customType = settingsData?.wordTypes?.custom?.find((type) => type.value === typeValue);
     return customType ? customType.label : typeValue;
+  };
+
+  const getSRSBadge = (word: Word) => {
+    const review = word.reviews && word.reviews.length > 0 ? word.reviews[0] : null;
+    if (!review || review.correctCount === 0) {
+      return { label: t('library.status_new'), className: 'srs-badge new' };
+    }
+    if (review.correctCount >= 4 && review.interval >= 14) {
+      return { label: t('library.status_mastered'), className: 'srs-badge mastered' };
+    }
+    return { label: t('library.status_learning'), className: 'srs-badge learning' };
   };
 
   const selectAll = () => {
@@ -265,6 +285,13 @@ const Library: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <CuteSelect 
+            options={statusOptions}
+            value={filterStatus}
+            onChange={(val) => setFilterStatus(val)}
+            className="library-status-select"
+            align='right'
+          />
           <CuteSelect 
             options={wordTypeOptions}
             value={filterType}
@@ -345,6 +372,10 @@ const Library: React.FC = () => {
                     <div className="word-main">
                       <h3>{word.word}</h3>
                       <span className="type-badge">{getTypeLabel(word.type)}</span>
+                      {(() => {
+                        const badge = getSRSBadge(word);
+                        return <span className={badge.className}>{badge.label}</span>;
+                      })()}
                     </div>
                   </div>
                   <div className="word-card-actions">

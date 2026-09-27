@@ -106,7 +106,7 @@ export class WordService {
   }
 
   async find(userId: number, filters: any) {
-    const { search, type, page, limit } = filters;
+    const { search, type, status, page, limit } = filters;
     const pageNum = parseInt(page) || 1;
     const limitNum = limit === 'all' ? undefined : parseInt(limit) || 20;
     const skip = limitNum ? (pageNum - 1) * limitNum : undefined;
@@ -124,6 +124,35 @@ export class WordService {
 
     if (type && type !== 'all') {
       where.type = type;
+    }
+
+    if (status && status !== 'all') {
+      if (status === 'mastered') {
+        where.reviews = {
+          some: {
+            correctCount: { gte: 4 },
+            interval: { gte: 14 },
+          },
+        };
+      } else if (status === 'learning') {
+        where.reviews = {
+          some: {
+            correctCount: { gt: 0 },
+            NOT: {
+              AND: [
+                { correctCount: { gte: 4 } },
+                { interval: { gte: 14 } },
+              ],
+            },
+          },
+        };
+      } else if (status === 'new') {
+        where.reviews = {
+          some: {
+            correctCount: 0,
+          },
+        };
+      }
     }
 
     const [words, total] = await Promise.all([
