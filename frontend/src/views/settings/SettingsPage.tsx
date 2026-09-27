@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -7,7 +7,8 @@ import {
 import BackButton from '../../components/BackButton';
 
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 import Card from '../../components/Card';
 import CuteSelect from '../../components/CuteSelect';
@@ -25,25 +26,19 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
   const { showAlert } = useCuteDialog();
 
   // Settings state from user profile or defaults
-  const [isSoundEnabled, setIsSoundEnabled] = useState(true);
+  const isSoundEnabled = settingsData?.preferences?.soundEnabled ?? true;
   const currentLang = i18n?.language?.startsWith('vi') ? 'vi' : (i18n?.language || 'en');
-
-  useEffect(() => {
-    if (settingsData) {
-      if (settingsData.preferences?.soundEnabled !== undefined) setIsSoundEnabled(settingsData.preferences.soundEnabled);
-    }
-  }, [settingsData]);
 
   const handleLanguageChange = (lng: string) => {
     i18n?.changeLanguage(lng);
     handleSaveSetting('language', lng);
   };
 
-  const handleSaveSetting = async (key: string, value: any) => {
+  const handleSaveSetting = async (key: string, value: string | boolean) => {
     try {
       await updateSettings({ [key]: value }).unwrap();
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || 'Failed to update settings', 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, 'Failed to update settings'), 'error');
     }
   };
 
@@ -85,7 +80,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                     type="checkbox" 
                     checked={isSoundEnabled} 
                     onChange={(e) => {
-                      setIsSoundEnabled(e.target.checked);
                       handleSaveSetting('soundEnabled', e.target.checked);
                     }} 
                   />

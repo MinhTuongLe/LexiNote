@@ -24,7 +24,7 @@ import {
   useImportWordsMutation,
   useGetMeQuery
 } from './store/apiSlice';
-import { useCuteDialog } from './context/DialogContext';
+import { useCuteDialog } from './context/useCuteDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized, logout } from './store/authSlice';
@@ -33,7 +33,8 @@ import { checkHasSeenGuide } from './utils/authUtils';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
-import type { CreateWordDTO } from './types';
+import type { CreateWordDTO, ImportedWord } from './types';
+import type { RootState } from './store';
 import CountUp from './components/CountUp';
 import { getTypeLabel } from './utils/wordUtils';
 import './components/Skeleton.css';
@@ -45,7 +46,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   
-  const { user, isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, isInitialized } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { showAlert, closeDialog } = useCuteDialog();
   const { t } = useTranslation();
@@ -68,8 +69,9 @@ function App() {
 
   // Global error handler for system-wide failures
   useEffect(() => {
-    const handleSystemError = (e: any) => {
-      showAlert(t('common.error'), e.detail || t('common.system_error'), 'error');
+    const handleSystemError = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      showAlert(t('common.error'), detail || t('common.system_error'), 'error');
     };
     window.addEventListener('system-error', handleSystemError);
     return () => window.removeEventListener('system-error', handleSystemError);
@@ -143,17 +145,17 @@ function App() {
       await createWord(data).unwrap();
       showAlert(t('common.success'), t('dashboard.add_success'), 'success');
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.add_error'), 'error');
     }
   };
 
-  const handleImport = async (words: any[]) => {
+  const handleImport = async (words: ImportedWord[]) => {
     try {
       await importWords(words).unwrap();
       showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
       setIsImportModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.import_error'), 'error');
     }
   };
@@ -304,7 +306,7 @@ function App() {
                     <p>{t('dashboard.empty_library')}</p>
                   </Card>
                 ) : (
-                  stats.recentWords.map((word: any) => (
+                  stats.recentWords.map((word) => (
                     <Card key={word.id} className="word-item">
                       <div className="word-header">
                         <h3>{word.word}</h3>

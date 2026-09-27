@@ -6,9 +6,10 @@ import Button from '../../../../components/Button';
 import i18n from '../../../../i18n';
 
 import { useGetStudyStatsQuery } from '../../../../store/apiSlice';
+import type { StudyStats } from '../../../../types';
 
 interface ActivityDetailProps {
-  stats: any;
+  stats: StudyStats;
 }
 
 const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) => {
@@ -51,7 +52,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
   const yearNum = viewDate.getFullYear();
   const isCurrentMonth = viewDate.getMonth() === new Date().getMonth() && viewDate.getFullYear() === new Date().getFullYear();
 
-  const studiedDaysCount = activeStats.weeklyActivity.filter((d: any) => d.count > 0).length;
+  const studiedDaysCount = activeStats.weeklyActivity.filter((d) => d.count > 0).length;
   const goalDays = 20;
   const goalPercent = Math.min((studiedDaysCount / goalDays) * 100, 100);
 
@@ -143,7 +144,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
                  const dayNum = i + 1;
                  const dateString = `${yearNum}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
                  
-                 const activityForDay = activeStats.weeklyActivity.find((d: any) => d.date === dateString);
+                 const activityForDay = activeStats.weeklyActivity.find((d) => d.date === dateString);
                  const isStudied = activityForDay && activityForDay.count > 0;
                  const isToday = isCurrentMonth && dayNum === new Date().getDate();
                  
@@ -198,10 +199,10 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
                </div>
             </Card>
             
-            {activeStats.weeklyActivity.some((d: any) => d.count > 0) && (
+            {activeStats.weeklyActivity.some((d) => d.count > 0) && (
               <div className="recent-activity-list">
                 <h4>{t('stats.recent_events')}</h4>
-                {activeStats.weeklyActivity.filter((d: any) => d.count > 0).slice(-3).reverse().map((day: any, i: number) => (
+                {activeStats.weeklyActivity.filter((d) => d.count > 0).slice(-3).reverse().map((day, i: number) => (
                     <div key={i} className="activity-log-item">
                       <div className="log-icon">✨</div>
                       <div className="log-text">

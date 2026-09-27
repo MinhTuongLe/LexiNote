@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { Trophy, RefreshCw } from 'lucide-react';
@@ -9,6 +9,9 @@ import { useSound } from '../../hooks/useSound';
 import { speakText } from '../../utils/speech';
 import Confetti from '../../components/Confetti';
 import './MatchGame.css';
+import type { Word } from '../../types';
+
+const EMPTY_WORDS: Word[] = [];
 
 interface MatchGameProps {
   onBack: () => void;
@@ -23,7 +26,7 @@ type GameItem = {
 
 const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 'all' });
-  const words = wordsData?.data || [];
+  const words = wordsData?.data ?? EMPTY_WORDS;
   const { t } = useTranslation();
   const { playSound } = useSound();
   const [recordGameSession] = useRecordGameSessionMutation();
@@ -35,11 +38,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const [errorIds, setErrorIds] = useState<[string, string] | null>(null);
   const [gameCompleted, setGameCompleted] = useState(false);
 
-  useEffect(() => {
-    initGame();
-  }, [words]);
-
-  const initGame = () => {
+  const initGame = useCallback(() => {
     if (words.length < 5) return;
     
     // Pick 6 random words
@@ -60,7 +59,12 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     setSelectedId(null);
     setErrorIds(null);
     setGameCompleted(false);
-  };
+  }, [words]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(initGame, 0);
+    return () => window.clearTimeout(timer);
+  }, [initGame]);
 
   const handleItemClick = (item: GameItem) => {
     if (matchedIds.has(item.wordId)) return; // Already matched
@@ -106,7 +110,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
               score: wordIds.length * 20,
               timeSpentSeconds: 30,
               wordIds
-            }).catch(() => {});
+            }).catch(() => undefined);
             
             setTimeout(() => setGameCompleted(true), 500);
           }

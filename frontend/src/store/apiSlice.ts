@@ -1,15 +1,16 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
+import type { RootState } from './index';
 import i18n from '../i18n';
 
 // Base query with auth header
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:1337/api/v1/client',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token;
+    const token = (getState() as RootState).auth.token;
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
@@ -30,7 +31,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   if (result.error) {
     // Handle 401 Unauthorized -> Refresh Token Flow
     if (result.error.status === 401) {
-      const refreshToken = (api.getState() as any).auth.refreshToken;
+      const refreshToken = (api.getState() as RootState).auth.refreshToken;
 
       if (refreshToken) {
         // Try to get a new access token
@@ -106,7 +107,9 @@ export const apiSlice = createApi({
         try {
           const { data } = await queryFulfilled;
           dispatch(updateUser(data.user));
-        } catch (err) {}
+        } catch {
+          // The session is allowed to remain anonymous when the profile lookup fails.
+        }
       },
     }),
     refreshToken: builder.mutation<{ user: User; token: string; refreshToken: string }, { refreshToken: string }>({
@@ -220,7 +223,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
-    importWords: builder.mutation<{ imported: number }, any[]>({
+    importWords: builder.mutation<{ imported: number }, ImportedWord[]>({
       query: (words) => ({
         url: '/words/import',
         method: 'POST',
@@ -258,7 +261,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
-    updateSettings: builder.mutation<{ settings: any; message: string }, any>({
+    updateSettings: builder.mutation<{ settings: UserSettings; message: string }, Partial<UserSettings> & Record<string, unknown>>({
       query: (settings) => ({
         url: '/settings',
         method: 'PATCH',
@@ -268,14 +271,16 @@ export const apiSlice = createApi({
       async onQueryStarted(_arg, { dispatch, queryFulfilled, getState }) {
         try {
           const { data } = await queryFulfilled;
-          const currentUser = (getState() as any).auth.user;
+          const currentUser = (getState() as RootState).auth.user;
           if (currentUser) {
             dispatch(updateUser({ ...currentUser, settings: data.settings }));
           }
-        } catch (err) {}
+        } catch {
+          // The mutation result already reports the error to the caller.
+        }
       },
     }),
-    getSettings: builder.query<{ preferences: any; wordTypes: { system: string[], custom: any[] } }, void>({
+    getSettings: builder.query<SettingsData, void>({
       query: () => '/settings',
       providesTags: ['User'],
     }),

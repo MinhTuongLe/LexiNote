@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ModerationFlagReason, ModerationStatus, Prisma } from '@prisma/client';
+import { ModerationStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { ModerationQueryDto } from './dto/moderation-query.dto';

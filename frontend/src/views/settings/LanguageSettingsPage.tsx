@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Volume2, Languages, Plus, X, Tag
 } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useUpdateSettingsMutation, useGetSettingsQuery } from '../../store/apiSlice';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import CuteSelect from '../../components/CuteSelect';
 import './SettingsPage.css'; // Reuse the same CSS
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface LanguageSettingsPageProps {
   onBack: () => void;
@@ -21,25 +22,17 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
   const [updateSettings, { isLoading: isUpdating }] = useUpdateSettingsMutation();
   const { data: settingsData } = useGetSettingsQuery();
 
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [flashcardFront, setFlashcardFront] = useState('en');
-  const [customWordTypes, setCustomWordTypes] = useState<any[]>([]);
+  const soundEnabled = settingsData?.preferences?.soundEnabled ?? true;
+  const flashcardFront = settingsData?.preferences?.flashcardFront ?? 'en';
+  const customWordTypes = settingsData?.wordTypes?.custom ?? [];
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeLabel, setNewTypeLabel] = useState('');
 
-  useEffect(() => {
-    if (settingsData) {
-      if (settingsData.preferences?.soundEnabled !== undefined) setSoundEnabled(settingsData.preferences.soundEnabled);
-      if (settingsData.preferences?.flashcardFront !== undefined) setFlashcardFront(settingsData.preferences.flashcardFront);
-      if (settingsData.wordTypes?.custom !== undefined) setCustomWordTypes(settingsData.wordTypes.custom);
-    }
-  }, [settingsData]);
-
-  const handleSaveSetting = async (key: string, value: any) => {
+  const handleSaveSetting = async (key: string, value: string | boolean) => {
     try {
       await updateSettings({ [key]: value }).unwrap();
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || 'Failed to update settings', 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, 'Failed to update settings'), 'error');
     }
   };
 
@@ -68,7 +61,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
       setNewTypeName('');
       setNewTypeLabel('');
       showAlert(t('settings.added_title'), t('settings.type_added', { label: addedLabel }), 'success');
-    } catch (err: any) {
+    } catch {
       showAlert(t('common.error'), 'Failed to add word type', 'error');
     }
   };
@@ -82,7 +75,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
         try {
           await updateSettings({ wordTypes: updatedTypes }).unwrap();
           showAlert(t('settings.deleted_title'), t('settings.type_deleted'), 'success');
-        } catch (err: any) {
+    } catch {
           showAlert(t('common.error'), 'Failed to delete word type', 'error');
         }
       }
@@ -127,7 +120,6 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
                     type="checkbox" 
                     checked={soundEnabled} 
                     onChange={(e) => {
-                      setSoundEnabled(e.target.checked);
                       handleSaveSetting('soundEnabled', e.target.checked);
                     }} 
                   />
@@ -144,7 +136,6 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
                   options={flashcardOptions} 
                   value={flashcardFront} 
                   onChange={(val) => {
-                    setFlashcardFront(val);
                     handleSaveSetting('flashcardFront', val);
                   }} 
                   className="settings-cute-select" 

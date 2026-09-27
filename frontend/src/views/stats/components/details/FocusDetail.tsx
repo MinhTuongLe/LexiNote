@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../../../components/Card';
 import Button from '../../../../components/Button';
+import type { StudyStats } from '../../../../types';
 
 interface FocusDetailProps {
-  stats: any;
+  stats: StudyStats;
 }
 
 const FocusDetail: React.FC<FocusDetailProps> = ({ stats }) => {
@@ -36,7 +37,7 @@ const FocusDetail: React.FC<FocusDetailProps> = ({ stats }) => {
 
       <div className="weak-words-expanded-list">
          {weakWordsCount > 0 ? (
-           stats.weakestWords.map((w: any, i: number) => {
+           stats.weakestWords.map((w, i: number) => {
              const confidence = Math.max(100 - (w.wrongCount * 10), 10);
              let priority = 'mild';
              if (w.wrongCount > 5) priority = 'critical';

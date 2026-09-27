@@ -167,10 +167,6 @@ export class ReviewService {
   }
 
   async getStudyStats(userId: number, year?: number, month?: number) {
-    const wordCount = await this.prisma.word.count({
-      where: { ownerId: userId },
-    });
-
     const reviews = await this.prisma.review.findMany({
       where: { word: { ownerId: userId } },
       include: { word: true },
@@ -184,7 +180,6 @@ export class ReviewService {
     let newCount = 0;
     let totalCorrect = 0;
     let totalWrong = 0;
-    let totalEaseFactor = 0;
 
     const typesMap = new Map<string, any>();
 
@@ -215,7 +210,6 @@ export class ReviewService {
 
       totalCorrect += r.correctCount;
       totalWrong += r.wrongCount;
-      totalEaseFactor += r.easeFactor;
     });
 
     const reviewedWords = reviews.filter((r: any) => r.lastReviewed !== null);

@@ -40,13 +40,18 @@ export class MailService {
     this.brevoApiKey = rawBrevoKey ? rawBrevoKey.trim() : null;
 
     this.smtpHost = this.configService.get<string>('SMTP_HOST') || '';
-    this.smtpPort = Number(this.configService.get<number | string>('SMTP_PORT', 587));
+    this.smtpPort = Number(
+      this.configService.get<number | string>('SMTP_PORT', 587),
+    );
     const host = this.smtpHost;
     const port = this.smtpPort;
     const user = this.configService.get<string>('SMTP_USER');
     const rawPass = this.configService.get<string>('SMTP_PASS');
     const pass = rawPass ? rawPass.replace(/["'\s]/g, '') : '';
-    const rawSecure = this.configService.get<string | boolean>('SMTP_SECURE', false);
+    const rawSecure = this.configService.get<string | boolean>(
+      'SMTP_SECURE',
+      false,
+    );
     const secure = String(rawSecure).toLowerCase() === 'true' || port === 465;
 
     const rawFrom = this.configService.get<string>('MAIL_FROM');
@@ -55,7 +60,9 @@ export class MailService {
       : '"LexiNote App" <mt09122002@gmail.com>';
 
     if (this.brevoApiKey) {
-      this.logger.log(`🚀 MailService initialized with Brevo HTTPS API (Port 443 - Unrestricted delivery)`);
+      this.logger.log(
+        `🚀 MailService initialized with Brevo HTTPS API (Port 443 - Unrestricted delivery)`,
+      );
     } else if (host && user && pass) {
       const transportOptions: SMTPTransport.Options = {
         host,
@@ -71,7 +78,9 @@ export class MailService {
         },
       };
       this.transporter = nodemailer.createTransport(transportOptions);
-      this.logger.log(`📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`);
+      this.logger.log(
+        `📧 SMTP Transporter initialized using ${host}:${port} (secure: ${secure})`,
+      );
 
       if (port !== 465) {
         const fallbackOptions: SMTPTransport.Options = {
@@ -87,7 +96,8 @@ export class MailService {
             rejectUnauthorized: false,
           },
         };
-        this.fallbackSslTransporter = nodemailer.createTransport(fallbackOptions);
+        this.fallbackSslTransporter =
+          nodemailer.createTransport(fallbackOptions);
       }
     } else {
       this.logger.warn(
@@ -96,12 +106,20 @@ export class MailService {
     }
   }
 
-  async sendMail(to: string, subject: string, html: string, text?: string): Promise<boolean> {
+  async sendMail(
+    to: string,
+    subject: string,
+    html: string,
+    text?: string,
+  ): Promise<boolean> {
     // 1. Try Brevo HTTPS API first (Allows sending to ANY email recipient without domain verification, 300 mails/day)
     if (this.brevoApiKey) {
       try {
         let senderName = 'LexiNote App';
-        let senderEmail = (this.configService.get<string>('SENDER_EMAIL') || 'mt09122002@gmail.com').trim();
+        let senderEmail = (
+          this.configService.get<string>('SENDER_EMAIL') ||
+          'mt09122002@gmail.com'
+        ).trim();
 
         if (this.configService.get<string>('MAIL_FROM')) {
           const match = this.fromEmail.match(/^"?([^"<]+)"?\s*<([^>]+)>/);
@@ -137,25 +155,43 @@ export class MailService {
         let response = await sendBrevo(senderEmail);
 
         if (response.ok) {
-          this.logger.log(`📧 Email sent successfully via Brevo HTTPS API to ${to} (Subject: "${subject}")`);
+          this.logger.log(
+            `📧 Email sent successfully via Brevo HTTPS API to ${to} (Subject: "${subject}")`,
+          );
           return true;
         }
 
-        const errData = (await response.json().catch(() => ({}))) as { message?: string; code?: string };
-        this.logger.error(`❌ Brevo API Error (${response.status}): ${JSON.stringify(errData)}`);
+        const errData = (await response.json().catch(() => ({}))) as {
+          message?: string;
+          code?: string;
+        };
+        this.logger.error(
+          `❌ Brevo API Error (${response.status}): ${JSON.stringify(errData)}`,
+        );
 
         // If sender email is rejected, retry with alternative sender email
-        const altEmail = senderEmail === 'mt09122002@gmail.com' ? 'leminhtuong091202@gmail.com' : 'mt09122002@gmail.com';
-        this.logger.warn(`🔄 Retrying Brevo API with alternative sender "${altEmail}"...`);
+        const altEmail =
+          senderEmail === 'mt09122002@gmail.com'
+            ? 'leminhtuong091202@gmail.com'
+            : 'mt09122002@gmail.com';
+        this.logger.warn(
+          `🔄 Retrying Brevo API with alternative sender "${altEmail}"...`,
+        );
 
         response = await sendBrevo(altEmail);
         if (response.ok) {
-          this.logger.log(`📧 Email sent successfully via Brevo HTTPS API to ${to} using sender "${altEmail}"`);
+          this.logger.log(
+            `📧 Email sent successfully via Brevo HTTPS API to ${to} using sender "${altEmail}"`,
+          );
           return true;
         }
 
-        const retryErr = (await response.json().catch(() => ({}))) as { message?: string };
-        this.logger.error(`❌ Brevo API Retry Error (${response.status}): ${JSON.stringify(retryErr)}`);
+        const retryErr = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
+        this.logger.error(
+          `❌ Brevo API Retry Error (${response.status}): ${JSON.stringify(retryErr)}`,
+        );
       } catch (err: unknown) {
         const error = err as { message?: string };
         this.logger.error(`❌ Brevo API Request Failed: ${error?.message}`);
@@ -172,15 +208,21 @@ export class MailService {
           text: text || html.replace(/<[^>]*>?/gm, ''),
           html,
         });
-        this.logger.log(`📧 Email sent successfully to ${to} (Subject: "${subject}")`);
+        this.logger.log(
+          `📧 Email sent successfully to ${to} (Subject: "${subject}")`,
+        );
         return true;
       } catch (err: unknown) {
         const error = err as { message?: string; stack?: string };
-        this.logger.error(`❌ Primary SMTP failed (${error.message}) on ${this.smtpHost}:${this.smtpPort}.`);
+        this.logger.error(
+          `❌ Primary SMTP failed (${error.message}) on ${this.smtpHost}:${this.smtpPort}.`,
+        );
 
         // Fallback to Port 465 SSL if Port 587 timed out on Render
         if (this.fallbackSslTransporter) {
-          this.logger.warn(`🔄 Retrying email delivery via SSL Port 465 (smtp.gmail.com:465)...`);
+          this.logger.warn(
+            `🔄 Retrying email delivery via SSL Port 465 (smtp.gmail.com:465)...`,
+          );
           try {
             await this.fallbackSslTransporter.sendMail({
               from: this.fromEmail,
@@ -189,14 +231,18 @@ export class MailService {
               text: text || html.replace(/<[^>]*>?/gm, ''),
               html,
             });
-            this.logger.log(`✅ Email successfully sent using fallback SSL Port 465 to ${to}`);
+            this.logger.log(
+              `✅ Email successfully sent using fallback SSL Port 465 to ${to}`,
+            );
             // Promote fallback SSL to primary for future requests
             this.transporter = this.fallbackSslTransporter;
             this.fallbackSslTransporter = null;
             return true;
           } catch (sslErr: unknown) {
             const sslError = sslErr as { message?: string };
-            this.logger.error(`❌ Fallback SSL Port 465 also failed: ${sslError.message}`);
+            this.logger.error(
+              `❌ Fallback SSL Port 465 also failed: ${sslError.message}`,
+            );
           }
         }
 
@@ -223,7 +269,11 @@ export class MailService {
   /**
    * Send Account Email Verification OTP Code
    */
-  async sendAccountVerificationCode(to: string, fullName: string, verificationCode: string) {
+  async sendAccountVerificationCode(
+    to: string,
+    fullName: string,
+    verificationCode: string,
+  ) {
     const subject = '🔐 [LexiNote] Xác thực địa chỉ email tài khoản mới';
     const html = renderVerificationEmailTemplate(fullName, verificationCode);
     return this.sendMail(to, subject, html);
@@ -232,7 +282,11 @@ export class MailService {
   /**
    * Send Forgot Password Verification OTP / Code
    */
-  async sendForgotPasswordCode(to: string, fullName: string, resetCode: string) {
+  async sendForgotPasswordCode(
+    to: string,
+    fullName: string,
+    resetCode: string,
+  ) {
     const subject = '🔑 [LexiNote] Mã khôi phục mật khẩu tài khoản';
     const html = renderForgotPasswordTemplate(fullName, resetCode);
     return this.sendMail(to, subject, html);
@@ -241,8 +295,13 @@ export class MailService {
   /**
    * Send Admin Password Reset Notification
    */
-  async sendAdminPasswordResetNotification(to: string, fullName: string, newDefaultPassword: string) {
-    const subject = '🛡️ [LexiNote] Quản trị viên đã thiết lập lại mật khẩu tài khoản của bạn';
+  async sendAdminPasswordResetNotification(
+    to: string,
+    fullName: string,
+    newDefaultPassword: string,
+  ) {
+    const subject =
+      '🛡️ [LexiNote] Quản trị viên đã thiết lập lại mật khẩu tài khoản của bạn';
     const html = renderAdminPasswordResetTemplate(fullName, newDefaultPassword);
     return this.sendMail(to, subject, html);
   }
@@ -250,8 +309,13 @@ export class MailService {
   /**
    * Send Welcome Email to New User Created by Admin
    */
-  async sendWelcomeNewUserEmail(to: string, fullName: string, rawPassword: string) {
-    const subject = '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công';
+  async sendWelcomeNewUserEmail(
+    to: string,
+    fullName: string,
+    rawPassword: string,
+  ) {
+    const subject =
+      '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công';
     const html = renderWelcomeNewUserTemplate(fullName, to, rawPassword);
     return this.sendMail(to, subject, html);
   }
@@ -260,7 +324,8 @@ export class MailService {
    * Send Security Notice when User Changes Password
    */
   async sendPasswordChangedNotification(to: string, fullName: string) {
-    const subject = '🛡️ [LexiNote] Cảnh báo bảo mật: Mật khẩu vừa được thay đổi';
+    const subject =
+      '🛡️ [LexiNote] Cảnh báo bảo mật: Mật khẩu vừa được thay đổi';
     const html = renderPasswordChangedTemplate(fullName);
     return this.sendMail(to, subject, html);
   }
@@ -268,7 +333,11 @@ export class MailService {
   /**
    * Send Account Status Changed (Deactivated / Reactivated) Notification
    */
-  async sendAccountStatusChangedNotification(to: string, fullName: string, isActive: boolean) {
+  async sendAccountStatusChangedNotification(
+    to: string,
+    fullName: string,
+    isActive: boolean,
+  ) {
     const subject = isActive
       ? '🎉 [LexiNote] Thông báo: Tài khoản của bạn đã được kích hoạt lại'
       : '🚨 [LexiNote] Cảnh báo: Tài khoản của bạn đã bị tạm khóa';
@@ -280,7 +349,8 @@ export class MailService {
    * Send Account Deleted Notification
    */
   async sendAccountDeletedNotification(to: string, fullName: string) {
-    const subject = '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống';
+    const subject =
+      '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống';
     const html = renderAccountDeletedTemplate(fullName);
     return this.sendMail(to, subject, html);
   }
@@ -288,8 +358,13 @@ export class MailService {
   /**
    * Send User Role Updated Notification
    */
-  async sendUserRoleUpdatedNotification(to: string, fullName: string, newRole: string) {
-    const subject = '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật';
+  async sendUserRoleUpdatedNotification(
+    to: string,
+    fullName: string,
+    newRole: string,
+  ) {
+    const subject =
+      '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật';
     const html = renderUserRoleUpdatedTemplate(fullName, newRole);
     return this.sendMail(to, subject, html);
   }
@@ -298,7 +373,8 @@ export class MailService {
    * Send Sessions Revoked Notification
    */
   async sendSessionsRevokedNotification(to: string, fullName: string) {
-    const subject = '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi';
+    const subject =
+      '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi';
     const html = renderSessionsRevokedTemplate(fullName);
     return this.sendMail(to, subject, html);
   }
@@ -306,7 +382,11 @@ export class MailService {
   /**
    * Generate rendered HTML preview for email templates
    */
-  getTemplatePreview(type: string, fullName = 'Nguyễn Văn A', sampleCodeOrPass = '123456') {
+  getTemplatePreview(
+    type: string,
+    fullName = 'Nguyễn Văn A',
+    sampleCodeOrPass = '123456',
+  ) {
     switch (type) {
       case 'verification':
         return {
@@ -320,8 +400,13 @@ export class MailService {
         };
       case 'welcome':
         return {
-          subject: '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công',
-          html: renderWelcomeNewUserTemplate(fullName, 'user@example.com', sampleCodeOrPass),
+          subject:
+            '🎉 [LexiNote] Chào mừng bạn! Thông tin tài khoản được khởi tạo thành công',
+          html: renderWelcomeNewUserTemplate(
+            fullName,
+            'user@example.com',
+            sampleCodeOrPass,
+          ),
         };
       case 'password_changed':
         return {
@@ -335,23 +420,27 @@ export class MailService {
         };
       case 'account_deleted':
         return {
-          subject: '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống',
+          subject:
+            '🗑️ [LexiNote] Thông báo: Tài khoản của bạn đã được xóa khỏi hệ thống',
           html: renderAccountDeletedTemplate(fullName),
         };
       case 'role_updated':
         return {
-          subject: '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật',
+          subject:
+            '🎖️ [LexiNote] Thông báo: Quyền hạn tài khoản của bạn đã được cập nhật',
           html: renderUserRoleUpdatedTemplate(fullName, 'ADMIN'),
         };
       case 'sessions_revoked':
         return {
-          subject: '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi',
+          subject:
+            '🔐 [LexiNote] Cảnh báo: Tất cả phiên đăng nhập từ xa vừa bị thu hồi',
           html: renderSessionsRevokedTemplate(fullName),
         };
       case 'admin_reset':
       default:
         return {
-          subject: '🛡️ [LexiNote] Quản trị viên đã thiết lập lại mật khẩu tài khoản của bạn',
+          subject:
+            '🛡️ [LexiNote] Quản trị viên đã thiết lập lại mật khẩu tài khoản của bạn',
           html: renderAdminPasswordResetTemplate(fullName, sampleCodeOrPass),
         };
     }

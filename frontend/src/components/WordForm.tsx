@@ -4,7 +4,7 @@ import { WORD_TYPES } from '../constants/wordTypes';
 import { useGetSettingsQuery } from '../store/apiSlice';
 import Button from './Button';
 import CuteSelect from './CuteSelect';
-import type { CreateWordDTO } from '../types';
+import type { CreateWordDTO, CustomWordType } from '../types';
 import './WordForm.css';
 
 interface WordFormProps {
@@ -28,7 +28,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
       value: type.value,
       label: t(`library.word_types.${type.value}`)
     })),
-    ...(settingsData?.wordTypes?.custom || []).map((type: any) => ({
+    ...(settingsData?.wordTypes?.custom || []).map((type: CustomWordType) => ({
       value: type.value,
       label: type.label
     }))
@@ -75,7 +75,7 @@ const WordForm: React.FC<WordFormProps> = ({ onSubmit, onCancel, initialData }) 
           label={t('words.type')}
           options={wordTypeOptions}
           value={formData.type}
-          onChange={(val) => setFormData({ ...formData, type: val as any })}
+          onChange={(val) => setFormData({ ...formData, type: val })}
         />
       </div>
 

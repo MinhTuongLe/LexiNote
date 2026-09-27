@@ -9,6 +9,41 @@ export interface Word {
   reviews?: Review[];
 }
 
+export interface CustomWordType {
+  value: string;
+  label: string;
+}
+
+export interface UserSettings {
+  preferences?: {
+    soundEnabled?: boolean;
+    flashcardFront?: 'en' | 'vi';
+    hasSeenGuide?: boolean;
+  };
+  wordTypes?: {
+    system?: string[];
+    custom?: CustomWordType[];
+  };
+  soundEnabled?: boolean;
+  flashcardFront?: 'en' | 'vi';
+  hasSeenGuide?: boolean;
+}
+
+export interface ImportedWord {
+  word: string;
+  meaningVi: string;
+  example?: string;
+  type: string;
+}
+
+export interface SettingsData {
+  preferences?: UserSettings['preferences'];
+  wordTypes?: {
+    system: string[];
+    custom: CustomWordType[];
+  };
+}
+
 export interface WordRelation {
   id: number;
   type: 'synonym' | 'antonym';

@@ -43,12 +43,14 @@ Tài liệu này tổng hợp phân tích chi tiết cấu trúc, đánh giá tr
   - Bổ sung nút Loa phát âm chuẩn trực tiếp trên từng thẻ từ vựng trong kho Library mà không cần vào chế độ học.
 
 ### 🟢 Giai đoạn 4: Hệ thống Thành tựu & Động lực Học tập (`stats/`)
-- [ ] **Hệ thống Huy hiệu (Achievements & Badges)**:
+- [x] **Hệ thống Huy hiệu (Achievements & Badges)**:
   - Mở khóa các huy hiệu khi đạt mốc:
     - 🐰 *Tân thủ (Học 10 từ đầu tiên)*
     - 🔥 *Chăm chỉ (Streak 7 ngày liên tiếp)*
-    - 🧠 *Trí nhớ siêu việt (Thuộc lòng 50 từ)*
-- [ ] **Bảng xếp hạng cá nhân & Thống kê tuần**.
+    - 🧠 *Trí nhớ siêu việt (Thuộc lòng 20 từ)*
+    - 🎯 *Thiện xạ (Độ chính xác >= 80%)*
+- [x] **Thống kê hoạt động tuần (Weekly Activity Chart)**.
+- [ ] **Bảng xếp hạng cá nhân & cộng đồng (Leaderboard)**.
 
 ---
 

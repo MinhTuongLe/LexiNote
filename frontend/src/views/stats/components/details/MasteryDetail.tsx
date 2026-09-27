@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import Card from '../../../../components/Card';
 import Button from '../../../../components/Button';
+import type { StudyStats } from '../../../../types';
 
 interface MasteryDetailProps {
-  stats: any;
+  stats: StudyStats;
 }
 
 const MasteryDetail: React.FC<MasteryDetailProps> = ({ stats }) => {

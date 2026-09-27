@@ -60,10 +60,10 @@ export class SettingsService {
         : {}),
     };
 
-    const updatedUser = (await this.prisma.user.update({
+    await this.prisma.user.update({
       where: { id: userId },
       data: { settings: newSettings } as any,
-    })) as any;
+    });
 
     return {
       settings: await this.getSettings(userId),

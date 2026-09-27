@@ -1,6 +1,5 @@
 import React from 'react';
-import { 
-  MoreVertical,
+import {
   Layers,
   Zap,
   ShieldCheck, 

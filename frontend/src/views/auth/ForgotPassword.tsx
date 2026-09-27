@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../../store/apiSlice';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Mail, KeyRound, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 type ForgotStep = 'email' | 'code' | 'done';
 
@@ -47,8 +48,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
       showAlert(t('common.success'), result.message, 'success');
       setStep('code');
       setCountdown(60);
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, t('common.error')), 'error');
     }
   };
 
@@ -69,8 +70,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
       await resetPassword({ email, resetToken: resetCode, newPassword }).unwrap();
       showAlert(t('common.success'), t('auth.password_reset_success') || 'Your password has been reset!', 'success');
       setStep('done');
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || t('auth.invalid_reset_code'), 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, t('auth.invalid_reset_code')), 'error');
     }
   };
 

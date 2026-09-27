@@ -4,7 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Word, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { SettingsService } from '../settings/settings.service';
 import { ReviewService } from '../review/review.service';
 

@@ -2,9 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { PieChart } from 'lucide-react';
 import Card from '../../../../components/Card';
+import type { StudyStats } from '../../../../types';
 
 interface CategoryInsightsProps {
-  typesBreakdown: any[];
+  typesBreakdown: StudyStats['typesBreakdown'];
   mounted: boolean;
   onClick: () => void;
 }

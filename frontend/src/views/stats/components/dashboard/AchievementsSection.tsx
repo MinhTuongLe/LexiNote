@@ -18,9 +18,12 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats,
   const accuracy = stats.accuracy || 0;
   const masteredWords = stats.masteryBreakdown?.mastered || 0;
 
-  const serverUnlockedIds = new Set((userAchievementsData?.achievements || []).filter(a => a.unlocked).map(a => a.id));
+  const serverUnlockedIds = React.useMemo(
+    () => new Set((userAchievementsData?.achievements || []).filter(a => a.unlocked).map(a => a.id)),
+    [userAchievementsData?.achievements]
+  );
 
-  const achievements = [
+  const achievements = React.useMemo(() => [
     {
       id: 'beginner',
       icon: '🐰',
@@ -61,7 +64,7 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats,
       unlocked: accuracy >= 80 || serverUnlockedIds.has('accuracy'),
       badgeColor: '#55efc4'
     }
-  ];
+  ], [accuracy, masteredWords, serverUnlockedIds, streak, totalWords]);
 
   // Auto-sync unlocks to server
   React.useEffect(() => {

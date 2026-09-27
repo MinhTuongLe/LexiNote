@@ -21,10 +21,10 @@ import {
   useImportWordsMutation,
   useGetDashboardStatsQuery
 } from '../store/apiSlice';
-import { useCuteDialog } from '../context/DialogContext';
+import { useCuteDialog } from '../context/useCuteDialog';
 import CuteSelect from '../components/CuteSelect';
 import SkeletonWordCard from '../components/SkeletonWordCard';
-import type { Word } from '../types';
+import type { Word, CreateWordDTO, ImportedWord, CustomWordType } from '../types';
 import { useTranslation } from 'react-i18next';
 import { WORD_TYPES } from '../constants/wordTypes';
 import { speakText } from '../utils/speech';
@@ -67,8 +67,8 @@ const Library: React.FC = () => {
         showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
         setLoadedWords(prev => prev.filter(w => w.id !== id));
         setSelectedIds(prev => prev.filter(sid => sid !== id));
-      } catch (err) {
-        console.error(err);
+      } catch {
+        showAlert(t('common.error'), t('common.error'), 'error');
       }
     });
   };
@@ -85,40 +85,40 @@ const Library: React.FC = () => {
           showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
           setLoadedWords(prev => prev.filter(w => !selectedIds.includes(w.id)));
           setSelectedIds([]);
-        } catch (err) {
+      } catch {
           showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
     );
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: CreateWordDTO) => {
     if (!editingWord) return;
     try {
       await updateWord({ id: editingWord.id, data }).unwrap();
       showAlert(t('library.update_success_title'), t('library.update_success_msg'), 'success');
       setEditingWord(null);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('common.error'), 'error');
     }
   };
 
-  const handleAddWord = async (data: any) => {
+  const handleAddWord = async (data: CreateWordDTO) => {
     try {
       await createWord(data).unwrap();
       showAlert(t('common.success'), t('dashboard.add_success'), 'success');
       setIsAddModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.add_error'), 'error');
     }
   };
 
-  const handleImport = async (words: any[]) => {
+  const handleImport = async (words: ImportedWord[]) => {
     try {
       await importWords(words).unwrap();
       showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
       setIsImportModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.import_error'), 'error');
     }
   };
@@ -151,7 +151,7 @@ const Library: React.FC = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
       XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } catch (err) {
+    } catch {
       console.error('Export failed:', err);
       showAlert(t('common.error'), t('common.error'), 'error');
     } finally {
@@ -171,7 +171,7 @@ const Library: React.FC = () => {
           await resetProgress(targets).unwrap();
           showAlert(t('library.reset_success_title'), t('library.reset_success_msg'), 'success');
           setSelectedIds([]);
-        } catch (err) {
+        } catch {
           showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
@@ -214,7 +214,7 @@ const Library: React.FC = () => {
       value: type.value,
       label: t(`library.word_types.${type.value}`)
     })),
-    ...(settingsData?.wordTypes?.custom || []).map((type: any) => ({
+    ...(settingsData?.wordTypes?.custom || []).map((type: CustomWordType) => ({
       value: type.value,
       label: type.label
     }))
@@ -223,7 +223,7 @@ const Library: React.FC = () => {
   const getTypeLabel = (typeValue: string) => {
     const defaultType = WORD_TYPES.find(t => t.value === typeValue);
     if (defaultType) return t(`library.word_types.${typeValue}`);
-    const customType = settingsData?.wordTypes?.custom?.find((t: any) => t.value === typeValue);
+    const customType = settingsData?.wordTypes?.custom?.find((type) => type.value === typeValue);
     return customType ? customType.label : typeValue;
   };
 
@@ -429,7 +429,7 @@ const Library: React.FC = () => {
       >
         {editingWord && (
           <WordForm 
-            initialData={editingWord as any}
+            initialData={editingWord}
             onSubmit={handleUpdate}
             onCancel={() => setEditingWord(null)}
           />

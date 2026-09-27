@@ -3,7 +3,7 @@ import Card from '../components/Card';
 import Button from '../components/Button';
 import { RotateCw, Check, AlertTriangle, Zap, X, Volume2, VolumeX } from 'lucide-react';
 import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
-import { useCuteDialog } from '../context/DialogContext';
+import { useCuteDialog } from '../context/useCuteDialog';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../hooks/useSound';
 import { speakText } from '../utils/speech';
@@ -93,7 +93,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
         { label: 'easy', color: '#55efc4' };
 
       setResults(prev => [...prev, { 
-        word: (currentReview.word as any).word, 
+        word: word.word,
         rating: ratingInfo.label,
         color: ratingInfo.color
       }]);

@@ -5,14 +5,13 @@ import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { useLogoutServerMutation } from '../store/apiSlice';
 import { useTranslation } from 'react-i18next';
-import { useCuteDialog } from '../context/DialogContext';
+import { useCuteDialog } from '../context/useCuteDialog';
+import type { RootState } from '../store';
 import './Navbar.css';
 
-interface NavbarProps {}
-
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, refreshToken } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, refreshToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { showConfirm } = useCuteDialog();
