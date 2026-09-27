@@ -273,6 +273,8 @@
             { "name": "List users", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users?page=1&limit=20&search=&isActive=" } },
             { "name": "Export users CSV", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/export?format=csv" } },
             { "name": "Create user", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"New User\",\n  \"email\": \"new-user@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"MEMBER\"\n}" }, "url": "{{dashboardBaseUrl}}/management/users" } },
+            { "name": "Ban user", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Violation of community standards\"\n}" }, "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/ban" } },
+            { "name": "Unban user", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/unban" } },
             { "name": "Get user", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}" } },
             { "name": "Get user details", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/details" } },
             { "name": "Update user", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Updated User\",\n  \"isActive\": true\n}" }, "url": "{{dashboardBaseUrl}}/management/users/{{userId}}" } },

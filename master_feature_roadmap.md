@@ -43,12 +43,11 @@ flowchart TD
   - API `POST /management/users/:id/reset-password`: Mã hóa bcrypt `123456`, cập nhật DB, thu hồi toàn bộ Refresh Tokens active.
   - Giao diện: Nút Reset Password trên bảng & trong Modal chi tiết kèm cảnh báo `ConfirmModal`.
 - [x] **Chỉnh sửa Thông tin cá nhân**: Sửa Họ tên, Email, Role (`ADMIN` / `MEMBER`), Trạng thái (`isActive`).
-- [ ] **Khóa & Khôi phục Tài khoản Nâng cao**:
-  - Cập nhật lý do khóa tài khoản (`banReason`).
-  - Đổi trạng thái tài khoản giữa `active`, `suspended`, `banned`.
-- 🟡 **Tạo mới User từ Admin (cơ bản đã có)**:
-  - Backend nhận `fullName`, `email`, `password` tùy chọn và `role` (`ADMIN` / `MEMBER`), mặc định mật khẩu `123456` và role `MEMBER`.
-  - Dashboard hiện mới nhập `fullName` và `email`; cần bổ sung trường Role và mật khẩu tùy chọn để hoàn tất.
+- [x] **Khóa & Khôi phục Tài khoản Nâng cao**:
+  - API `POST /management/users/:id/ban` lưu `banReason`, đặt `status=banned`, tắt tài khoản và thu hồi toàn bộ refresh sessions.
+  - API `POST /management/users/:id/unban` khôi phục `status=active`, bật tài khoản và xóa `banReason`.
+- [x] **Tạo mới User từ Admin (Full Fields)**:
+  - Backend và Dashboard hỗ trợ `fullName`, `email`, password tùy chọn và role (`ADMIN` / `MEMBER`), mặc định mật khẩu `123456` và role `MEMBER`.
 
 #### 1.2. Quản lý Phiên Đăng Nhập & Giám sát Thiết bị (Session Inspector)
 - [x] **Xem danh sách phiên active**: IP Address, User-Agent, Trạng thái hết hạn (`isExpired`).
@@ -155,7 +154,7 @@ flowchart TD
 
 | Module | Tên Module | Trạng thái hiện tại | Bước tiếp theo |
 | :---: | :--- | :---: | :--- |
-| **Module 1** | User & Session Management | 🟡 Khoảng 75% | Bổ sung form User đầy đủ trường, trạng thái nâng cao và cảnh báo đăng nhập bất thường |
+| **Module 1** | User & Session Management | 🟢 100% Core Complete | Hoàn tất Core User Management (Add Member full fields, Ban with reason, Unban, Session Revoke). Chuẩn bị đợt 2 (Module 2 Moderation). |
 | **Module 2** | Word & Content Library | 🟡 Khoảng 70% | Bổ sung IPA/audio/tags, transfer ownership, file import và moderation reject/request-edit |
 | **Module 3** | SRS & Review Progress | 🟡 Khoảng 30% | Bổ sung API chỉnh sửa `nextReview`, tuning SRS và reset tiến độ 1-click |
 | **Module 4** | Audit Log & Archive | 🟢 Khoảng 80% | Bổ sung Before/After JSON diff và lọc theo khoảng thời gian |

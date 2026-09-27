@@ -43,6 +43,7 @@ model User {
   updatedAt                BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
   settings                 Json?    @default("{}") @db.Json
   status                   String   @default("active")
+  banReason                String?  @map("ban_reason")
   
   words                    Word[]
   refreshTokens            RefreshToken[]

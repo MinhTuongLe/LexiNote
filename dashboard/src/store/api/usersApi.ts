@@ -11,6 +11,8 @@ export interface ApiUser {
   updatedAt?: number | string;
   role?: string;
   wordCount?: number;
+  status?: string;
+  banReason?: string | null;
 }
 
 export interface GetUsersResponse {
@@ -70,13 +72,28 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       providesTags: ['Users'],
     }),
-    createUser: builder.mutation<ApiUser, { fullName: string; email: string }>({
+    createUser: builder.mutation<ApiUser, { fullName: string; email: string; password?: string; role?: 'ADMIN' | 'MEMBER' }>({
       query: (data) => ({
         url: '/management/users',
         method: 'POST',
         body: data,
       }),
       invalidatesTags: ['Users', 'Stats'],
+    }),
+    banUser: builder.mutation<ApiUser, { id: number; reason: string }>({
+      query: ({ id, reason }) => ({
+        url: `/management/users/${id}/ban`,
+        method: 'POST',
+        body: { reason },
+      }),
+      invalidatesTags: (_result, _error, { id }) => ['Users', { type: 'Users', id }, { type: 'Users', id: `sessions-${id}` }],
+    }),
+    unbanUser: builder.mutation<ApiUser, number>({
+      query: (id) => ({
+        url: `/management/users/${id}/unban`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, id) => ['Users', { type: 'Users', id }],
     }),
     toggleUserStatus: builder.mutation<{ success: boolean; isActive?: boolean }, number>({
       query: (id) => ({
@@ -170,6 +187,8 @@ export const {
   useRevokeAllUserSessionsMutation,
   useUpdateUserRoleMutation,
   useResetUserPasswordMutation,
+  useBanUserMutation,
+  useUnbanUserMutation,
   useGetMailPreviewQuery,
   useLazyGetMailPreviewQuery,
 } = usersApi;

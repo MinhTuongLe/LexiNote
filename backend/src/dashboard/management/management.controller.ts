@@ -20,6 +20,7 @@ import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { toCsv } from '../../common/export/csv.util';
 import { ExportUsersQueryDto } from './dto/export-users-query.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 
 @ApiTags('Dashboard Management')
 @ApiBearerAuth()
@@ -88,6 +89,21 @@ export class ManagementController {
     },
   ) {
     return this.managementService.createUser(body);
+  }
+
+  @Post('users/:id/ban')
+  @ApiOperation({ summary: 'Ban a user and revoke all active sessions' })
+  async banUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: BanUserDto,
+  ) {
+    return this.managementService.banUser(id, body.reason);
+  }
+
+  @Post('users/:id/unban')
+  @ApiOperation({ summary: 'Unban a user and restore account access' })
+  async unbanUser(@Param('id', ParseIntPipe) id: number) {
+    return this.managementService.unbanUser(id);
   }
 
   @Post('users/:id/reset-password')

@@ -7,7 +7,7 @@ import type { DashboardUserItem } from './useUsers';
 interface UserFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { fullName: string; email?: string }) => Promise<void>;
+  onSubmit: (data: { fullName: string; email?: string; password?: string; role?: 'ADMIN' | 'MEMBER' }) => Promise<void>;
   user?: DashboardUserItem | null;
   isLoading?: boolean;
 }
@@ -22,24 +22,36 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
   const isEditing = !!user;
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'ADMIN' | 'MEMBER'>((user?.role as 'ADMIN' | 'MEMBER') || 'MEMBER');
 
   const [prevUser, setPrevUser] = useState(user);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
-  // Sync state during rendering when props change (React recommended pattern for state reset)
   if (user !== prevUser || isOpen !== prevIsOpen) {
     setPrevUser(user);
     setPrevIsOpen(isOpen);
     if (isOpen) {
       setFullName(user?.fullName || '');
       setEmail(user?.email || '');
+      setPassword('');
+      setRole((user?.role as 'ADMIN' | 'MEMBER') || 'MEMBER');
     }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName.trim()) return;
-    await onSubmit(isEditing ? { fullName } : { fullName, email });
+    if (isEditing) {
+      await onSubmit({ fullName });
+    } else {
+      await onSubmit({ 
+        fullName: fullName.trim(), 
+        email: email.trim(), 
+        password: password.trim() || undefined,
+        role 
+      });
+    }
     onClose();
   };
 
@@ -47,18 +59,18 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
     <ReModal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Update User Profile' : 'Add New Member'}
+      title={isEditing ? 'Update User Profile' : 'Add New User Account'}
       description={
         isEditing
           ? `Modify profile details for: ${user?.email}`
-          : 'Initialize a new administrative or student account.'
+          : 'Create a new administrative or student account with customized roles and credentials.'
       }
       footer={
         <>
           <Button variant="outline" size="sm" onClick={onClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button size="sm" onClick={handleSubmit} disabled={isLoading || !fullName.trim()}>
+          <Button size="sm" onClick={handleSubmit} disabled={isLoading || !fullName.trim() || (!isEditing && !email.trim())}>
             {isLoading ? (isEditing ? 'Saving...' : 'Creating...') : isEditing ? 'Save Changes' : 'Create Account'}
           </Button>
         </>
@@ -67,7 +79,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-1.5">
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Full Name
+            Full Name <span className="text-destructive">*</span>
           </label>
           <Input
             placeholder="e.g. Linh Nguyen"
@@ -79,19 +91,50 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
         </div>
 
         {!isEditing && (
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Email Address
-            </label>
-            <Input
-              type="email"
-              placeholder="e.g. linh@lexinote.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
-              required
-            />
-          </div>
+          <>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Email Address <span className="text-destructive">*</span>
+              </label>
+              <Input
+                type="email"
+                placeholder="e.g. linh@lexinote.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+                required
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Password <span className="text-muted-foreground font-normal">(Default: 123456)</span>
+                </label>
+                <Input
+                  type="password"
+                  placeholder="Optional custom password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  User Role
+                </label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as 'ADMIN' | 'MEMBER')}
+                  className="flex h-10 w-full rounded-md border border-border/80 bg-muted/40 px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                  <option value="MEMBER">Member (Student)</option>
+                  <option value="ADMIN">Admin (System Manager)</option>
+                </select>
+              </div>
+            </div>
+          </>
         )}
       </form>
     </ReModal>
