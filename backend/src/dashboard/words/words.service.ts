@@ -85,6 +85,79 @@ export class DashboardWordsService {
     };
   }
 
+  async resetWordSrs(
+    wordId: number,
+    actorId?: number,
+    actorEmail?: string,
+  ) {
+    const word = await this.prisma.word.findUnique({
+      where: { id: wordId },
+      select: { id: true, word: true },
+    });
+    if (!word) throw new NotFoundException(`Word with ID ${wordId} not found`);
+
+    const resetAt = BigInt(Date.now());
+    const review = await this.prisma.review.upsert({
+      where: { wordId },
+      create: {
+        wordId,
+        interval: 0,
+        easeFactor: 2.5,
+        correctCount: 0,
+        wrongCount: 0,
+        lastReviewed: null,
+        nextReview: resetAt,
+        updatedAt: resetAt,
+      },
+      update: {
+        interval: 0,
+        easeFactor: 2.5,
+        correctCount: 0,
+        wrongCount: 0,
+        lastReviewed: null,
+        nextReview: resetAt,
+        updatedAt: resetAt,
+      },
+    });
+
+    await this.auditService.logAction({
+      actorId,
+      actorEmail,
+      action: 'WORD_RESET_SRS',
+      targetType: 'Word',
+      targetId: String(wordId),
+      details: { wordId, word: word.word },
+    });
+
+    return {
+      success: true,
+      message: `SRS progress reset successfully for word #${wordId}`,
+      review: {
+        wordId: review.wordId,
+        interval: review.interval,
+        easeFactor: review.easeFactor,
+        correctCount: review.correctCount,
+        wrongCount: review.wrongCount,
+        lastReviewed: review.lastReviewed
+          ? review.lastReviewed.toString()
+          : null,
+        nextReview: review.nextReview.toString(),
+      },
+    };
+  }
+
+  async getDistinctWordTypes(): Promise<string[]> {
+    const types = await this.prisma.word.findMany({
+      select: { type: true },
+      distinct: ['type'],
+    });
+
+    return Array.from(
+      new Set(types.map(({ type }) => type.trim()).filter(Boolean)),
+    )
+      .sort((first, second) => first.localeCompare(second));
+  }
+
   async importWords(ownerId: number, dto: ImportWordsDto) {
     const parsedWords = dto.rawWords
       .split(/[,;\r\n]+/)

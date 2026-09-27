@@ -7,7 +7,9 @@ import {
   useTransferWordOwnershipMutation,
   useAddWordRelationMutation,
   useDeleteWordRelationMutation,
-  useImportWordsMutation
+  useImportWordsMutation,
+  useResetWordSrsMutation,
+  useGetDistinctWordTypesQuery
 } from '@/store/api/wordsApi';
 
 export function useWords() {
@@ -16,12 +18,14 @@ export function useWords() {
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState('all');
+
+  const { data: distinctTypes = [] } = useGetDistinctWordTypesQuery();
 
   const { data, isLoading } = useGetWordsQuery({ 
     page, 
     search, 
-    type: filter === 'All' ? undefined : filter.toLowerCase(),
+    type: filter.toLowerCase() === 'all' ? undefined : filter.toLowerCase(),
     ownerId: ownerIdParam
   });
   const [deleteWord] = useDeleteWordMutation();
@@ -30,9 +34,16 @@ export function useWords() {
   const [addRelation] = useAddWordRelationMutation();
   const [deleteRelation] = useDeleteWordRelationMutation();
   const [importWordsApi, { isLoading: isImporting }] = useImportWordsMutation();
+  const [resetWordSrs] = useResetWordSrsMutation();
 
   const words = data?.data || [];
   const meta = data?.meta || { totalPages: 1, total: 0 };
+
+  // Combine default types with any custom types from DB
+  const defaultTypes = ['all', 'noun', 'verb', 'adjective', 'adverb'];
+  const allAvailableTypes = Array.from(
+    new Set(['all', ...defaultTypes.slice(1), ...distinctTypes.map((t) => t.toLowerCase())])
+  );
 
   const handleSearchChange = (value: string) => {
     setSearch(value);
@@ -69,6 +80,10 @@ export function useWords() {
     return deleteRelation(relationId).unwrap();
   };
 
+  const handleResetSrs = async (wordId: number) => {
+    return resetWordSrs(wordId).unwrap();
+  };
+
   const handleBatchImport = async (rawWords: string) => {
     try {
       return await importWordsApi({ rawWords }).unwrap();
@@ -88,6 +103,7 @@ export function useWords() {
     setFilter,
     type: filter,
     setType: setFilter,
+    availableTypes: allAvailableTypes,
     ownerId: ownerIdParam,
     setOwnerId: handleOwnerChange,
     page,
@@ -100,6 +116,7 @@ export function useWords() {
     handleTransferOwnership,
     handleAddRelation,
     handleDeleteRelation,
+    handleResetWordSrs: handleResetSrs,
     handleBatchImport
   };
 }

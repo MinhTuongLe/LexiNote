@@ -217,6 +217,84 @@ export class ManagementService {
     };
   }
 
+  async resetUserSrs(
+    userId: number,
+    actorId?: number,
+    actorEmail?: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
+
+    const words = await this.prisma.word.findMany({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+    const wordIds = words.map(({ id }) => id);
+    const resetAt = BigInt(Date.now());
+
+    if (wordIds.length > 0) {
+      const existingReviews = await this.prisma.review.findMany({
+        where: { wordId: { in: wordIds } },
+        select: { wordId: true },
+      });
+      const existingWordIds = new Set(
+        existingReviews.map(({ wordId }) => wordId),
+      );
+      const missingWordIds = wordIds.filter(
+        (wordId) => !existingWordIds.has(wordId),
+      );
+
+      await this.prisma.$transaction([
+        this.prisma.review.updateMany({
+          where: { wordId: { in: wordIds } },
+          data: {
+            interval: 0,
+            easeFactor: 2.5,
+            correctCount: 0,
+            wrongCount: 0,
+            lastReviewed: null,
+            nextReview: resetAt,
+            updatedAt: resetAt,
+          },
+        }),
+        ...(missingWordIds.length > 0
+          ? [
+              this.prisma.review.createMany({
+                data: missingWordIds.map((wordId) => ({
+                  wordId,
+                  interval: 0,
+                  easeFactor: 2.5,
+                  correctCount: 0,
+                  wrongCount: 0,
+                  lastReviewed: null,
+                  nextReview: resetAt,
+                  updatedAt: resetAt,
+                })),
+              }),
+            ]
+          : []),
+      ]);
+    }
+
+    await this.auditService.logAction({
+      actorId,
+      actorEmail,
+      action: 'USER_RESET_SRS',
+      targetType: 'User',
+      targetId: String(userId),
+      details: { userId, wordsCount: wordIds.length },
+    });
+
+    return {
+      success: true,
+      message: `Reset SRS progress for ${wordIds.length} words belonging to user #${userId}`,
+      resetCount: wordIds.length,
+    };
+  }
+
   async getUserSessions(userId: number) {
     const sessions = await this.prisma.refreshToken.findMany({
       where: { userId },

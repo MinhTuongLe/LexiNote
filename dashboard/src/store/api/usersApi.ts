@@ -165,6 +165,13 @@ export const usersApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, id) => ['Users', { type: 'Users', id }, { type: 'Users', id: `sessions-${id}` }],
     }),
+    resetUserSrs: builder.mutation<{ success: boolean; message: string; resetCount: number }, number>({
+      query: (id) => ({
+        url: `/management/users/${id}/reset-srs`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, id) => ['Users', { type: 'Users', id }, 'Words', 'Stats'],
+    }),
     getMailPreview: builder.query<{ html: string; subject: string }, { type?: string; fullName?: string; code?: string }>({
       query: (params) => ({
         url: '/management/mail-preview',
@@ -189,6 +196,7 @@ export const {
   useResetUserPasswordMutation,
   useBanUserMutation,
   useUnbanUserMutation,
+  useResetUserSrsMutation,
   useGetMailPreviewQuery,
   useLazyGetMailPreviewQuery,
 } = usersApi;

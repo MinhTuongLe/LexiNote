@@ -10,6 +10,7 @@ import {
   Query,
   ParseIntPipe,
   Res,
+  Req,
 } from '@nestjs/common';
 import { FastifyReply } from 'fastify';
 import { ManagementService } from './management.service';
@@ -104,6 +105,20 @@ export class ManagementController {
   @ApiOperation({ summary: 'Unban a user and restore account access' })
   async unbanUser(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.unbanUser(id);
+  }
+
+  @Post('users/:id/reset-srs')
+  @ApiOperation({ summary: 'Reset all SRS progress for a user' })
+  async resetUserSrs(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: { user?: { id?: number; userId?: number; email?: string } },
+  ) {
+    const actorId = req.user?.id ?? req.user?.userId;
+    return this.managementService.resetUserSrs(
+      id,
+      actorId,
+      req.user?.email,
+    );
   }
 
   @Post('users/:id/reset-password')

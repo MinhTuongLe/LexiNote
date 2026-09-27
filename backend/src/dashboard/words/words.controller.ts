@@ -92,6 +92,12 @@ export class DashboardWordsController {
     );
   }
 
+  @Get('types')
+  @ApiOperation({ summary: 'Get distinct glossary word types' })
+  async getDistinctWordTypes() {
+    return this.wordsService.getDistinctWordTypes();
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get all glossary items' })
   async getWords(
@@ -117,6 +123,16 @@ export class DashboardWordsController {
     @Body() data: UpdateDashboardWordDto,
   ) {
     return this.wordsService.updateWord(id, data);
+  }
+
+  @Post(':id/reset-srs')
+  @ApiOperation({ summary: 'Reset SRS progress for a word' })
+  async resetWordSrs(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: { user?: { id?: number; userId?: number; email?: string } },
+  ) {
+    const actorId = req.user?.id ?? req.user?.userId;
+    return this.wordsService.resetWordSrs(id, actorId, req.user?.email);
   }
 
   @Delete(':id')

@@ -10,7 +10,8 @@ import {
   Tag,
   Layers,
   Download,
-  UserCheck
+  UserCheck,
+  RotateCcw
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ const WordLibraryPage: React.FC = () => {
     setPage,
     type,
     setType,
+    availableTypes,
     ownerId,
     setOwnerId,
     totalPages,
@@ -48,6 +50,7 @@ const WordLibraryPage: React.FC = () => {
     handleTransferOwnership,
     handleAddRelation,
     handleDeleteRelation,
+    handleResetWordSrs,
     handleBatchImport
   } = useWords();
 
@@ -58,6 +61,7 @@ const WordLibraryPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -139,6 +143,25 @@ const WordLibraryPage: React.FC = () => {
       );
     } catch {
       toast.error('Action Failed', 'Could not delete relation.');
+    }
+  };
+
+  const handleResetSrsTrigger = (word: Word) => {
+    setEditingWord(word);
+    setIsResetModalOpen(true);
+  };
+
+  const onConfirmResetSrs = async () => {
+    if (!editingWord) return;
+    setIsProcessing(true);
+    try {
+      await handleResetWordSrs(editingWord.id);
+      setIsResetModalOpen(false);
+      toast.success('SRS Progress Reset', `SRS metrics for "${editingWord.word}" reset to New.`);
+    } catch {
+      toast.error('Reset Failed', 'Could not reset SRS review progress.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -262,6 +285,18 @@ const WordLibraryPage: React.FC = () => {
         onImport={onConfirmBatch}
       />
 
+      {/* Reset SRS Progress Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isResetModalOpen}
+        onClose={() => setIsResetModalOpen(false)}
+        onConfirm={onConfirmResetSrs}
+        title="Reset SRS Review Progress"
+        description={`Are you sure you want to reset SRS progress for "${editingWord?.word}"? The review intervals and counters will be reset back to New word state.`}
+        confirmText="Reset SRS"
+        variant="warning"
+        isLoading={isProcessing}
+      />
+
       {/* Delete Word Confirmation Modal */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
@@ -282,7 +317,7 @@ const WordLibraryPage: React.FC = () => {
               <Layers size={14} className="text-primary" /> Lexical Category
             </h3>
             <div className="space-y-1">
-              {(['all', 'noun', 'verb', 'adjective', 'adverb'] as const).map((t) => (
+              {availableTypes.map((t) => (
                 <button
                   key={t}
                   onClick={() => setType(t)}
@@ -395,6 +430,20 @@ const WordLibraryPage: React.FC = () => {
                             className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
                           >
                             <Edit2 size={13} />
+                          </Button>
+                        </Tooltip>
+
+                        <Tooltip content="Reset SRS Progress" side="top">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleResetSrsTrigger(word);
+                            }}
+                            className="h-7 w-7 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10"
+                          >
+                            <RotateCcw size={13} />
                           </Button>
                         </Tooltip>
 

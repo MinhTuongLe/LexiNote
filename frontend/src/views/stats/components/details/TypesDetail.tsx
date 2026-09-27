@@ -45,7 +45,9 @@ const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
              </div>
            ) : (
              <div className="top-category-highlight">
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('stats.start_learning_for_analysis')}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {t('stats.start_learning_for_analysis', 'Start studying to see an analysis of your lexical strengths! 🚀')}
+                </span>
              </div>
            )}
         </Card>

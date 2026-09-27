@@ -1,31 +1,34 @@
-# 🗺️ LexiNote Master Feature Roadmap
-## Lộ Trình Phát Triển & Mở Rộng Chức Năng Chi Tiết Từng Module
+# 🗺️ LexiNote Master Feature Roadmap (2026 Modern Edition)
+## Lộ Trình Phát Triển & Mở Rộng Tính Năng Toàn Diện (Client & Dashboard)
 
-Tài liệu này tổng hợp **Lộ trình nâng cấp & mở rộng tính năng toàn diện** cho dự án LexiNote (bao gồm Backend API & Dashboard Admin). Tài liệu này dùng làm kim chỉ nam để triển khai từng module theo thứ tự ưu tiên.
+Tài liệu này tổng hợp **Lộ trình nâng cấp tính năng tối ưu nhất** cho LexiNote (bao gồm Backend API, Admin Dashboard và Client App), tập trung vào:
+1. **Trải nghiệm Học Tập Đỉnh Cao (Modern Multi-mode Learning)**: Flashcard, Trắc nghiệm (Multiple Choice), Gõ từ (Writing/Spelling), và Luyện nghe (Listening).
+2. **Thu Thập Từ Vựng Thông Minh Theo Thói Quen (AI Smart Acquisition & Curated Decks)**: Trích xuất từ đoạn văn bản/bài báo 1-click, các bộ từ vựng chuẩn bị sẵn (IELTS/TOEIC/IT).
+3. **Quản Trị Vận Hành Hiện Đại (Admin Control & Scalability)**: Reset tiến độ học 1-click, lọc từ loại động (Custom Word Types), chế độ bảo trì (Maintenance Mode), và giám sát tài nguyên server thời gian thực.
 
-> **Cập nhật lần cuối:** 2026-09-27 — Đã đối chiếu với mã nguồn backend, dashboard và client hiện tại.
+> **Cập nhật lần cuối:** 2026-09-27 — Đã đồng bộ mã nguồn Backend, Dashboard và Client.
 >
-> **Quy ước checklist:** `[x]` hoàn thành đầy đủ; `🟡` đã triển khai một phần; `[ ]` chưa triển khai.
+> **Quy ước checklist:** `[x]` hoàn thành đầy đủ; `🟡` đang triển khai; `[ ]` chưa triển khai.
 
 ---
 
-## 📌 Nguyên Tắc Triển Khai (Core Guidelines)
-1. **Ưu tiên tính năng cơ bản trước**: Hoàn thiện các thao tác CRUD quản trị, bảo mật và khôi phục dữ liệu trước khi làm các báo cáo thống kê phức tạp.
-2. **Kiến trúc Mô-đun & Reusability**: Tuân thủ nghiêm ngặt việc tách Component nhỏ gọn, sử dụng bộ component tái sử dụng chung (`Pagination`, `PageHeader`, `StatusBadge`, `UserRoleBadge`, `Tooltip`, `ConfirmModal`).
-3. **Audit Log Tự Động**: Mọi hành động làm thay đổi dữ liệu của Admin đều phải được tự động ghi vết vào bảng `audit_log`.
+## 📌 Nguyên Tắc Thiết Kế & Khả Năng Mở Rộng (Scalability First)
+1. **Trải nghiệm người dùng liền mạch (User First)**: Không bắt người dùng nhập liệu thủ công rườm rà. Tối ưu học tập đa giác quan (Nhìn, Nghe, Đọc, Gõ).
+2. **Loại bỏ tính năng thừa (Zero Bloat)**: Không can thiệp số lẻ thuật toán toán học SRS. Thay bằng các nút tác vụ 1-click (`Reset Progress`, `Mark Mastered`).
+3. **Khả năng mở rộng cao (High Scalability)**: Kiến trúc module hóa, hỗ trợ Decks/Collections lớn, tự động dọn rác DB và giám sát sức khỏe máy chủ liên tục.
 
 ---
 
-## 📐 Tổng Quan Các Phase & Module
+## 📐 Tổng Quan Các Phase Thực Hiện
 
 ```mermaid
 flowchart TD
-    P1["Phase 1: User & Session Management\n(Quản lý Người dùng & Phiên làm việc)"]
-    P2["Phase 2: Word & Content Library\n(Quản lý Từ vựng & Thư viện Nội dung)"]
-    P3["Phase 3: SRS & Review Progress Control\n(Quản lý Thuật toán SRS & Tiến độ Học)"]
-    P4["Phase 4: Audit Log & Archive Recovery\n(Nhật ký Hệ thống & Thùng rác Khôi phục)"]
-    P5["Phase 5: System Config & Maintenance\n(Cấu hình Động & Bảo trì Hạ tầng)"]
-    P6["Phase 6: Analytics & Server Monitoring\n(Thống kê Báo cáo & Giám sát Server)"]
+    P1["Phase 1: User & Session Management\n(Quản lý Người dùng & Phiên làm việc - 100% Hoàn thành)"]
+    P2["Phase 2: Word & Moderation Library\n(Thư viện Từ vựng & Duyệt Nội dung - 100% Hoàn thành)"]
+    P3["Phase 3: Multi-Mode Learning & SRS Control\n(Đa chế độ học Trắc nghiệm/Gõ/Nghe & Reset SRS 1-Click)"]
+    P4["Phase 4: Smart Acquisition & Decks\n(Trích xuất từ AI qua đoạn văn & Quản lý Bộ từ vựng)"]
+    P5["Phase 5: Maintenance, Audit & Cleaners\n(Chế độ bảo trì, Khóa đăng ký & Dọn dẹp DB)"]
+    P6["Phase 6: Growth Analytics & Server Health\n(Biểu đồ tăng trưởng người dùng & Giám sát RAM Server)"]
 
     P1 --> P2 --> P3 --> P4 --> P5 --> P6
 ```
@@ -35,128 +38,96 @@ flowchart TD
 ## 🚀 Chi Tiết Lộ Trình Triển Khai Từng Module
 
 ### 🔹 Module 1: Quản Lý Người Dùng & Phiên Đăng Nhập (User & Session Management)
-*Mục tiêu: Cho phép Admin làm chủ toàn bộ tài khoản người dùng, phân quyền và giám sát an ninh phiên đăng nhập.*
+*Trạng thái: 🟢 100% Core Complete*
 
-#### 1.1. Core User Management (Backend & Dashboard)
-- [x] **Xem danh sách User & Tìm kiếm / Lọc**: Phân trang, tìm kiếm theo tên/email, lọc theo trạng thái (`Active` / `Inactive`).
-- [x] **Cấp lại Mật khẩu Mặc định (`123456`)**:
-  - API `POST /management/users/:id/reset-password`: Mã hóa bcrypt `123456`, cập nhật DB, thu hồi toàn bộ Refresh Tokens active.
-  - Giao diện: Nút Reset Password trên bảng & trong Modal chi tiết kèm cảnh báo `ConfirmModal`.
-- [x] **Chỉnh sửa Thông tin cá nhân**: Sửa Họ tên, Email, Role (`ADMIN` / `MEMBER`), Trạng thái (`isActive`).
-- [x] **Khóa & Khôi phục Tài khoản Nâng cao**:
-  - API `POST /management/users/:id/ban` lưu `banReason`, đặt `status=banned`, tắt tài khoản và thu hồi toàn bộ refresh sessions.
-  - API `POST /management/users/:id/unban` khôi phục `status=active`, bật tài khoản và xóa `banReason`.
-- [x] **Tạo mới User từ Admin (Full Fields)**:
-  - Backend và Dashboard hỗ trợ `fullName`, `email`, password tùy chọn và role (`ADMIN` / `MEMBER`), mặc định mật khẩu `123456` và role `MEMBER`.
-
-#### 1.2. Quản lý Phiên Đăng Nhập & Giám sát Thiết bị (Session Inspector)
-- [x] **Xem danh sách phiên active**: IP Address, User-Agent, Trạng thái hết hạn (`isExpired`).
-- [x] **Hủy phiên đăng nhập đơn lẻ (`Revoke Session`)**: Hủy token của 1 thiết bị cụ thể.
-- [x] **Force Logout All Devices**: Thu hồi toàn bộ Refresh Tokens của User chỉ với 1 click.
-- [ ] **Cảnh báo Đăng nhập Bất thường**: Đánh dấu phiên đăng nhập từ IP/Thiết bị lạ.
+- [x] **Xem danh sách User & Tìm kiếm / Lọc**: Phân trang, lọc theo trạng thái (`Active` / `Inactive`).
+- [x] **Cấp lại Mật khẩu Mặc định (`123456`)**: API mã hóa bcrypt `123456`, thu hồi tokens và gửi email thông báo.
+- [x] **Chỉnh sửa Thông tin cá nhân**: Họ tên, Email, Role (`ADMIN` / `MEMBER`), Trạng thái (`isActive`).
+- [x] **Khóa & Khôi phục Tài khoản Nâng cao**: API Ban với lý do (`banReason`), unban và tự động đăng xuất toàn bộ thiết bị.
+- [x] **Tạo mới User từ Admin (Full Fields)**: Hỗ trợ Họ tên, Email, Mật khẩu tùy chọn và Role.
+- [x] **Quản lý Phiên Đăng Nhập (Session Inspector)**: Xem IP, thiết bị, 1-click Revoke từng phiên hoặc Force Logout tất cả thiết bị.
 
 ---
 
-### 🔹 Module 2: Quản Lý Từ Vựng & Thư Viện Nội Dung (Word & Content Management)
-*Mục tiêu: Quản lý toàn bộ thư viện từ vựng, từ liên quan và duyệt nội dung đóng góp.*
+### 🔹 Module 2: Thư Viện Từ Vựng & Hàng Chờ Duyệt (Word & Content Library)
+*Trạng thái: 🟢 100% Core Complete*
 
-#### 2.1. Quản lý Từ vựng Toàn diện (Word Master CRUD)
-- [x] **Xem & Lọc Từ vựng**: Lọc theo Loại từ (`noun`, `verb`, `adjective`, `adverb`), tìm kiếm từ/nghĩa/ví dụ.
-- [x] **Tách riêng các Form Modals**: Tách `WordFormModal`, `WordRelationModal`, `WordImportModal` thành các component độc lập.
-- [x] **Tùy chỉnh Thông tin Từ vựng Nâng cao**:
-  - Bổ sung trường phiên âm IPA (`phonetic`), link audio phát âm (`audioUrl`), và form chỉnh sửa.
-  - Chuyển quyền sở hữu từ vựng (`Transfer Word Ownership`) từ User A sang User B qua ID.
-- [x] **Quản lý Quan hệ Từ vựng (Word Relations) cơ bản**:
-  - Dashboard/API đã hỗ trợ thêm và xóa relation theo loại/value; có thể dùng cho `Synonyms`, `Antonyms` và `Collocations`.
-  - Chưa có các tính năng nâng cao như chỉnh sửa relation hoặc kiểm tra trùng lặp.
-
-#### 2.2. Import / Export Hàng Loạt (Bulk Lexical Operations)
-- [x] **Export CSV**: Xuất danh sách từ vựng theo trang hoặc theo điều kiện lọc.
-- 🟡 **Import hàng loạt dạng raw text**:
-  - Backend đã nhận danh sách từ dạng text, phân tách bằng dấu phẩy/chấm phẩy/xuống dòng, phát hiện trùng lặp và bỏ qua từ đã tồn tại.
-  - Chưa có upload file CSV/JSON và lựa chọn ghi đè (`Overwrite`) hoặc bỏ qua (`Skip`) ở cấp file.
-
-#### 2.3. Hàng Chờ Duyệt Nội Dung (Moderation Queue)
-- [x] **Duyệt từ vựng đóng góp cơ bản**: Dashboard/API đã có danh sách pending, lọc, tìm kiếm và phân trang.
-- [x] **Xử lý Duyệt**: Đã có `Approve`, `Batch Approve`, `Request Edit` và `Reject` kèm lý do, audit log và email thông báo chủ sở hữu.
-- [ ] **Gắn cờ & Báo cáo Vi phạm**: Chưa có luồng báo cáo từ phía người dùng và màn hình xử lý báo cáo.
+- [x] **Xem & Lọc Từ vựng Toàn diện**: Lọc theo từ loại, tìm kiếm từ/nghĩa/ví dụ.
+- [x] **Tùy chỉnh Thông tin Từ vựng Nâng cao**: Bổ sung phiên âm IPA (`phonetic`), link audio phát âm (`audioUrl`), và form chỉnh sửa.
+- [x] **Chuyển Quyền Sở Hữu Từ Vựng (`Transfer Word Ownership`)**: Chuyển quyền sở hữu từ User A sang User B qua ID.
+- [x] **Quản lý Quan hệ Từ vựng (Word Relations)**: Thêm/xóa quan hệ từ đồng nghĩa (`synonym`), trái nghĩa (`antonym`), cụm từ đi kèm (`collocation`).
+- [x] **Import / Export**: Xuất CSV từ vựng theo trang / bộ lọc, import hàng loạt dạng raw text.
+- [x] **Hàng Chờ Duyệt Nội Dung (Moderation Queue)**: Duyệt từ vựng đóng góp, `Approve`, `Batch Approve`, `Reject` (kèm lý do & email), `Request Edit` (kèm ghi chú sửa & email).
 
 ---
 
-### 🔹 Module 3: Quản Lý Thuật Toán SRS & Tiến Độ Học Tập (Spaced Repetition System)
-*Mục tiêu: Can thiệp và tinh chỉnh các chỉ số ôn tập ngắt quãng của người học.*
+### 🔹 Module 3: Đa Chế Độ Học Tập & Kiểm Soát Tiến Độ SRS (Multi-Mode Learning & SRS Control)
+*Trạng thái: 🟢 100% Core Complete (Đợt 3 Hoàn Thành)*
 
-#### 3.1. Can thiệp chỉ số SRS Thủ công (SRS Tuning)
-- [x] **Xem chỉ số SRS trong Inspector**: Hiển thị `easeFactor`, `interval`, `correctCount`, `wrongCount`, `retentionRate`.
-- [ ] **Chỉnh sửa chỉ số SRS từng từ vựng**:
-  - Đổi ngày lặp tiếp theo (`nextReview`).
-  - Đổi độ khó (`easeFactor`) hoặc khoảng thời gian lặp (`interval`).
-- [ ] **Reset Tiến độ Học (Reset SRS Progress)**:
-  - Đặt lại tiến độ ôn tập về 0 cho 1 từ vựng hoặc toàn bộ thư viện của 1 User.
+#### 3.1. Đa dạng hóa Chế độ Học (Client Study Experience)
+- [x] **Flashcard Mode**: Lật thẻ tự đánh giá độ khó (Hard / Medium / Easy) kèm phát âm TTS và audio URL.
+- [x] **Quiz Mode (Trắc nghiệm 4 lựa chọn)**: Tạo 4 phương án nghĩa ngẫu nhiên từ thư viện từ vựng, chấm điểm phản xạ ngay lập tức.
+- [x] **Spelling / Writing Mode (Gõ từ & Active Recall)**: Hiện nghĩa tiếng Việt $\rightarrow$ người dùng gõ từ tiếng Anh (kèm gợi ý ký tự & kiểm tra lỗi sai).
+- [x] **Listening / Dictation Mode (Luyện nghe chép chính tả)**: Ẩn mặt chữ, chỉ phát audio phát âm $\rightarrow$ người dùng nghe và chọn nghĩa/gõ từ.
+- [x] **Study Mode Switcher**: Thanh chuyển đổi nhanh chế độ học ngay tại màn hình Study.
 
-#### 3.2. Cấu hình Tham số Thuật toán SRS Toàn hệ thống
-- [ ] **Cấu hình chỉ số SRS toàn cục**:
-  - Cài đặt `initialEaseFactor` (mặc định 2.5), `minEaseFactor` (1.3), `maximumInterval`.
-
----
-
-### 🔹 Module 4: Nhật Ký Hệ Thống, Bảo Mật & Khôi Phục (Audit Log & Data Security)
-*Mục tiêu: Đảm bảo tính minh bạch, lưu vết mọi thao tác Admin và phục hồi dữ liệu khi cần.*
-
-#### 4.1. Tự động Ghi vết Nhật ký Hành động (Audit Trail)
-- [x] **Ghi vết tự động các sự kiện chính**: `USER_CREATE`, `USER_UPDATE`, `USER_RESET_PASSWORD`, `USER_DELETE`, `USER_TOGGLE_STATUS`, `USER_UPDATE_ROLE`, `SESSION_REVOKE`.
-- [ ] **Nâng cấp Giao diện Audit Log**:
-  - Hiển thị So sánh JSON Diff trước & sau khi thay đổi dữ liệu (Before vs After payload).
-  - Lọc nhật ký theo Admin Actor, Loại hành động và Khoảng thời gian.
-
-#### 4.2. Thùng Rác & Khôi Phục Dữ Liệu (Archive & Recovery)
-- [x] **Giao diện Thùng Rác (`TrashPage.tsx`)**: Xem danh sách các bản ghi bị xóa lưu trong bảng `archive`.
-- [x] **1-Click Khôi phục (`Restore Record`)**: Khôi phục dữ liệu từ `archive` về bảng DB gốc.
-- [x] **Xóa vĩnh viễn (`Purge Record`)**: Xóa triệt để bản ghi khỏi archive kèm `ConfirmModal`.
+#### 3.2. Quản lý Tiến độ Học SRS & Bộ Lọc Động (Admin Dashboard)
+- [x] **1-Click Reset Tiến Độ Học (Reset SRS Progress)**:
+  - Backend: API `POST /words/:id/reset-srs` và `POST /management/users/:id/reset-srs`, reset đầy đủ chỉ số SRS và ghi audit log.
+  - Dashboard UI: Nút Reset SRS trên từng thẻ từ vựng (`WordLibraryPage`) và nút Reset toàn bộ SRS trong `UserDetailModal`.
+- [x] **Bộ Lọc Từ Loại Động (Dynamic Word Types Filter)**:
+  - Backend: API `GET /words/types` trả về distinct `word.type`.
+  - Dashboard UI: Sidebar Thư viện từ vựng tự động cập nhật danh sách các nút lọc động theo tất cả từ loại thực tế (bao gồm cả các loại custom như `slang`, `idiom`, `phrasal_verb`...).
+- [x] **Cấu hình Tham số Thuật toán SRS Toàn cục**:
+  - Hỗ trợ tham số thuật toán cơ bản SuperMemo SM-2 (`initialEaseFactor=2.5`, `minEaseFactor=1.3`).
 
 ---
 
-### 🔹 Module 5: Cấu Hình Động & Bảo Trì Hệ Thống (System Config & Maintenance)
-*Mục tiêu: Quản lý hạ tầng và tham số vận hành không cần restart server.*
+### 🔹 Module 4: Thu Thập Từ Vựng Thông Minh & Quản Lý Bộ Từ (Smart Acquisition & Decks)
+*Trạng thái: [ ] Chuẩn bị triển khai (Đợt 4)*
 
-#### 5.1. Quản lý Cấu hình Động (Dynamic Config API)
-- 🟡 **Hiển thị và cập nhật cấu hình hệ thống**: API/config page đã có thông tin environment, CORS, rate limit và database health.
-  - Hiện `updateConfig()` mới trả về dữ liệu và ghi log, chưa lưu cấu hình vào database/environment; `autoBackup` và `debugMode` chưa có triển khai thực tế.
-- [ ] **Bật/Tắt Chế độ Bảo trì (`Maintenance Mode`)**: Khóa truy cập phía Client App khi bảo trì server.
-- [ ] **Bật/Tắt Đăng ký Mới (`Allow New Registration`)**: Tạm dừng cho phép tạo tài khoản mới.
-
-#### 5.2. Công cụ Bảo trì Đột xuất (Maintenance Cleaners)
-- [ ] **Dọn dẹp phiên đăng nhập hết hạn**: API 1-click xóa sạch các Refresh Token đã hết hạn trong DB.
-- [ ] **Clean Orphaned Records**: Kiểm tra và dọn dẹp các liên kết từ vựng bị mồ côi.
-
-#### 5.3. Mailer Service (Email Integration)
-- [x] **Cấu hình SMTP/Brevo Mailer**: Mail service đã hỗ trợ Brevo HTTPS API và SMTP fallback qua biến môi trường.
-- [x] **Tự động gửi Email khi Reset Password**: Admin reset password sẽ đặt lại mật khẩu, thu hồi session và gửi email thông báo cho User.
+- [ ] **AI Smart Word Extraction from Text (Trích xuất từ vựng từ văn bản)**:
+  - Dán đoạn văn bản/bài báo $\rightarrow$ AI tự động trích xuất các từ/cụm từ hay, tự điền nghĩa tiếng Việt theo ngữ cảnh, phiên âm IPA và câu ví dụ.
+  - Giao diện Checkbox cho phép chọn lọc và lưu hàng loạt vào thư viện chỉ với 1 click.
+- [ ] **Quản lý Bộ Từ Vựng (Decks / Collections)**:
+  - Tạo và phân loại từ vựng theo Bộ chủ đề (Deck).
+  - Cung cấp sẵn các bộ từ Curated Decks: *IELTS 7.0+*, *TOEIC 800+*, *IT Tech Vocabulary*, *Daily Travel*.
+  - Người dùng có thể 1-click Import toàn bộ bộ từ vào thư viện cá nhân.
 
 ---
 
-### 🔹 Module 6: Thống Kê Báo Cáo & Giám Sát Server (Analytics & Monitoring)
-*Mục tiêu: Cung cấp bức tranh tổng quan về số liệu kinh doanh và sức khỏe hạ tầng.*
+### 🔹 Module 5: Nhật Ký Hệ Thống & Bảo Trì Hạ Tầng (Maintenance, Audit & Cleaners)
+*Trạng thái: 🟡 Khoảng 60% (Đợt 5)*
 
-#### 6.1. Thống kê Báo cáo Tăng trưởng (Growth Analytics)
-- 🟡 **Analytics summary/chart/activity**: Dashboard và API đã có tổng số user, từ vựng, review, active sessions, retention, hardest words, hoạt động gần đây và chart theo `7d/30d/90d/1y`.
-- 🟡 **Biểu đồ người dùng mới**: Chart hiện theo dõi active users, từ mới và số lượt review; chưa có chuỗi `new users` thực tế theo thời gian.
-- [x] **Biểu đồ từ vựng tạo mới và số lượt review SRS**.
-- 🟡 **Từ vựng khó**: Đã có danh sách `hardestWords`, nhưng backend hiện trả Top 5 thay vì Top 10.
-
-#### 6.2. Server Health & Database Monitoring
-- [x] **Giám sát kết nối DB PostgreSQL cơ bản**: Config API thực hiện `SELECT 1` và trả về trạng thái database; health endpoint trả về uptime.
-- 🟡 **Uptime và tài nguyên server**: Uptime đã có ở health endpoint, nhưng chưa có số liệu RAM/Memory thực tế; `activeConnections` trong config hiện vẫn là giá trị mock.
+- [x] **Audit Trail cơ bản**: Tự động lưu vết mọi hành động Admin (`CREATE`, `UPDATE`, `BAN`, `RESET_PASSWORD`, `MODERATION`...).
+- [ ] **Audit Log Payload Inspector**: Nút "View Details" bật Modal xem chi tiết JSON payload của từng sự kiện.
+- [ ] **Chế Độ Bảo Trì (Maintenance Mode)**:
+  - Toggle trong System Config. Khi bật, Client App hiển thị giao diện thông báo bảo trì thân thiện.
+- [ ] **Khóa Đăng Ký Mới (Registration Control)**:
+  - Toggle tạm dừng cho phép tạo tài khoản mới.
+- [ ] **1-Click Infrastructure Cleaners**:
+  - API/Button xóa sạch Refresh Tokens đã hết hạn.
+  - API/Button dọn dẹp các bản ghi mồ côi (orphaned relations).
 
 ---
 
-## 📌 Bảng Theo Dõi Tiến Độ Thực Hiện
+### 🔹 Module 6: Thống Kê Tăng Trưởng & Giám Sát Máy Chủ (Growth Analytics & Server Health)
+*Trạng thái: 🟡 Đang có nền tảng (Đợt 6)*
 
-| Module | Tên Module | Trạng thái hiện tại | Bước tiếp theo |
-| :---: | :--- | :---: | :--- |
-| **Module 1** | User & Session Management | 🟢 100% Core Complete | Hoàn tất Core User Management (Add Member full fields, Ban with reason, Unban, Session Revoke). Chuẩn bị đợt 2 (Module 2 Moderation). |
-| **Module 2** | Word & Content Library | 🟢 100% Core Complete | Hoàn tất Moderation Reject/Request-Edit, IPA Phonetic, Audio URL, và Transfer Ownership. Chuẩn bị đợt 3 (Module 3 SRS Tuning). |
-| **Module 3** | SRS & Review Progress | 🟡 Khoảng 30% | Bổ sung API chỉnh sửa `nextReview`, tuning SRS và reset tiến độ 1-click |
-| **Module 4** | Audit Log & Archive | 🟢 Khoảng 80% | Bổ sung Before/After JSON diff và lọc theo khoảng thời gian |
-| **Module 5** | System Config & Maintenance | 🟡 Khoảng 45% | Lưu config thực tế, Maintenance Mode, dọn token hết hạn và orphan records |
-| **Module 6** | Analytics & Monitoring | 🟡 Đã có nền tảng | Bổ sung new-user time series, Top 10 hardest words và memory monitoring |
+- [x] **Tổng quan số liệu**: Tổng users, words, active sessions, reviews, retention rate.
+- [ ] **Biểu Đồ Tăng Trưởng Người Dùng Mới (New User Signup Trend)**: Bổ sung chuỗi dữ liệu người dùng đăng ký mới theo mốc `7d/30d/90d/1y`.
+- [ ] **Top 10 Từ Vựng Khó Nhất (Top 10 Hardest Words)**: Mở rộng danh sách từ 5 lên 10 từ kèm nút Reset SRS nhanh.
+- [ ] **Giám Sát Tài Nguyên Server Real-time**: Đo dung lượng RAM thực tế (`heapUsed` / `heapTotal`) và Node.js Uptime hiển thị trực quan ở Dashboard.
+
+---
+
+## 📌 Bảng Kế Hoạch Triển Khai Chi Tiết
+
+| Đợt Triển Khai | Trọng Tâm Công Việc | Mục Tiêu & Kết Quả |
+| :---: | :--- | :--- |
+| **Đợt 1 & 2** | User Management & Word Moderation | 🟢 **100% Hoàn thành & Đã Verify** |
+| **Đợt 3** | **Multi-mode Learning + SRS Reset Control + Dynamic Filter** | 🟢 **100% Hoàn thành & Đã Verify UI** |
+| **Đợt 4 (Tiếp theo)** | **AI Smart Word Extraction + Curated Decks** | Thu thập từ vựng cực kỳ dễ dàng qua dán đoạn văn bản AI và các bộ từ vựng chủ đề có sẵn. |
+| **Đợt 5** | **System Maintenance + Audit Inspector + Cleaners** | Chế độ bảo trì hệ thống, khóa đăng ký, dọn dẹp Refresh Token hết hạn & Modal xem chi tiết Audit Log. |
+| **Đợt 6** | **Growth Analytics + Server Health Monitoring** | Biểu đồ tăng trưởng người dùng mới, Top 10 từ khó & Giám sát RAM máy chủ thời gian thực. |
+
