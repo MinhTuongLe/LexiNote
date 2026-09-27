@@ -7,6 +7,21 @@ and this project adheres to Semantic Versioning as it matures.
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- Client weekly leaderboard integration with Top 3 podium and Top 10 results.
+- A Postman collection covering client and dashboard APIs with automatic token capture after login.
+- Root and application-specific setup documentation, including Swagger UI and OpenAPI JSON URLs.
+
+### Changed
+
+- Corrected the documented backend runtime from Express to Fastify.
+- Documented separate `/api/v1/client` and `/api/v1/dashboard` API namespaces.
+
+---
+
 ## 🚀 [Released / Latest] — 2026-05-16
 
 ### ✨ Added

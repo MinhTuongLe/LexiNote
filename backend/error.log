@@ -343,3 +343,16 @@ BadRequestException: error.auth.email_exists
 UnauthorizedException: error.auth.wrong_password
     at AuthService.validateUser (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.service.ts:37:13)
     at AuthController.login (D:\Workspace\Personal\Web\LexiNote\backend\src\client\auth\auth.controller.ts:38:18)
+
+[2026-09-27T11:59:49.276Z] /favicon.ico
+NotFoundException: Cannot GET /favicon.ico
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)

@@ -1,0 +1,321 @@
+{
+  "info": {
+    "_postman_id": "5f1ce4d4-1b4d-4f76-9b1d-lexinote-api",
+    "name": "LexiNote API - Client & Dashboard",
+    "description": "Ready-to-import API collection for the LexiNote client and admin dashboard APIs. Change apiOrigin once to switch from local to production.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "apiOrigin", "value": "http://localhost:1337", "type": "string" },
+    { "key": "clientBaseUrl", "value": "{{apiOrigin}}/api/v1/client", "type": "string" },
+    { "key": "dashboardBaseUrl", "value": "{{apiOrigin}}/api/v1/dashboard", "type": "string" },
+    { "key": "accessToken", "value": "", "type": "string" },
+    { "key": "refreshToken", "value": "", "type": "string" },
+    { "key": "adminAccessToken", "value": "", "type": "string" },
+    { "key": "adminRefreshToken", "value": "", "type": "string" },
+    { "key": "userEmail", "value": "user@example.com", "type": "string" },
+    { "key": "userPassword", "value": "password123", "type": "string" },
+    { "key": "userFullName", "value": "LexiNote User", "type": "string" },
+    { "key": "adminEmail", "value": "admin@example.com", "type": "string" },
+    { "key": "adminPassword", "value": "password123", "type": "string" },
+    { "key": "userId", "value": "1", "type": "string" },
+    { "key": "wordId", "value": "1", "type": "string" },
+    { "key": "relationId", "value": "1", "type": "string" },
+    { "key": "sessionId", "value": "1", "type": "string" },
+    { "key": "archiveId", "value": "1", "type": "string" },
+    { "key": "moderationWordId", "value": "1", "type": "string" },
+    { "key": "verificationCode", "value": "123456", "type": "string" },
+    { "key": "resetCode", "value": "123456", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "00 - Health & Swagger",
+      "item": [
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{apiOrigin}}/api"
+          }
+        },
+        {
+          "name": "OpenAPI / Swagger JSON",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{apiOrigin}}/api/docs-json"
+          }
+        },
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{apiOrigin}}/api/docs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Client API",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Register",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\",\n  \"fullName\": \"{{userFullName}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/register",
+                "description": "Registration normally requires email verification before login."
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Login (stores access + refresh tokens)",
+              "event": [{
+                "listen": "test",
+                "script": { "type": "text/javascript", "exec": [
+                  "pm.test('Login succeeded', function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "if (data.refreshToken) pm.collectionVariables.set('refreshToken', data.refreshToken);",
+                  "if (data.user && data.user.id) pm.collectionVariables.set('userId', String(data.user.id));"
+                ] }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/login"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Refresh token (rotates both tokens)",
+              "event": [{
+                "listen": "test",
+                "script": { "type": "text/javascript", "exec": [
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('accessToken', data.token);",
+                  "if (data.refreshToken) pm.collectionVariables.set('refreshToken', data.refreshToken);"
+                ] }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/refresh"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Current user",
+              "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/auth/me" }
+            },
+            {
+              "name": "Verify email",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"token\": \"{{verificationCode}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/verify-email"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Resend verification code",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/resend-verification"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Forgot password",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/forgot-password"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Reset password",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{userEmail}}\",\n  \"resetToken\": \"{{resetCode}}\",\n  \"newPassword\": \"{{userPassword}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/reset-password"
+              },
+              "auth": { "type": "noauth" }
+            },
+            {
+              "name": "Change password",
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"{{userPassword}}\",\n  \"newPassword\": \"{{userPassword}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/change-password"
+              }
+            },
+            {
+              "name": "Update profile",
+              "request": {
+                "method": "PATCH",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"{{userFullName}}\",\n  \"avatar\": \"🐰\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/profile"
+              }
+            },
+            {
+              "name": "Logout",
+              "event": [{
+                "listen": "test",
+                "script": { "type": "text/javascript", "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) { pm.collectionVariables.unset('accessToken'); pm.collectionVariables.unset('refreshToken'); }"
+                ] }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" },
+                "url": "{{clientBaseUrl}}/auth/logout"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Words",
+          "item": [
+            { "name": "List words", "request": { "method": "GET", "header": [], "url": { "raw": "{{clientBaseUrl}}/words?page=1&limit=20&search=&type=&status=", "host": ["{{clientBaseUrl}}"], "path": ["words"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "20" }, { "key": "search", "value": "" }, { "key": "type", "value": "" }, { "key": "status", "value": "" }] } } },
+            { "name": "Get word", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/words/{{wordId}}" } },
+            { "name": "Create word", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"word\": \"serendipity\",\n  \"meaningVi\": \"sự tình cờ may mắn\",\n  \"example\": \"They met by serendipity.\",\n  \"type\": \"noun\",\n  \"synonyms\": [\"chance\"],\n  \"antonyms\": []\n}" }, "url": "{{clientBaseUrl}}/words" } },
+            { "name": "Update word", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"meaningVi\": \"nghĩa cập nhật\",\n  \"example\": \"Updated example.\"\n}" }, "url": "{{clientBaseUrl}}/words/{{wordId}}" } },
+            { "name": "Delete word", "request": { "method": "DELETE", "header": [], "url": "{{clientBaseUrl}}/words/{{wordId}}" } },
+            { "name": "Bulk delete words", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"wordIds\": [{{wordId}}]\n}" }, "url": "{{clientBaseUrl}}/words/delete-bulk" } },
+            { "name": "Import words", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"words\": [\n    {\n      \"word\": \"resilient\",\n      \"meaningVi\": \"kiên cường\",\n      \"type\": \"adjective\"\n    }\n  ]\n}" }, "url": "{{clientBaseUrl}}/words/import" } }
+          ]
+        },
+        {
+          "name": "Reviews & Stats",
+          "item": [
+            { "name": "Due reviews", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/reviews/due" } },
+            { "name": "Update SRS review", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"reviewId\": 1,\n  \"quality\": 4\n}" }, "url": "{{clientBaseUrl}}/reviews/update" } },
+            { "name": "Record review game session", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"wordIds\": [{{wordId}}]\n}" }, "url": "{{clientBaseUrl}}/reviews/game-session" } },
+            { "name": "Reset word progress", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"wordIds\": [{{wordId}}]\n}" }, "url": "{{clientBaseUrl}}/reviews/reset" } },
+            { "name": "Study stats", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/reviews/stats?year=2026&month=9" } },
+            { "name": "Dashboard stats", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/dashboard" } }
+          ]
+        },
+        {
+          "name": "Settings, Achievements & Games",
+          "item": [
+            { "name": "Get settings", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/settings" } },
+            { "name": "Update settings", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"language\": \"vi\",\n  \"soundEnabled\": true,\n  \"darkTheme\": false\n}" }, "url": "{{clientBaseUrl}}/settings" } },
+            { "name": "Deactivate account", "request": { "method": "PATCH", "header": [], "url": "{{clientBaseUrl}}/settings/deactivate" } },
+            { "name": "Get achievements", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/user/achievements" } },
+            { "name": "Unlock achievement", "request": { "method": "POST", "header": [], "url": "{{clientBaseUrl}}/user/achievements/first_word/unlock" } },
+            { "name": "Record minigame session", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"gameType\": \"MATCH_GAME\",\n  \"score\": 120,\n  \"timeSpentSeconds\": 30,\n  \"wordIds\": [{{wordId}}]\n}" }, "url": "{{clientBaseUrl}}/games/session" } },
+            { "name": "Weekly leaderboard", "request": { "method": "GET", "header": [], "url": "{{clientBaseUrl}}/games/leaderboard?gameType=MATCH_GAME&limit=10" } }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Dashboard API",
+      "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{adminAccessToken}}", "type": "string" }] },
+      "item": [
+        {
+          "name": "Auth",
+          "item": [
+            {
+              "name": "Admin login (stores admin tokens)",
+              "event": [{
+                "listen": "test",
+                "script": { "type": "text/javascript", "exec": [
+                  "pm.test('Admin login succeeded', function () { pm.expect(pm.response.code).to.be.within(200, 299); });",
+                  "const data = pm.response.json();",
+                  "if (data.token) pm.collectionVariables.set('adminAccessToken', data.token);",
+                  "if (data.refreshToken) pm.collectionVariables.set('adminRefreshToken', data.refreshToken);"
+                ] }
+              }],
+              "request": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+                "url": "{{dashboardBaseUrl}}/auth/login"
+              },
+              "auth": { "type": "noauth" }
+            },
+            { "name": "Current admin", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/auth/me" } }
+          ]
+        },
+        {
+          "name": "Analytics",
+          "item": [
+            { "name": "Summary", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/analytics/summary" } },
+            { "name": "Chart", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/analytics/chart?range=30d" } },
+            { "name": "Export analytics CSV", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/analytics/export?range=30d&format=csv" } },
+            { "name": "Recent activity", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/analytics/activity" } }
+          ]
+        },
+        {
+          "name": "User Management",
+          "item": [
+            { "name": "List users", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users?page=1&limit=20&search=&isActive=" } },
+            { "name": "Export users CSV", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/export?format=csv" } },
+            { "name": "Create user", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"New User\",\n  \"email\": \"new-user@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"MEMBER\"\n}" }, "url": "{{dashboardBaseUrl}}/management/users" } },
+            { "name": "Get user", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}" } },
+            { "name": "Get user details", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/details" } },
+            { "name": "Update user", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"fullName\": \"Updated User\",\n  \"isActive\": true\n}" }, "url": "{{dashboardBaseUrl}}/management/users/{{userId}}" } },
+            { "name": "Reset user password", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/reset-password" } },
+            { "name": "Toggle user status", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/toggle-status" } },
+            { "name": "Toggle email verification", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/toggle-verify" } },
+            { "name": "Update user role", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"role\": \"MEMBER\"\n}" }, "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/role" } },
+            { "name": "Delete user", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}" } },
+            { "name": "List user sessions", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/sessions" } },
+            { "name": "Revoke all user sessions", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/management/users/{{userId}}/sessions" } },
+            { "name": "Revoke one session", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/management/users/sessions/{{sessionId}}" } },
+            { "name": "Mail preview", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/management/mail-preview?type=admin_reset&fullName=LexiNote%20Admin&code=123456" } }
+          ]
+        },
+        {
+          "name": "Words & Moderation",
+          "item": [
+            { "name": "List glossary words", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/words?page=1&limit=20&search=&type=&ownerId=" } },
+            { "name": "Export glossary CSV", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/words/export?format=csv&search=&type=" } },
+            { "name": "Export glossary JSON", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/words/export?format=json" } },
+            { "name": "Import glossary words", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"rawWords\": \"resilient | kiên cường\\nserendipity | sự tình cờ may mắn\",\n  \"type\": \"noun\",\n  \"autoEnrich\": false\n}" }, "url": "{{dashboardBaseUrl}}/words/import" } },
+            { "name": "Update glossary word", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"meaningVi\": \"nghĩa cập nhật\",\n  \"type\": \"noun\",\n  \"example\": \"Updated example.\"\n}" }, "url": "{{dashboardBaseUrl}}/words/{{wordId}}" } },
+            { "name": "Delete glossary word", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/words/{{wordId}}" } },
+            { "name": "Add word relation", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"type\": \"synonym\",\n  \"value\": \"chance\"\n}" }, "url": "{{dashboardBaseUrl}}/words/{{wordId}}/relations" } },
+            { "name": "Delete word relation", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/words/relations/{{relationId}}" } },
+            { "name": "Pending moderation words", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/moderation/pending?page=1&limit=20&reason=ALL&search=" } },
+            { "name": "Approve word", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/moderation/{{moderationWordId}}/approve" } },
+            { "name": "Batch approve words", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"wordIds\": [{{moderationWordId}}]\n}" }, "url": "{{dashboardBaseUrl}}/moderation/batch-approve" } }
+          ]
+        },
+        {
+          "name": "Config & Audit",
+          "item": [
+            { "name": "Get system config", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/config" } },
+            { "name": "Update system config", "request": { "method": "PATCH", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{\n  \"maintenanceMode\": false\n}" }, "url": "{{dashboardBaseUrl}}/config" } },
+            { "name": "Audit logs", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/audit/logs?page=1&limit=20&search=&action=&targetType=" } },
+            { "name": "Export audit logs CSV", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/audit/logs/export?format=csv&search=&action=" } },
+            { "name": "Archived records", "request": { "method": "GET", "header": [], "url": "{{dashboardBaseUrl}}/audit/archives?page=1&limit=20" } },
+            { "name": "Restore archived record", "request": { "method": "POST", "header": [], "url": "{{dashboardBaseUrl}}/audit/archives/{{archiveId}}/restore" } },
+            { "name": "Delete archived record", "request": { "method": "DELETE", "header": [], "url": "{{dashboardBaseUrl}}/audit/archives/{{archiveId}}" } }
+          ]
+        }
+      ]
+    }
+  ]
+}

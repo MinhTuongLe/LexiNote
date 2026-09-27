@@ -3,6 +3,10 @@
 
 Tài liệu này tổng hợp **Lộ trình nâng cấp & mở rộng tính năng toàn diện** cho dự án LexiNote (bao gồm Backend API & Dashboard Admin). Tài liệu này dùng làm kim chỉ nam để triển khai từng module theo thứ tự ưu tiên.
 
+> **Cập nhật lần cuối:** 2026-09-27 — Đã đối chiếu với mã nguồn backend, dashboard và client hiện tại.
+>
+> **Quy ước checklist:** `[x]` hoàn thành đầy đủ; `🟡` đã triển khai một phần; `[ ]` chưa triển khai.
+
 ---
 
 ## 📌 Nguyên Tắc Triển Khai (Core Guidelines)
@@ -21,7 +25,7 @@ flowchart TD
     P3["Phase 3: SRS & Review Progress Control\n(Quản lý Thuật toán SRS & Tiến độ Học)"]
     P4["Phase 4: Audit Log & Archive Recovery\n(Nhật ký Hệ thống & Thùng rác Khôi phục)"]
     P5["Phase 5: System Config & Maintenance\n(Cấu hình Động & Bảo trì Hạ tầng)"]
-    P6["Phase 6: Analytics & Server Monitoring\n(Thống kê Báo cáo & Giám sát Server - Làm sau)"]
+    P6["Phase 6: Analytics & Server Monitoring\n(Thống kê Báo cáo & Giám sát Server)"]
 
     P1 --> P2 --> P3 --> P4 --> P5 --> P6
 ```
@@ -42,8 +46,9 @@ flowchart TD
 - [ ] **Khóa & Khôi phục Tài khoản Nâng cao**:
   - Cập nhật lý do khóa tài khoản (`banReason`).
   - Đổi trạng thái tài khoản giữa `active`, `suspended`, `banned`.
-- [ ] **Tạo mới User từ Admin (Full Fields)**:
-  - Form thêm user cho phép chọn Role (`ADMIN` / `MEMBER`), cài đặt mật khẩu tùy chọn hoặc dùng mặc định `123456`.
+- 🟡 **Tạo mới User từ Admin (cơ bản đã có)**:
+  - Backend nhận `fullName`, `email`, `password` tùy chọn và `role` (`ADMIN` / `MEMBER`), mặc định mật khẩu `123456` và role `MEMBER`.
+  - Dashboard hiện mới nhập `fullName` và `email`; cần bổ sung trường Role và mật khẩu tùy chọn để hoàn tất.
 
 #### 1.2. Quản lý Phiên Đăng Nhập & Giám sát Thiết bị (Session Inspector)
 - [x] **Xem danh sách phiên active**: IP Address, User-Agent, Trạng thái hết hạn (`isExpired`).
@@ -62,26 +67,27 @@ flowchart TD
 - [ ] **Tùy chỉnh Thông tin Từ vựng Nâng cao**:
   - Bổ sung trường phiên âm IPA, Link File Audio phát âm, Thẻ phân loại (Tags/Topics).
   - Chuyển quyền sở hữu từ vựng (`Transfer Word Ownership`) từ User A sang User B.
-- [ ] **Quản lý Quan hệ Từ vựng (Word Relations)**:
-  - Quản lý từ Đồng nghĩa (`Synonyms`), Trái nghĩa (`Antonyms`), Cụm từ hay đi kèm (`Collocations`).
+- [x] **Quản lý Quan hệ Từ vựng (Word Relations) cơ bản**:
+  - Dashboard/API đã hỗ trợ thêm và xóa relation theo loại/value; có thể dùng cho `Synonyms`, `Antonyms` và `Collocations`.
+  - Chưa có các tính năng nâng cao như chỉnh sửa relation hoặc kiểm tra trùng lặp.
 
 #### 2.2. Import / Export Hàng Loạt (Bulk Lexical Operations)
 - [x] **Export CSV**: Xuất danh sách từ vựng theo trang hoặc theo điều kiện lọc.
-- [ ] **Import CSV / JSON Hàng loạt**:
-  - Tải lên file CSV chứa danh sách từ vựng.
-  - Tự động phát hiện trùng lặp từ (Duplicate Detection) và cho phép ghi đè (Overwrite) hoặc Bỏ qua (Skip).
+- 🟡 **Import hàng loạt dạng raw text**:
+  - Backend đã nhận danh sách từ dạng text, phân tách bằng dấu phẩy/chấm phẩy/xuống dòng, phát hiện trùng lặp và bỏ qua từ đã tồn tại.
+  - Chưa có upload file CSV/JSON và lựa chọn ghi đè (`Overwrite`) hoặc bỏ qua (`Skip`) ở cấp file.
 
 #### 2.3. Hàng Chờ Duyệt Nội Dung (Moderation Queue)
-- [ ] **Duyệt từ vựng đóng góp**: Xem danh sách từ vựng do người dùng đóng góp cho Thư viện cộng đồng.
-- [ ] **Xử lý Duyệt**: Nút Duyệt (`Approve`), Yêu cầu sửa đổi (`Request Edit`) hoặc Từ chối (`Reject`) kèm lý do.
-- [ ] **Gắn cờ & Báo cáo Vi phạm**: Quản lý từ vựng bị người dùng báo cáo sai nghĩa hoặc nội dung không phù hợp.
+- [x] **Duyệt từ vựng đóng góp cơ bản**: Dashboard/API đã có danh sách pending, lọc, tìm kiếm và phân trang.
+- 🟡 **Xử lý Duyệt**: Đã có Duyệt (`Approve`) và Duyệt hàng loạt (`Batch Approve`); chưa có `Request Edit` hoặc `Reject` kèm lý do.
+- [ ] **Gắn cờ & Báo cáo Vi phạm**: Chưa có luồng báo cáo từ phía người dùng và màn hình xử lý báo cáo.
 
 ---
 
 ### 🔹 Module 3: Quản Lý Thuật Toán SRS & Tiến Độ Học Tập (Spaced Repetition System)
 *Mục tiêu: Can thiệp và tinh chỉnh các chỉ số ôn tập ngắt quãng của người học.*
 
-#### 3.1. Can thiệp 指数 SRS Thủ công (SRS Tuning)
+#### 3.1. Can thiệp chỉ số SRS Thủ công (SRS Tuning)
 - [x] **Xem chỉ số SRS trong Inspector**: Hiển thị `easeFactor`, `interval`, `correctCount`, `wrongCount`, `retentionRate`.
 - [ ] **Chỉnh sửa chỉ số SRS từng từ vựng**:
   - Đổi ngày lặp tiếp theo (`nextReview`).
@@ -115,7 +121,8 @@ flowchart TD
 *Mục tiêu: Quản lý hạ tầng và tham số vận hành không cần restart server.*
 
 #### 5.1. Quản lý Cấu hình Động (Dynamic Config API)
-- [x] **Lưu & Đồng bộ Cấu hình**: Giới hạn Rate Limit, CORS, Auto Backup, Debug Mode.
+- 🟡 **Hiển thị và cập nhật cấu hình hệ thống**: API/config page đã có thông tin environment, CORS, rate limit và database health.
+  - Hiện `updateConfig()` mới trả về dữ liệu và ghi log, chưa lưu cấu hình vào database/environment; `autoBackup` và `debugMode` chưa có triển khai thực tế.
 - [ ] **Bật/Tắt Chế độ Bảo trì (`Maintenance Mode`)**: Khóa truy cập phía Client App khi bảo trì server.
 - [ ] **Bật/Tắt Đăng ký Mới (`Allow New Registration`)**: Tạm dừng cho phép tạo tài khoản mới.
 
@@ -123,23 +130,24 @@ flowchart TD
 - [ ] **Dọn dẹp phiên đăng nhập hết hạn**: API 1-click xóa sạch các Refresh Token đã hết hạn trong DB.
 - [ ] **Clean Orphaned Records**: Kiểm tra và dọn dẹp các liên kết từ vựng bị mồ côi.
 
-#### 5.3. Chuẩn bị Mailer Service (Email Integration)
-- [ ] **Cấu hình SMTP Mailer**: Thêm thiết lập SMTP Server (`host`, `port`, `username`, `password`).
-- [ ] **Tự động gửi Email thật khi Reset Password**: Khi Admin bấm reset password, ngoài việc set mật khẩu về `123456`, hệ thống sẽ tự động gửi email thông báo cho User.
+#### 5.3. Mailer Service (Email Integration)
+- [x] **Cấu hình SMTP/Brevo Mailer**: Mail service đã hỗ trợ Brevo HTTPS API và SMTP fallback qua biến môi trường.
+- [x] **Tự động gửi Email khi Reset Password**: Admin reset password sẽ đặt lại mật khẩu, thu hồi session và gửi email thông báo cho User.
 
 ---
 
-### 🔹 Module 6: Thống Kê Báo Cáo & Giám Sát Server (Analytics & Monitoring - Làm Sau Cùng)
+### 🔹 Module 6: Thống Kê Báo Cáo & Giám Sát Server (Analytics & Monitoring)
 *Mục tiêu: Cung cấp bức tranh tổng quan về số liệu kinh doanh và sức khỏe hạ tầng.*
 
 #### 6.1. Thống kê Báo cáo Tăng trưởng (Growth Analytics)
-- [ ] Biểu đồ người dùng mới theo mốc thời gian (Ngày / Tuần / Tháng).
-- [ ] Biểu đồ từ vựng tạo mới và số lượt review SRS toàn hệ thống.
-- [ ] Thống kê Top 10 từ vựng khó nhất (được luyện tập nhiều nhất nhưng hay sai).
+- 🟡 **Analytics summary/chart/activity**: Dashboard và API đã có tổng số user, từ vựng, review, active sessions, retention, hardest words, hoạt động gần đây và chart theo `7d/30d/90d/1y`.
+- 🟡 **Biểu đồ người dùng mới**: Chart hiện theo dõi active users, từ mới và số lượt review; chưa có chuỗi `new users` thực tế theo thời gian.
+- [x] **Biểu đồ từ vựng tạo mới và số lượt review SRS**.
+- 🟡 **Từ vựng khó**: Đã có danh sách `hardestWords`, nhưng backend hiện trả Top 5 thay vì Top 10.
 
 #### 6.2. Server Health & Database Monitoring
-- [ ] Giám sát tình trạng kết nối DB PostgreSQL.
-- [ ] Dung lượng RAM / Memory usage và Uptime của Backend Service.
+- [x] **Giám sát kết nối DB PostgreSQL cơ bản**: Config API thực hiện `SELECT 1` và trả về trạng thái database; health endpoint trả về uptime.
+- 🟡 **Uptime và tài nguyên server**: Uptime đã có ở health endpoint, nhưng chưa có số liệu RAM/Memory thực tế; `activeConnections` trong config hiện vẫn là giá trị mock.
 
 ---
 
@@ -147,9 +155,9 @@ flowchart TD
 
 | Module | Tên Module | Trạng thái hiện tại | Bước tiếp theo |
 | :---: | :--- | :---: | :--- |
-| **Module 1** | User & Session Management | 🟢 85% Hoàn thành | Bổ sung Form Thêm User đầy đủ trường & Khóa tài khoản kèm lý do |
-| **Module 2** | Word & Content Library | 🟡 60% Hoàn thành | Bổ sung Phiên âm IPA, Audio URL & Chuyển quyền từ vựng |
-| **Module 3** | SRS & Review Progress | 🟡 40% Hoàn thành | Bổ sung API chỉnh sửa `nextReview` & Reset tiến độ SRS 1-click |
-| **Module 4** | Audit Log & Archive | 🟢 90% Hoàn thành | Bổ sung hiển thị Before/After JSON diff |
-| **Module 5** | System Config & Maintenance | 🟡 50% Hoàn thành | Bổ sung Maintenance Mode & API dọn dẹp Token hết hạn |
-| **Module 6** | Analytics & Monitoring | ⏸️ Tạm hoãn (Làm sau) | Sẽ làm sau khi hoàn thiện toàn bộ các Module quản trị ở trên |
+| **Module 1** | User & Session Management | 🟡 Khoảng 75% | Bổ sung form User đầy đủ trường, trạng thái nâng cao và cảnh báo đăng nhập bất thường |
+| **Module 2** | Word & Content Library | 🟡 Khoảng 70% | Bổ sung IPA/audio/tags, transfer ownership, file import và moderation reject/request-edit |
+| **Module 3** | SRS & Review Progress | 🟡 Khoảng 30% | Bổ sung API chỉnh sửa `nextReview`, tuning SRS và reset tiến độ 1-click |
+| **Module 4** | Audit Log & Archive | 🟢 Khoảng 80% | Bổ sung Before/After JSON diff và lọc theo khoảng thời gian |
+| **Module 5** | System Config & Maintenance | 🟡 Khoảng 45% | Lưu config thực tế, Maintenance Mode, dọn token hết hạn và orphan records |
+| **Module 6** | Analytics & Monitoring | 🟡 Đã có nền tảng | Bổ sung new-user time series, Top 10 hardest words và memory monitoring |
