@@ -76,7 +76,7 @@ export const RejectModerationModal: React.FC<RejectModerationModalProps> = ({
             placeholder="e.g. Inaccurate translation / Offensive vocabulary / Spam"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            className="bg-muted/40 border-border/80 h-10 font-medium text-foreground text-xs"
+            className="h-10 font-medium text-foreground text-xs bg-background"
             required
             autoFocus
           />

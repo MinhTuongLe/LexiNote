@@ -18,6 +18,8 @@ import { AuditModule } from './dashboard/audit/audit.module';
 import { ModerationModule } from './dashboard/moderation/moderation.module';
 import { AchievementModule } from './client/achievement/achievement.module';
 import { GameModule } from './client/game/game.module';
+import { DeckModule } from './client/deck/deck.module';
+import { SystemMaintenanceGuard } from './common/guards/system-maintenance.guard';
 
 import { MailModule } from './common/mail/mail.module';
 
@@ -36,6 +38,7 @@ import { MailModule } from './common/mail/mail.module';
     SettingsModule,
     AchievementModule,
     GameModule,
+    DeckModule,
     // Dashboard
     AnalyticsModule,
     ManagementModule,
@@ -62,6 +65,7 @@ import { MailModule } from './common/mail/mail.module';
           { path: '/', module: SettingsModule },
           { path: '/', module: AchievementModule },
           { path: '/', module: GameModule },
+          { path: '/', module: DeckModule },
           { path: '/', module: MetaModule },
         ],
       },
@@ -75,6 +79,7 @@ import { MailModule } from './common/mail/mail.module';
           { path: '/', module: DashboardConfigModule },
           { path: '/', module: AuditModule },
           { path: '/', module: ModerationModule },
+          { path: '/', module: DeckModule },
         ],
       },
     ]),
@@ -84,6 +89,10 @@ import { MailModule } from './common/mail/mail.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: SystemMaintenanceGuard,
     },
   ],
 })

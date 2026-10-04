@@ -71,7 +71,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
           <Input
             value={meaningVi}
             onChange={(e) => setMeaningVi(e.target.value)}
-            className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+            className="h-10 font-medium text-foreground bg-background"
             required
           />
         </div>
@@ -85,7 +85,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
               placeholder="e.g. /ˈlex.ɪ.noʊt/"
               value={phonetic}
               onChange={(e) => setPhonetic(e.target.value)}
-              className="bg-muted/40 border-border/80 h-10 font-mono text-xs text-foreground"
+              className="h-10 font-mono text-xs text-foreground bg-background"
             />
           </div>
 
@@ -97,7 +97,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
               placeholder="e.g. https://.../audio.mp3"
               value={audioUrl}
               onChange={(e) => setAudioUrl(e.target.value)}
-              className="bg-muted/40 border-border/80 h-10 font-mono text-xs text-foreground"
+              className="h-10 font-mono text-xs text-foreground bg-background"
             />
           </div>
         </div>
@@ -110,7 +110,7 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
             value={example}
             onChange={(e) => setExample(e.target.value)}
             placeholder="e.g. She found the book by pure serendipity."
-            className="bg-muted/40 border-border/80 min-h-[90px] rounded-lg p-3 text-xs font-medium text-foreground"
+            className="min-h-22.5 rounded-lg p-3 text-xs font-medium text-foreground bg-background"
           />
         </div>
       </div>
@@ -119,3 +119,4 @@ export const WordFormModal: React.FC<WordFormModalProps> = ({
 };
 
 export default WordFormModal;
+

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery, AiExtractedWord, VocabularyDeck, VocabularyDeckSummary } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 import type { RootState } from './index';
@@ -231,6 +231,31 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
+    aiExtractWords: builder.mutation<{ success: boolean; words: AiExtractedWord[] }, { text: string; maxWords?: number }>({
+      query: (body) => ({
+        url: '/words/ai-extract',
+        method: 'POST',
+        body,
+      }),
+    }),
+    getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
+      query: (params) => ({
+        url: '/decks/curated',
+        params: params || undefined,
+      }),
+      providesTags: ['Words'],
+    }),
+    getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
+      query: (id) => `/decks/${id}`,
+    }),
+    importDeck: builder.mutation<{ success: boolean; importedCount: number; skippedCount: number; message: string }, { id: number; words?: string[] }>({
+      query: ({ id, words }) => ({
+        url: `/decks/${id}/import`,
+        method: 'POST',
+        body: words ? { words } : {},
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
 
     // Reviews
     getDueReviews: builder.query<Review[], void>({
@@ -316,9 +341,34 @@ export const apiSlice = createApi({
         params: params || undefined,
       }),
       providesTags: ['Leaderboard'],
-
-
     }),
+    aiExtractWords: builder.mutation<{ success: boolean; words: AiExtractedWord[] }, { text: string; maxWords?: number }>({
+      query: (data) => ({
+        url: '/words/ai-extract',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
+      query: (params) => ({
+        url: '/../dashboard/decks/curated',
+        params: params || undefined,
+      }),
+    }),
+    getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
+      query: (id) => `/../dashboard/decks/${id}`,
+    }),
+    importDeck: builder.mutation<{ success: boolean; importedCount: number; message: string }, { id: number; words?: string[] }>({
+      query: ({ id, words }) => ({
+        url: `/../dashboard/decks/${id}/import`,
+        method: 'POST',
+        body: { words },
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
+
+
+
   }),
 });
 
@@ -354,4 +404,8 @@ export const {
   useUnlockAchievementMutation,
   useRecordGameSessionFullMutation,
   useGetGameLeaderboardQuery,
+  useAiExtractWordsMutation,
+  useGetCuratedDecksQuery,
+  useGetDeckQuery,
+  useImportDeckMutation,
 } = apiSlice;

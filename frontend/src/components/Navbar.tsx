@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
+import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings, Layers, Sparkles } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -65,6 +65,10 @@ const Navbar: React.FC = () => {
       <NavLink to="/library" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Plus size={24} className="nav-icon" />
         <span>{t('nav.library')}</span>
+      </NavLink>
+      <NavLink to="/decks" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+        <Layers size={24} className="nav-icon" />
+        <span>Bộ từ vựng</span>
       </NavLink>
       <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Trophy size={24} className="nav-icon" />

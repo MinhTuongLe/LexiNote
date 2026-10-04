@@ -6,7 +6,7 @@ Tài liệu này tổng hợp **Lộ trình nâng cấp tính năng tối ưu nh
 2. **Thu Thập Từ Vựng Thông Minh Theo Thói Quen (AI Smart Acquisition & Curated Decks)**: Trích xuất từ đoạn văn bản/bài báo 1-click, các bộ từ vựng chuẩn bị sẵn (IELTS/TOEIC/IT).
 3. **Quản Trị Vận Hành Hiện Đại (Admin Control & Scalability)**: Reset tiến độ học 1-click, lọc từ loại động (Custom Word Types), chế độ bảo trì (Maintenance Mode), và giám sát tài nguyên server thời gian thực.
 
-> **Cập nhật lần cuối:** 2026-09-27 — Đã đồng bộ mã nguồn Backend, Dashboard và Client.
+> **Cập nhật lần cuối:** 2026-10-03 — Đã đồng bộ mã nguồn Backend, Dashboard và Client (Hoàn thành Phase 1-4, Phase 5 & 6 Backend Ready).
 >
 > **Quy ước checklist:** `[x]` hoàn thành đầy đủ; `🟡` đang triển khai; `[ ]` chưa triển khai.
 
@@ -83,41 +83,40 @@ flowchart TD
 
 ---
 
-### 🔹 Module 4: Thu Thập Từ Vựng Thông Minh & Quản Lý Bộ Từ (Smart Acquisition & Decks)
-*Trạng thái: [ ] Chuẩn bị triển khai (Đợt 4)*
+#### 🔹 Module 4: Thu Thập Từ Vựng Thông Minh & Quản Lý Bộ Từ (Smart Acquisition & Decks)
+*Trạng thái: 🟢 100% Core Complete (Đợt 4 Hoàn Thành)*
 
-- [ ] **AI Smart Word Extraction from Text (Trích xuất từ vựng từ văn bản)**:
-  - Dán đoạn văn bản/bài báo $\rightarrow$ AI tự động trích xuất các từ/cụm từ hay, tự điền nghĩa tiếng Việt theo ngữ cảnh, phiên âm IPA và câu ví dụ.
-  - Giao diện Checkbox cho phép chọn lọc và lưu hàng loạt vào thư viện chỉ với 1 click.
-- [ ] **Quản lý Bộ Từ Vựng (Decks / Collections)**:
-  - Tạo và phân loại từ vựng theo Bộ chủ đề (Deck).
+- [x] **Backend APIs & Database Models (Prisma Deck & DeckWord)**: APIs `POST /v1/words/ai-extract`, `GET /v1/decks/curated`, `GET /v1/decks/:id`, `POST /v1/decks/:id/import`, `POST /v1/dashboard/decks`.
+- [x] **AI Smart Word Extraction from Text (Client UI)**:
+  - Component [AiExtractModal.tsx](file:///d:/Workspace/Personal/Web/LexiNote/frontend/src/components/AiExtractModal.tsx): Dán đoạn văn bản/bài báo $\rightarrow$ AI tự động trích xuất các từ/cụm từ hay, tự điền nghĩa tiếng Việt theo ngữ cảnh, phiên âm IPA và câu ví dụ.
+  - Giao diện Checkbox cho phép chọn lọc và 1-click import hàng loạt vào thư viện cá nhân.
+- [x] **Quản lý Bộ Từ Vựng (Client UI)**:
+  - Trang [DecksPage.tsx](file:///d:/Workspace/Personal/Web/LexiNote/frontend/src/views/decks/DecksPage.tsx) và modal [DeckDetailModal.tsx](file:///d:/Workspace/Personal/Web/LexiNote/frontend/src/views/decks/DeckDetailModal.tsx): Phân loại từ vựng theo Bộ chủ đề (Deck).
   - Cung cấp sẵn các bộ từ Curated Decks: *IELTS 7.0+*, *TOEIC 800+*, *IT Tech Vocabulary*, *Daily Travel*.
   - Người dùng có thể 1-click Import toàn bộ bộ từ vào thư viện cá nhân.
 
 ---
 
 ### 🔹 Module 5: Nhật Ký Hệ Thống & Bảo Trì Hạ Tầng (Maintenance, Audit & Cleaners)
-*Trạng thái: 🟡 Khoảng 60% (Đợt 5)*
+*Trạng thái: 🟡 85% (Backend APIs complete - Đợt 5)*
 
 - [x] **Audit Trail cơ bản**: Tự động lưu vết mọi hành động Admin (`CREATE`, `UPDATE`, `BAN`, `RESET_PASSWORD`, `MODERATION`...).
-- [ ] **Audit Log Payload Inspector**: Nút "View Details" bật Modal xem chi tiết JSON payload của từng sự kiện.
-- [ ] **Chế Độ Bảo Trì (Maintenance Mode)**:
-  - Toggle trong System Config. Khi bật, Client App hiển thị giao diện thông báo bảo trì thân thiện.
-- [ ] **Khóa Đăng Ký Mới (Registration Control)**:
-  - Toggle tạm dừng cho phép tạo tài khoản mới.
-- [ ] **1-Click Infrastructure Cleaners**:
-  - API/Button xóa sạch Refresh Tokens đã hết hạn.
-  - API/Button dọn dẹp các bản ghi mồ côi (orphaned relations).
+- [x] **Audit Log Payload Inspector**: Nút "View Details" bật Modal xem chi tiết JSON payload của từng sự kiện.
+- [x] **Backend Infrastructure Cleaners & Guards**: Guard bảo trì `SystemMaintenanceGuard`, `isRegistrationOpen` control, API `POST /v1/dashboard/cleaners/expired-tokens` và `POST /v1/dashboard/cleaners/orphaned-records`.
+- [ ] **Chế Độ Bảo Trì & Khóa Đăng Ký (Dashboard & Client UI)**:
+  - Toggles trong System Config và giao diện thông báo bảo trì thân thiện ở Client App.
+- [ ] **1-Click Cleaners (Dashboard UI Buttons)**: Nút xóa Refresh Tokens đã hết hạn và dọn bản ghi mồ côi trên System Config Page.
 
 ---
 
 ### 🔹 Module 6: Thống Kê Tăng Trưởng & Giám Sát Máy Chủ (Growth Analytics & Server Health)
-*Trạng thái: 🟡 Đang có nền tảng (Đợt 6)*
+*Trạng thái: 🟡 70% (Backend APIs complete - Đợt 6)*
 
 - [x] **Tổng quan số liệu**: Tổng users, words, active sessions, reviews, retention rate.
-- [ ] **Biểu Đồ Tăng Trưởng Người Dùng Mới (New User Signup Trend)**: Bổ sung chuỗi dữ liệu người dùng đăng ký mới theo mốc `7d/30d/90d/1y`.
-- [ ] **Top 10 Từ Vựng Khó Nhất (Top 10 Hardest Words)**: Mở rộng danh sách từ 5 lên 10 từ kèm nút Reset SRS nhanh.
-- [ ] **Giám Sát Tài Nguyên Server Real-time**: Đo dung lượng RAM thực tế (`heapUsed` / `heapTotal`) và Node.js Uptime hiển thị trực quan ở Dashboard.
+- [x] **Backend Server Health & Analytics APIs**: API `GET /v1/dashboard/analytics/server-health` (RAM heapUsed/heapTotal & Uptime), Top 10 Hardest Words endpoint (`take: 10`), và `newUsers` signup trend.
+- [ ] **Biểu Đồ Tăng Trưởng Người Dùng Mới (Dashboard Chart UI)**: Hiển thị chuỗi dữ liệu người dùng đăng ký mới trên chart.
+- [ ] **Top 10 Từ Vựng Khó Nhất (Dashboard Bento UI)**: Hiển thị Top 10 từ khó kèm nút Reset SRS nhanh.
+- [ ] **Giám Sát Tài Nguyên Server Real-time (Dashboard UI Widget)**: Hiển thị widget RAM (`heapUsed` / `heapTotal`) và Node.js Uptime.
 
 ---
 
@@ -127,7 +126,8 @@ flowchart TD
 | :---: | :--- | :--- |
 | **Đợt 1 & 2** | User Management & Word Moderation | 🟢 **100% Hoàn thành & Đã Verify** |
 | **Đợt 3** | **Multi-mode Learning + SRS Reset Control + Dynamic Filter** | 🟢 **100% Hoàn thành & Đã Verify UI** |
-| **Đợt 4 (Tiếp theo)** | **AI Smart Word Extraction + Curated Decks** | Thu thập từ vựng cực kỳ dễ dàng qua dán đoạn văn bản AI và các bộ từ vựng chủ đề có sẵn. |
-| **Đợt 5** | **System Maintenance + Audit Inspector + Cleaners** | Chế độ bảo trì hệ thống, khóa đăng ký, dọn dẹp Refresh Token hết hạn & Modal xem chi tiết Audit Log. |
-| **Đợt 6** | **Growth Analytics + Server Health Monitoring** | Biểu đồ tăng trưởng người dùng mới, Top 10 từ khó & Giám sát RAM máy chủ thời gian thực. |
+| **Đợt 4** | **AI Smart Word Extraction + Curated Decks** | 🟢 **100% Hoàn thành & Đã Verify UI** |
+| **Đợt 5** | **System Maintenance + Audit Inspector + Cleaners** | 🟡 **Backend API Ready** $\rightarrow$ Sẵn sàng ghép nối Dashboard UI |
+| **Đợt 6** | **Growth Analytics + Server Health Monitoring** | 🟡 **Backend API Ready** $\rightarrow$ Sẵn sàng ghép nối Dashboard UI |
+
 

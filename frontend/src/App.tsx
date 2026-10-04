@@ -9,6 +9,8 @@ import WordImport from './components/WordImport';
 import WelcomePage from './views/guide/WelcomePage';
 import Library from './views/Library';
 import StudyMode from './views/StudyMode';
+import DecksPage from './views/decks/DecksPage';
+import AiExtractModal from './components/AiExtractModal';
 import ProfilePage from './views/profile/ProfilePage';
 import SettingsPage from './views/settings/SettingsPage';
 import LanguageSettingsPage from './views/settings/LanguageSettingsPage';
@@ -17,7 +19,7 @@ import MatchGame from './views/games/MatchGame';
 import StatsPage from './views/stats/StatsPage';
 import ScrollToTop from './components/ScrollToTop';
 import SkeletonWordCard from './components/SkeletonWordCard';
-import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
+import { Plus, Play, Book, TrendingUp, Upload, Gamepad2, Sparkles, Layers } from 'lucide-react';
 import { 
   useGetDashboardStatsQuery,
   useCreateWordMutation, 
@@ -45,6 +47,7 @@ function App() {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAiExtractModalOpen, setIsAiExtractModalOpen] = useState(false);
   
   const { user, isAuthenticated, isInitialized } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
@@ -260,6 +263,22 @@ function App() {
                 </div>
               </Card>
 
+              <Card className="stat-card purple clickable" onClick={() => setIsAiExtractModalOpen(true)}>
+                <div className="stat-icon"><Sparkles size={32} /></div>
+                <div className="stat-info">
+                  <h3>AI Extract</h3>
+                  <p>Trích xuất từ vựng AI</p>
+                </div>
+              </Card>
+
+              <Card className="stat-card blue clickable" onClick={() => navigate('/decks')}>
+                <div className="stat-icon"><Layers size={32} /></div>
+                <div className="stat-info">
+                  <h3>Bộ Từ Vựng</h3>
+                  <p>IELTS, TOEIC, IT Tech</p>
+                </div>
+              </Card>
+
               <Card className="stat-card green clickable" onClick={() => navigate('/match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
@@ -328,6 +347,7 @@ function App() {
           } />
 
           <Route path="/library" element={<Library />} />
+          <Route path="/decks" element={<DecksPage />} />
           
           <Route path="/stats" element={<StatsPage onBack={() => navigate('/dashboard')} />} />
           <Route path="/stats/activity" element={<StatsPage onBack={() => navigate('/stats')} detail="activity" />} />
@@ -362,6 +382,11 @@ function App() {
           isLoading={isImporting}
         />
       </Modal>
+
+      <AiExtractModal
+        isOpen={isAiExtractModalOpen}
+        onClose={() => setIsAiExtractModalOpen(false)}
+      />
 
       <ScrollToTop />
     </div>

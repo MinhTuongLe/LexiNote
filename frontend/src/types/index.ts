@@ -131,3 +131,27 @@ export interface LeaderboardQuery {
   gameType?: GameType;
   limit?: number;
 }
+
+export interface AiExtractedWord {
+  word: string;
+  meaningVi: string;
+  type: string;
+  phonetic: string;
+  example: string;
+  context: string;
+}
+
+export interface VocabularyDeckSummary {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  level?: string | null;
+  coverImage?: string | null;
+  wordCount: number;
+  isCurated: boolean;
+}
+
+export interface VocabularyDeck extends Omit<VocabularyDeckSummary, 'wordCount'> {
+  words: Array<Omit<AiExtractedWord, 'context'> & { audioUrl?: string | null }>;
+}

@@ -76,7 +76,7 @@ export const RequestEditModal: React.FC<RequestEditModalProps> = ({
             placeholder="e.g. Please add an example sentence / Fix Vietnamese translation spelling"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="bg-muted/40 border-border/80 h-10 font-medium text-foreground text-xs"
+            className="h-10 font-medium text-foreground text-xs bg-background"
             required
             autoFocus
           />

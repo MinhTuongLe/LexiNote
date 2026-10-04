@@ -85,7 +85,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             placeholder="e.g. Linh Nguyen"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+            className="h-10 font-medium text-foreground bg-background"
             required
           />
         </div>
@@ -101,7 +101,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                 placeholder="e.g. linh@lexinote.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+                className="h-10 font-medium text-foreground bg-background"
                 required
               />
             </div>
@@ -116,7 +116,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                   placeholder="Optional custom password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="bg-muted/40 border-border/80 h-10 font-medium text-foreground"
+                  className="h-10 font-medium text-foreground bg-background"
                 />
               </div>
 
@@ -127,7 +127,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value as 'ADMIN' | 'MEMBER')}
-                  className="flex h-10 w-full rounded-md border border-border/80 bg-muted/40 px-3 py-2 text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-all outline-none focus:border-ring focus:ring-2 focus:ring-ring/40 shadow-xs"
                 >
                   <option value="MEMBER">Member (Student)</option>
                   <option value="ADMIN">Admin (System Manager)</option>

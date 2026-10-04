@@ -33,8 +33,28 @@ export interface AnalyticsSummary {
 
 export interface ChartDataPoint {
   date: string;
-  count: number;
+  activeUsers?: number;
+  newUsers?: number;
+  newWords?: number;
+  reviewsCount?: number;
   [key: string]: unknown;
+}
+
+export interface ServerHealth {
+  success: boolean;
+  data: {
+    memory: {
+      heapUsedMB: number;
+      heapTotalMB: number;
+      rssMB: number;
+      usagePercentage: number;
+    };
+    uptimeSeconds: number;
+    uptimeFormatted: string;
+    nodeVersion: string;
+    platform: string;
+    timestamp: number;
+  };
 }
 
 export interface ActivityItem {
@@ -52,7 +72,7 @@ export const analyticsApi = dashboardApi.injectEndpoints({
     }),
     getChartData: builder.query<ChartDataPoint[], { range?: string } | void>({
       query: (params) => ({
-        url: '/analytics/chart',
+        url: '/analytics/traffic',
         params: params || undefined,
       }),
       providesTags: ['Stats'],
@@ -61,11 +81,16 @@ export const analyticsApi = dashboardApi.injectEndpoints({
       query: () => '/analytics/activity',
       providesTags: ['Stats'],
     }),
+    getServerHealth: builder.query<ServerHealth, void>({
+      query: () => '/analytics/server-health',
+      providesTags: ['Health'],
+    }),
   }),
 });
 
 export const { 
   useGetSummaryQuery, 
   useGetChartDataQuery, 
-  useGetRecentActivityQuery 
+  useGetRecentActivityQuery,
+  useGetServerHealthQuery,
 } = analyticsApi;

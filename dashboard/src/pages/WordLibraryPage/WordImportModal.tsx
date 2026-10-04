@@ -51,7 +51,7 @@ export const WordImportModal: React.FC<WordImportModalProps> = ({
             placeholder="e.g. ephemeral, serendipity, pragmatic..."
             value={batchData}
             onChange={(e) => setBatchData(e.target.value)}
-            className="bg-muted/40 border-border/80 min-h-[140px] rounded-lg p-3 font-mono text-xs text-foreground"
+            className="min-h-35 rounded-lg p-3 font-mono text-xs text-foreground bg-background"
           />
         </div>
       </div>
@@ -60,3 +60,4 @@ export const WordImportModal: React.FC<WordImportModalProps> = ({
 };
 
 export default WordImportModal;
+

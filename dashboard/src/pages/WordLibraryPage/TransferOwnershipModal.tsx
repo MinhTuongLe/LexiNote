@@ -77,7 +77,7 @@ export const TransferOwnershipModal: React.FC<TransferOwnershipModalProps> = ({
             placeholder="e.g. 12"
             value={newOwnerId}
             onChange={(e) => setNewOwnerId(e.target.value)}
-            className="bg-muted/40 border-border/80 h-10 font-mono text-foreground"
+            className="h-10 font-mono text-foreground bg-background"
             required
             autoFocus
           />

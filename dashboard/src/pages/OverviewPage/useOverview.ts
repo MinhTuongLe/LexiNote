@@ -60,11 +60,27 @@ export function useOverview() {
     },
   ], [stats]);
 
+  const formattedChartData = useMemo(() => {
+    if (!chartData || !Array.isArray(chartData)) return [];
+    return chartData.map((point: any) => {
+      const parts = point.date ? point.date.split('-') : [];
+      const fallbackName = parts.length === 3 ? `${parts[2]}/${parts[1]}` : (point.date || '');
+      return {
+        ...point,
+        name: point.name || fallbackName,
+        words: point.words ?? point.newWords ?? 0,
+        reviews: point.reviewsCount ?? 0,
+        activeUsers: point.activeUsers ?? 0,
+        newUsers: point.newUsers ?? 0,
+      };
+    });
+  }, [chartData]);
+
   return {
     kpis,
     srsStats: stats?.srsStats,
     rawStats: stats,
-    chartData: chartData || [],
+    chartData: formattedChartData,
     timeRange,
     setTimeRange,
     isLoading: isSummaryLoading || isChartLoading,

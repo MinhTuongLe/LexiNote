@@ -99,6 +99,16 @@ export class AuthService {
   async register(registrationData: any) {
     const { email, password, fullName } = registrationData;
 
+    const systemConfig = await (this.prisma as any).systemConfig.findUnique({
+      where: { id: 1 },
+      select: { isRegistrationOpen: true },
+    });
+    if (systemConfig && !systemConfig.isRegistrationOpen) {
+      throw new ForbiddenException(
+        'New user registrations are currently disabled by the administrator.',
+      );
+    }
+
     if (!email || !password || !fullName) {
       throw new BadRequestException('error.auth.missing_fields');
     }

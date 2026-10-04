@@ -1,6 +1,14 @@
 import { dashboardApi } from './dashboardApi';
 
 export interface SystemConfig {
+  isMaintenanceMode?: boolean;
+  isRegistrationOpen?: boolean;
+  config?: {
+    isMaintenanceMode: boolean;
+    isRegistrationOpen: boolean;
+    rateLimit: number;
+    corsEnabled: boolean;
+  };
   environment?: {
     platform?: string;
     version?: string;
@@ -15,6 +23,8 @@ export interface SystemConfig {
 }
 
 export interface UpdateConfigPayload {
+  isMaintenanceMode?: boolean;
+  isRegistrationOpen?: boolean;
   rateLimit?: number;
   corsEnabled?: boolean;
   autoBackup?: boolean;
@@ -37,7 +47,13 @@ export const configApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Config'],
     }),
+    purgeExpiredTokens: builder.mutation<{ success: boolean; deletedCount: number; message: string }, void>({
+      query: () => ({ url: '/cleaners/expired-tokens', method: 'POST' }),
+    }),
+    cleanOrphanedRecords: builder.mutation<{ success: boolean; cleanedRelationsCount: number; cleanedReviewsCount: number; message: string }, void>({
+      query: () => ({ url: '/cleaners/orphaned-records', method: 'POST' }),
+    }),
   }),
 });
 
-export const { useGetConfigQuery, useUpdateConfigMutation } = configApi;
+export const { useGetConfigQuery, useUpdateConfigMutation, usePurgeExpiredTokensMutation, useCleanOrphanedRecordsMutation } = configApi;

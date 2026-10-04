@@ -53,7 +53,7 @@ export const WordRelationModal: React.FC<WordRelationModalProps> = ({
             <select
               value={relType}
               onChange={(e) => setRelType(e.target.value as 'synonym' | 'antonym' | 'collocation')}
-              className="w-full bg-muted/40 border border-border/80 rounded-md h-9 px-2 text-xs font-semibold text-foreground focus:outline-hidden"
+              className="w-full bg-background border border-input rounded-md h-9 px-2 text-xs font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 shadow-xs"
             >
               <option value="synonym">Synonym</option>
               <option value="antonym">Antonym</option>
@@ -67,7 +67,7 @@ export const WordRelationModal: React.FC<WordRelationModalProps> = ({
                 value={relValue}
                 onChange={(e) => setRelValue(e.target.value)}
                 placeholder="e.g. chance, luck..."
-                className="bg-muted/40 border-border/80 h-9 text-xs font-medium text-foreground"
+                className="h-9 text-xs font-medium text-foreground bg-background"
               />
               <Button
                 size="sm"

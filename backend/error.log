@@ -361,3 +361,135 @@ NotFoundException: Cannot GET /favicon.ico
 ConflictException: The target user already owns a word with the same spelling
     at DashboardWordsService.transferOwnership (D:\Workspace\Personal\Web\LexiNote\backend\src\dashboard\words\words.service.ts:287:15)
     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-10-03T06:56:20.832Z] /api/v1/client/decks/curated
+NotFoundException: Cannot HEAD /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:56:20.836Z] /api/v1/client/decks/curated
+NotFoundException: Cannot GET /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:56:53.787Z] /api/v1/client/decks/curated
+NotFoundException: Cannot HEAD /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:56:53.788Z] /api/v1/client/decks/curated
+NotFoundException: Cannot GET /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:58:24.070Z] /api/v1/client/decks/curated
+NotFoundException: Cannot HEAD /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:58:24.074Z] /api/v1/client/decks/curated
+NotFoundException: Cannot GET /api/v1/client/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:58:50.832Z] /api/decks/curated
+NotFoundException: Cannot HEAD /api/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:58:50.834Z] /api/decks/curated
+NotFoundException: Cannot GET /api/decks/curated
+    at callback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\routes-resolver.js:77:19)
+    at Object.<anonymous> (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-proxy.js:9:23)
+    at preHandlerCallbackInner (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:168:24)
+    at preHandlerCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:134:5)
+    at validationCompleted (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:124:5)
+    at preValidationCallback (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:101:5)
+    at handler (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:78:7)
+    at Object.handleRequest (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\handle-request.js:30:5)
+    at runPreParsing (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\route.js:651:19)
+    at next (D:\Workspace\Personal\Web\LexiNote\backend\node_modules\fastify\lib\hooks.js:236:9)
+
+[2026-10-03T06:59:30.506Z] /api/v1/dashboard/decks/curated
+TypeError: Cannot read properties of undefined (reading 'findMany')
+    at DeckService.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.service.ts:10:51)
+    at DeckController.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.controller.ts:26:29)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-10-03T06:59:30.510Z] /api/v1/dashboard/decks/curated
+TypeError: Cannot read properties of undefined (reading 'findMany')
+    at DeckService.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.service.ts:10:51)
+    at DeckController.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.controller.ts:26:29)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-10-03T07:00:43.087Z] /api/v1/dashboard/decks/curated
+TypeError: Cannot read properties of undefined (reading 'findMany')
+    at DeckService.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.service.ts:10:51)
+    at DeckController.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.controller.ts:26:29)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+
+[2026-10-03T07:00:43.089Z] /api/v1/dashboard/decks/curated
+TypeError: Cannot read properties of undefined (reading 'findMany')
+    at DeckService.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.service.ts:10:51)
+    at DeckController.listCurated (D:\Workspace\Personal\Web\LexiNote\backend\src\client\deck\deck.controller.ts:26:29)
+    at D:\Workspace\Personal\Web\LexiNote\backend\node_modules\@nestjs\core\router\router-execution-context.js:38:29
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)

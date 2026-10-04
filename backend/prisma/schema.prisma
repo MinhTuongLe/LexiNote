@@ -51,6 +51,7 @@ model User {
   refreshTokens            RefreshToken[]
   achievementUnlocks       AchievementUnlock[]
   gameSessions             GameSession[]
+  createdDecks             Deck[]
 
   @@map("user")
 }
@@ -77,6 +78,42 @@ model Word {
   @@unique([word, ownerId])
   @@index([ownerId])
   @@map("word")
+}
+
+model Deck {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  category    String   @default("GENERAL")
+  level       String?  @default("Intermediate")
+  coverImage  String?  @map("cover_image")
+  isCurated   Boolean  @default(true) @map("is_curated")
+  creatorId   Int?     @map("creator_id")
+  createdAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt   BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  creator     User?    @relation(fields: [creatorId], references: [id], onDelete: SetNull)
+  words       DeckWord[]
+
+  @@index([category])
+  @@index([isCurated])
+  @@map("deck")
+}
+
+model DeckWord {
+  deckId    Int      @map("deck_id")
+  word      String
+  meaningVi String   @map("meaning_vi")
+  type      String   @default("noun")
+  phonetic  String?
+  example   String?
+  audioUrl  String?  @map("audio_url")
+  createdAt BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+
+  @@id([deckId, word])
+  @@map("deck_word")
 }
 
 model WordRelation {
@@ -179,4 +216,16 @@ model AuditLog {
   @@index([action])
   @@index([createdAt])
   @@map("audit_log")
+}
+
+model SystemConfig {
+  id                  Int      @id @default(1)
+  isMaintenanceMode   Boolean  @default(false) @map("is_maintenance_mode")
+  isRegistrationOpen  Boolean  @default(true) @map("is_registration_open")
+  rateLimit           Int      @default(100)
+  corsEnabled         Boolean  @default(true) @map("cors_enabled")
+  createdAt           BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+  updatedAt           BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
+
+  @@map("system_config")
 }

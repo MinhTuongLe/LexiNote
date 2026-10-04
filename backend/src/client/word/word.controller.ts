@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
+import { AiExtractDto } from './dto/ai-extract.dto';
 
 @ApiTags('Words')
 @Controller('words') // Under /api prefix -> /api/words
@@ -22,6 +23,12 @@ import { UpdateWordDto } from './dto/update-word.dto';
 @ApiBearerAuth()
 export class WordController {
   constructor(private readonly wordService: WordService) {}
+
+  @Post('ai-extract')
+  @ApiOperation({ summary: 'Extract vocabulary from English text' })
+  async aiExtract(@Body() body: AiExtractDto) {
+    return this.wordService.extractVocabulary(body.text, body.maxWords);
+  }
 
   @Post()
   @ApiOperation({ summary: 'Create a new word' })

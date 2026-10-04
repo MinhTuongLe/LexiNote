@@ -51,10 +51,11 @@
   flex-direction: column;
   gap: 16px;
   background: white;
-  padding: 20px;
-  border-radius: var(--radius-md);
-  border: 3px solid var(--border);
-  box-shadow: var(--shadow);
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  border: 4px solid var(--border);
+  box-shadow: 6px 6px 0px var(--border);
+  margin-bottom: 8px;
 }
 
 .library-controls {
@@ -68,18 +69,21 @@
   .library-controls {
     flex-direction: row;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
   }
 }
 
+.library-status-select,
 .library-type-select {
   width: 100%;
 }
 
 @media (min-width: 600px) {
+  .library-status-select,
   .library-type-select {
-    min-width: 200px;
+    min-width: 180px;
     width: auto;
+    flex-shrink: 0;
   }
 }
 
@@ -89,47 +93,56 @@
   align-items: center;
   gap: 12px;
   background: white;
-  border: 4px solid var(--border); /* Match CuteSelect */
-  border-radius: var(--radius-sm);
-  padding: 0 16px;
-  min-height: 56px;
+  border: 4px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 4px 16px;
+  min-height: 52px;
+  min-width: 220px;
   transition: all 0.2s;
-  width: 100%;
-  box-shadow: 2px 2px 0px var(--border); /* Match CuteSelect */
+  box-shadow: 3px 3px 0px var(--border);
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
   .search-bar {
-    min-height: 56px;
-    font-size: 1.2rem;
+    min-height: 52px;
+    font-size: 1.1rem;
   }
   
   .search-bar input {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 }
 
 .search-bar:focus-within {
   transform: translateY(-2px);
-  box-shadow: 4px 4px 0px var(--border);
+  box-shadow: 5px 5px 0px var(--border);
   border-color: var(--primary);
 }
 
 .search-bar input {
   flex: 1;
-  border: none;
-  background: transparent;
+  border: none !important;
+  background: transparent !important;
   font-family: inherit;
-  font-weight: 500;
-  outline: none;
-  padding: 0;
-  height: 100%;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--text);
+  outline: none !important;
+  padding: 6px 0 !important;
+  height: auto !important;
+  min-height: 36px;
   width: 100%;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .search-bar input:focus {
-  transform: none;
-  box-shadow: none;
+  transform: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+  border: none !important;
 }
 
 .selection-actions {

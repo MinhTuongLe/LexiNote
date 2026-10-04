@@ -34,6 +34,22 @@ export class AnalyticsController {
     );
   }
 
+  @Get('traffic')
+  @ApiOperation({ summary: 'Get traffic and growth chart data' })
+  getTraffic(@Query() query: AnalyticsQueryDto) {
+    return this.analyticsService.getTrafficStats(
+      query.range,
+      query.startDate,
+      query.endDate,
+    );
+  }
+
+  @Get('server-health')
+  @ApiOperation({ summary: 'Get live Node.js server health' })
+  getServerHealth() {
+    return this.analyticsService.getServerHealth();
+  }
+
   @Get('export')
   @ApiOperation({ summary: 'Export analytics report' })
   async exportChart(
@@ -50,7 +66,10 @@ export class AnalyticsController {
       'Content-Disposition',
       `attachment; filename="lexinote_export_analytics_${Date.now()}.csv"`,
     );
-    return toCsv(['date', 'activeUsers', 'newWords', 'reviewsCount'], points);
+    return toCsv(
+      ['date', 'activeUsers', 'newUsers', 'newWords', 'reviewsCount'],
+      points,
+    );
   }
 
   @Get('activity')
