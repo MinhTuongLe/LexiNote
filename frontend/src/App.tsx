@@ -48,6 +48,7 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAiExtractModalOpen, setIsAiExtractModalOpen] = useState(false);
+  const [maintenanceNotice, setMaintenanceNotice] = useState<string | null>(null);
   
   const { user, isAuthenticated, isInitialized } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
@@ -79,6 +80,16 @@ function App() {
     window.addEventListener('system-error', handleSystemError);
     return () => window.removeEventListener('system-error', handleSystemError);
   }, [showAlert, t]);
+
+  // Handle scheduled maintenance notifications gracefully
+  useEffect(() => {
+    const handleMaintenance = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      setMaintenanceNotice(detail || 'Hệ thống đang được bảo trì định kỳ.');
+    };
+    window.addEventListener('system-maintenance', handleMaintenance);
+    return () => window.removeEventListener('system-maintenance', handleMaintenance);
+  }, []);
 
   // RTK Query hooks - Top level (required by React)
   const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
@@ -387,6 +398,26 @@ function App() {
         isOpen={isAiExtractModalOpen}
         onClose={() => setIsAiExtractModalOpen(false)}
       />
+
+      <Modal
+        isOpen={Boolean(maintenanceNotice)}
+        onClose={() => setMaintenanceNotice(null)}
+        title="🚧 Đang Bảo Trì Hệ Thống"
+      >
+        <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+          <p style={{ fontSize: '1rem', lineHeight: '1.6', marginBottom: '1.5rem', color: 'var(--text-muted, #64748b)' }}>
+            {maintenanceNotice}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <Button variant="outline" onClick={() => setMaintenanceNotice(null)}>
+              Đóng
+            </Button>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Thử lại 🔄
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       <ScrollToTop />
     </div>

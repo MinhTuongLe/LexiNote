@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import SystemConfigPage from './SystemConfigPage';
+import { ToastProvider } from '@/components/ui/Toast';
 
 const updateConfig = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({}) });
 const purgeExpiredTokens = vi.fn().mockReturnValue({ unwrap: vi.fn().mockResolvedValue({ deletedCount: 3 }) });
@@ -33,9 +34,13 @@ vi.mock('@/store/api/analyticsApi', () => ({
   }),
 }));
 
+const renderWithProviders = (ui: React.ReactElement) => {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+};
+
 describe('SystemConfigPage', () => {
   it('renders maintenance and registration controls', () => {
-    render(<SystemConfigPage />);
+    renderWithProviders(<SystemConfigPage />);
 
     expect(screen.getByLabelText('Maintenance mode')).toBeInTheDocument();
     expect(screen.getByLabelText('Registration open')).toBeInTheDocument();
@@ -43,7 +48,7 @@ describe('SystemConfigPage', () => {
   });
 
   it('renders infrastructure cleaner actions', () => {
-    render(<SystemConfigPage />);
+    renderWithProviders(<SystemConfigPage />);
 
     expect(screen.getByRole('button', { name: 'Purge expired tokens' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Clean orphaned records' })).toBeInTheDocument();

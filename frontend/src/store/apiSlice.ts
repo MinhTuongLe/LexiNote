@@ -63,6 +63,16 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         window.dispatchEvent(new CustomEvent('system-error', { detail: 'Phiên đăng nhập không hợp lệ!' }));
       }
     } 
+    // Handle 503 Service Unavailable -> Maintenance Mode
+    else if (result.error.status === 503) {
+      const errorData = result.error.data as { message?: string } | undefined;
+      const maintenanceDetail =
+        errorData?.message ||
+        'Hệ thống đang trong thời gian bảo trì nâng cấp. Vui lòng quay lại sau ít phút!';
+      window.dispatchEvent(
+        new CustomEvent('system-maintenance', { detail: maintenanceDetail })
+      );
+    }
     // Handle System Errors (Network down, Server Error >= 500, etc)
     else if (
       result.error.status === 'FETCH_ERROR' || 
