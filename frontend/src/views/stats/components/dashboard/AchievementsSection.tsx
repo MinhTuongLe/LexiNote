@@ -115,9 +115,9 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats,
                       {item.title}
                     </h4>
                     {item.unlocked ? (
-                      <CheckCircle2 size={16} style={{ color: '#00b894', shrink: 0 }} />
+                      <CheckCircle2 size={16} style={{ color: '#00b894', flexShrink: 0 }} />
                     ) : (
-                      <Lock size={14} style={{ color: 'var(--text-muted)', shrink: 0 }} />
+                      <Lock size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
                     )}
                   </div>
                   <p style={{ margin: '2px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: 1.2 }}>

@@ -3,7 +3,9 @@ export interface Word {
   word: string;
   meaningVi: string;
   example?: string;
-  type: 'noun' | 'verb' | 'adj' | 'adv' | 'phrasal_verb' | 'idiom' | 'phrase' | 'noun_phrase' | 'verb_phrase' | 'other';
+  type: 'noun' | 'verb' | 'adj' | 'adv' | 'phrasal_verb' | 'idiom' | 'phrase' | 'noun_phrase' | 'verb_phrase' | 'other' | string;
+  phonetic?: string;
+  audioUrl?: string;
   createdAt: number;
   relations?: WordRelation[];
   reviews?: Review[];
@@ -93,6 +95,9 @@ export interface StudyStats {
   accuracy: number;
   totalTimeSpentMinutes: number;
   weakestWords: { word: string; meaning: string; wrongCount: number }[];
+  totalWords?: number;
+  totalSessions?: number;
+  masteryBreakdown?: { mastered: number; learning: number; new: number };
 }
 
 export interface TypeBreakdown {

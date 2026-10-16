@@ -27,7 +27,7 @@ const AiExtractModal: React.FC<AiExtractModalProps> = ({ isOpen, onClose }) => {
 
   const handleExtract = async () => {
     if (!textInput.trim()) {
-      showAlert(t('common.error'), 'Vui lòng nhập hoặc dán một đoạn văn bản tiếng Anh để AI trích xuất!', 'warning');
+      showAlert(t('common.error'), 'Vui lòng nhập hoặc dán một đoạn văn bản tiếng Anh để AI trích xuất!', 'alert');
       return;
     }
 
@@ -65,7 +65,7 @@ const AiExtractModal: React.FC<AiExtractModalProps> = ({ isOpen, onClose }) => {
   const handleImportSelected = async () => {
     const selected = extractedWords.filter(w => selectedWordsMap[w.word]);
     if (selected.length === 0) {
-      showAlert(t('common.error'), 'Vui lòng chọn ít nhất 1 từ vựng để thêm vào thư viện!', 'warning');
+      showAlert(t('common.error'), 'Vui lòng chọn ít nhất 1 từ vựng để thêm vào thư viện!', 'alert');
       return;
     }
 
@@ -78,10 +78,10 @@ const AiExtractModal: React.FC<AiExtractModalProps> = ({ isOpen, onClose }) => {
     }));
 
     try {
-      const res = await importWords({ words: payload }).unwrap();
+      const res = await importWords(payload).unwrap();
       showAlert(
         t('common.success'),
-        `Đã thêm thành công ${res.importedWords?.length || selected.length} từ vựng mới vào Thư viện cá nhân của bạn!`,
+        `Đã thêm thành công ${res.imported || selected.length} từ vựng mới vào Thư viện cá nhân của bạn!`,
         'success'
       );
       // Reset & close modal

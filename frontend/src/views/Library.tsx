@@ -68,7 +68,7 @@ const Library: React.FC = () => {
         showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
         setLoadedWords(prev => prev.filter(w => w.id !== id));
         setSelectedIds(prev => prev.filter(sid => sid !== id));
-      } catch {
+      } catch (err) {
         showAlert(t('common.error'), t('common.error'), 'error');
       }
     });
@@ -153,7 +153,7 @@ const Library: React.FC = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
       XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } catch {
+    } catch (err) {
       console.error('Export failed:', err);
       showAlert(t('common.error'), t('common.error'), 'error');
     } finally {

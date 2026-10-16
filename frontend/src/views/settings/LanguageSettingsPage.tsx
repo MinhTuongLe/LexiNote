@@ -56,7 +56,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
 
     const updatedTypes = [...customWordTypes, { value, label: newTypeLabel }];
     try {
-      await updateSettings({ wordTypes: updatedTypes }).unwrap();
+      await updateSettings({ wordTypes: { custom: updatedTypes } }).unwrap();
       const addedLabel = newTypeLabel;
       setNewTypeName('');
       setNewTypeLabel('');
@@ -73,7 +73,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
       async () => {
         const updatedTypes = customWordTypes.filter(t => t.value !== value);
         try {
-          await updateSettings({ wordTypes: updatedTypes }).unwrap();
+          await updateSettings({ wordTypes: { custom: updatedTypes } }).unwrap();
           showAlert(t('settings.deleted_title'), t('settings.type_deleted'), 'success');
     } catch {
           showAlert(t('common.error'), 'Failed to delete word type', 'error');
