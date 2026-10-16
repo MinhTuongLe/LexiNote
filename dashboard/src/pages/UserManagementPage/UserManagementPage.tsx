@@ -6,7 +6,6 @@ import {
   Plus,
   Trash2, 
   Edit2,
-  ShieldCheck,
   BadgeCheck,
   Key,
   Mail,
@@ -279,7 +278,7 @@ const UserManagementPage: React.FC = () => {
         title="Restore Banned User Account"
         description={`Are you sure you want to unban ${unbanConfirmUser?.fullName || 'this user'}? Their access will be restored.`}
         confirmText="Restore Account"
-        variant="info"
+        variant="primary"
         isLoading={isActionLoading}
       />
 
