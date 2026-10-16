@@ -32,7 +32,7 @@ export class AnalyticsService {
         },
       }),
       this.prisma.review.findMany({
-        take: 5,
+        take: 10,
         where: { wrongCount: { gt: 0 } },
         orderBy: { wrongCount: 'desc' },
         include: {
@@ -83,7 +83,7 @@ export class AnalyticsService {
     endDate?: string,
   ) {
     const window = this.resolveDateWindow(range, startDate, endDate);
-    const [newWords, reviews] = await Promise.all([
+    const [newWords, reviews, newUsers] = await Promise.all([
       this.prisma.word.findMany({
         where: {
           createdAt: { gte: window.startMs, lt: window.endMs },
@@ -101,12 +101,17 @@ export class AnalyticsService {
           word: { select: { ownerId: true } },
         },
       }),
+      this.prisma.user.findMany({
+        where: { createdAt: { gte: window.startMs, lt: window.endMs } },
+        select: { createdAt: true },
+      }),
     ]);
 
     const points = new Map<
       string,
       {
         activeUsers: Set<number>;
+        newUsers: number;
         newWords: number;
         reviewsCount: number;
       }
@@ -114,6 +119,7 @@ export class AnalyticsService {
     for (const date of window.dates) {
       points.set(this.toDateKey(date), {
         activeUsers: new Set<number>(),
+        newUsers: 0,
         newWords: 0,
         reviewsCount: 0,
       });
@@ -124,6 +130,11 @@ export class AnalyticsService {
         this.toDateKey(new Date(Number(word.createdAt))),
       );
       if (point) point.newWords += 1;
+    }
+
+    for (const user of newUsers) {
+      const point = points.get(this.toDateKey(new Date(Number(user.createdAt))));
+      if (point) point.newUsers += 1;
     }
 
     for (const review of reviews) {
@@ -138,13 +149,57 @@ export class AnalyticsService {
 
     return window.dates.map((date) => {
       const point = points.get(this.toDateKey(date));
+      const key = this.toDateKey(date);
+      const newWordsCount = point?.newWords || 0;
       return {
-        date: this.toDateKey(date),
+        date: key,
+        name: key.slice(5).replace('-', '/'),
+        words: newWordsCount,
+        newWords: newWordsCount,
         activeUsers: point?.activeUsers.size || 0,
-        newWords: point?.newWords || 0,
+        newUsers: point?.newUsers || 0,
         reviewsCount: point?.reviewsCount || 0,
       };
     });
+  }
+
+  getServerHealth() {
+    const memory = process.memoryUsage();
+    const heapUsedMB = this.toMb(memory.heapUsed);
+    const heapTotalMB = this.toMb(memory.heapTotal);
+    const rssMB = this.toMb(memory.rss);
+    return {
+      success: true,
+      data: {
+        memory: {
+          heapUsedMB,
+          heapTotalMB,
+          rssMB,
+          usagePercentage:
+            heapTotalMB > 0
+              ? Number(((heapUsedMB / heapTotalMB) * 100).toFixed(1))
+              : 0,
+        },
+        uptimeSeconds: Math.floor(process.uptime()),
+        uptimeFormatted: this.formatUptime(process.uptime()),
+        nodeVersion: process.version,
+        platform: process.platform,
+        timestamp: Date.now(),
+      },
+    };
+  }
+
+  private toMb(bytes: number) {
+    return Number((bytes / 1024 / 1024).toFixed(1));
+  }
+
+  private formatUptime(seconds: number) {
+    const totalSeconds = Math.floor(seconds);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const remainder = totalSeconds % 60;
+    return `${days}d ${hours}h ${minutes}m ${remainder}s`;
   }
 
   private resolveDateWindow(

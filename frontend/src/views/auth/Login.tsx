@@ -6,10 +6,11 @@ import { setCredentials } from '../../store/authSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Eye, EyeOff } from 'lucide-react';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import { useTranslation } from 'react-i18next';
 import { checkHasSeenGuide } from '../../utils/authUtils';
 import './Auth.css';
+import { getApiErrorMessage, getApiErrorPayload } from '../../utils/errorUtils';
 
 interface LoginProps {
   onSwitch: () => void;
@@ -43,21 +44,21 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
         closeDialog();
         navigate('/welcome', { replace: true });
       }
-    } catch (err: any) {
-      if (err.data?.code === 'EMAIL_NOT_VERIFIED') {
+    } catch (error: unknown) {
+      const errorData = getApiErrorPayload(error);
+      if (errorData?.code === 'EMAIL_NOT_VERIFIED') {
         showAlert(t('auth.not_verified_title'), t('auth.not_verified_msg'), 'alert');
         navigate(`/verify-email?email=${encodeURIComponent(email)}`);
         return;
       }
       
-      if (err.data?.code === 'ACCOUNT_INACTIVE') {
+      if (errorData?.code === 'ACCOUNT_INACTIVE') {
         showAlert(t('auth.login_failed_title'), t('auth.account_inactive_msg'), 'error');
         return;
       }
 
-      const errorMessage = err.data?.message?.startsWith('error.') 
-        ? t(err.data.message) 
-        : (err.data?.message || t('auth.login_failed_msg'));
+      const apiMessage = getApiErrorMessage(error, t('auth.login_failed_msg'));
+      const errorMessage = apiMessage.startsWith('error.') ? t(apiMessage) : apiMessage;
 
       showAlert(t('auth.login_failed_title'), errorMessage, 'error');
     }

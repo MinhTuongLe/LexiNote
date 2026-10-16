@@ -4,15 +4,16 @@ import { Sparkles, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useUpdateSettingsMutation } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import { markGuideAsSeenLocal } from '../../utils/authUtils';
 import Button from '../../components/Button';
 import './WelcomePage.css';
+import type { RootState } from '../../store';
 
 const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('welcome');
-  const { user } = useSelector((state: any) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const { closeDialog } = useCuteDialog();
   const [updateSettings] = useUpdateSettingsMutation();
   const [currentSlide, setCurrentSlide] = useState(0);

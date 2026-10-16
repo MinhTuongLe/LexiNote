@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { TrendingUp } from 'lucide-react';
 import Card from '../../../../components/Card';
 import i18n from '../../../../i18n';
+import type { StudyStats } from '../../../../types';
 
 interface WeeklyActivityChartProps {
-  weeklyActivity: any[];
+  weeklyActivity: StudyStats['weeklyActivity'];
   mounted: boolean;
   onClick: () => void;
 }

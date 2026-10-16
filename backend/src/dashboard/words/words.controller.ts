@@ -22,6 +22,8 @@ import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ExportWordsQueryDto } from './dto/export-words-query.dto';
 import { ImportWordsDto } from './dto/import-words.dto';
+import { TransferOwnershipDto } from './dto/transfer-ownership.dto';
+import { UpdateDashboardWordDto } from './dto/update-word.dto';
 
 @ApiTags('Dashboard Words')
 @ApiBearerAuth()
@@ -61,8 +63,11 @@ export class DashboardWordsController {
         'meaningVi',
         'example',
         'type',
+        'phonetic',
+        'audioUrl',
         'moderationStatus',
         'flagReason',
+        'rejectReason',
         'createdAt',
         'ownerId',
         'ownerName',
@@ -74,14 +79,23 @@ export class DashboardWordsController {
         meaningVi: word.meaningVi,
         example: word.example,
         type: word.type,
+        phonetic: word.phonetic,
+        audioUrl: word.audioUrl,
         moderationStatus: word.moderationStatus,
         flagReason: word.flagReason,
+        rejectReason: word.rejectReason,
         createdAt: word.createdAt,
         ownerId: word.ownerId,
         ownerName: word.ownerName,
         ownerEmail: word.ownerEmail,
       })),
     );
+  }
+
+  @Get('types')
+  @ApiOperation({ summary: 'Get distinct glossary word types' })
+  async getDistinctWordTypes() {
+    return this.wordsService.getDistinctWordTypes();
   }
 
   @Get()
@@ -106,9 +120,19 @@ export class DashboardWordsController {
   @ApiOperation({ summary: 'Update word details' })
   async updateWord(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: { meaningVi?: string; type?: string; example?: string },
+    @Body() data: UpdateDashboardWordDto,
   ) {
     return this.wordsService.updateWord(id, data);
+  }
+
+  @Post(':id/reset-srs')
+  @ApiOperation({ summary: 'Reset SRS progress for a word' })
+  async resetWordSrs(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: { user?: { id?: number; userId?: number; email?: string } },
+  ) {
+    const actorId = req.user?.id ?? req.user?.userId;
+    return this.wordsService.resetWordSrs(id, actorId, req.user?.email);
   }
 
   @Delete(':id')
@@ -132,5 +156,14 @@ export class DashboardWordsController {
   @ApiOperation({ summary: 'Delete a word relation' })
   async deleteRelation(@Param('relationId', ParseIntPipe) relationId: number) {
     return this.wordsService.deleteRelation(relationId);
+  }
+
+  @Post(':id/transfer-ownership')
+  @ApiOperation({ summary: 'Transfer a word to another user' })
+  async transferOwnership(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: TransferOwnershipDto,
+  ) {
+    return this.wordsService.transferOwnership(id, body.newOwnerId);
   }
 }

@@ -2,9 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from '../../../../components/Card';
 import { getTypeLabel } from '../../../../utils/wordUtils';
+import type { StudyStats } from '../../../../types';
 
 interface TypesDetailProps {
-  stats: any;
+  stats: StudyStats;
 }
 
 const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
@@ -44,14 +45,16 @@ const TypesDetail: React.FC<TypesDetailProps> = ({ stats }) => {
              </div>
            ) : (
              <div className="top-category-highlight">
-                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('stats.start_learning_for_analysis')}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  {t('stats.start_learning_for_analysis', 'Start studying to see an analysis of your lexical strengths! 🚀')}
+                </span>
              </div>
            )}
         </Card>
       </div>
 
       <div className="types-insights-grid">
-         {sortedTypes.map((type: any, i: number) => {
+         {sortedTypes.map((type, i: number) => {
            const masteredPercent = (type.mastered / type.total) * 100;
            const learningPercent = (type.learning / type.total) * 100;
            const newPercent = (type.new / type.total) * 100;

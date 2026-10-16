@@ -3,13 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useVerifyEmailMutation, useResendVerificationMutation } from '../../store/apiSlice';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../../store/authSlice';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import { useTranslation } from 'react-i18next';
 import { Trans } from 'react-i18next';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Mail, ArrowLeft, CheckCircle } from 'lucide-react';
 import './Auth.css';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 const VerifyEmail: React.FC = () => {
   const navigate = useNavigate();
@@ -51,8 +52,8 @@ const VerifyEmail: React.FC = () => {
       dispatch(setCredentials(result));
       setIsVerified(true);
       showAlert(t('common.success'), t('auth.verify_success_desc'), 'success');
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, t('common.error')), 'error');
     }
   };
 
@@ -62,8 +63,8 @@ const VerifyEmail: React.FC = () => {
       await resendVerification({ email }).unwrap();
       setCountdown(60);
       showAlert(t('common.success'), t('common.success'), 'success');
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || t('common.error'), 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, t('common.error')), 'error');
     }
   };
 

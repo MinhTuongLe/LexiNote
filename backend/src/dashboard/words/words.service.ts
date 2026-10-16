@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { ModerationFlagReason, ModerationStatus, Prisma } from '@prisma/client';
@@ -80,6 +85,79 @@ export class DashboardWordsService {
     };
   }
 
+  async resetWordSrs(
+    wordId: number,
+    actorId?: number,
+    actorEmail?: string,
+  ) {
+    const word = await this.prisma.word.findUnique({
+      where: { id: wordId },
+      select: { id: true, word: true },
+    });
+    if (!word) throw new NotFoundException(`Word with ID ${wordId} not found`);
+
+    const resetAt = BigInt(Date.now());
+    const review = await this.prisma.review.upsert({
+      where: { wordId },
+      create: {
+        wordId,
+        interval: 0,
+        easeFactor: 2.5,
+        correctCount: 0,
+        wrongCount: 0,
+        lastReviewed: null,
+        nextReview: resetAt,
+        updatedAt: resetAt,
+      },
+      update: {
+        interval: 0,
+        easeFactor: 2.5,
+        correctCount: 0,
+        wrongCount: 0,
+        lastReviewed: null,
+        nextReview: resetAt,
+        updatedAt: resetAt,
+      },
+    });
+
+    await this.auditService.logAction({
+      actorId,
+      actorEmail,
+      action: 'WORD_RESET_SRS',
+      targetType: 'Word',
+      targetId: String(wordId),
+      details: { wordId, word: word.word },
+    });
+
+    return {
+      success: true,
+      message: `SRS progress reset successfully for word #${wordId}`,
+      review: {
+        wordId: review.wordId,
+        interval: review.interval,
+        easeFactor: review.easeFactor,
+        correctCount: review.correctCount,
+        wrongCount: review.wrongCount,
+        lastReviewed: review.lastReviewed
+          ? review.lastReviewed.toString()
+          : null,
+        nextReview: review.nextReview.toString(),
+      },
+    };
+  }
+
+  async getDistinctWordTypes(): Promise<string[]> {
+    const types = await this.prisma.word.findMany({
+      select: { type: true },
+      distinct: ['type'],
+    });
+
+    return Array.from(
+      new Set(types.map(({ type }) => type.trim()).filter(Boolean)),
+    )
+      .sort((first, second) => first.localeCompare(second));
+  }
+
   async importWords(ownerId: number, dto: ImportWordsDto) {
     const parsedWords = dto.rawWords
       .split(/[,;\r\n]+/)
@@ -157,8 +235,11 @@ export class DashboardWordsService {
         meaningVi: true,
         example: true,
         type: true,
+        phonetic: true,
+        audioUrl: true,
         moderationStatus: true,
         flagReason: true,
+        rejectReason: true,
         createdAt: true,
         owner: { select: { id: true, fullName: true, email: true } },
       },
@@ -170,8 +251,11 @@ export class DashboardWordsService {
       meaningVi: word.meaningVi,
       example: word.example,
       type: word.type,
+      phonetic: word.phonetic,
+      audioUrl: word.audioUrl,
       moderationStatus: word.moderationStatus,
       flagReason: word.flagReason,
+      rejectReason: word.rejectReason,
       createdAt: new Date(Number(word.createdAt)).toISOString(),
       ownerId: word.owner.id,
       ownerName: word.owner.fullName,
@@ -214,7 +298,13 @@ export class DashboardWordsService {
 
   async updateWord(
     id: number,
-    data: { meaningVi?: string; type?: string; example?: string },
+    data: {
+      meaningVi?: string;
+      type?: string;
+      example?: string;
+      phonetic?: string;
+      audioUrl?: string;
+    },
   ) {
     const updated = await this.prisma.word.update({
       where: { id },
@@ -222,6 +312,8 @@ export class DashboardWordsService {
         ...(data.meaningVi !== undefined && { meaningVi: data.meaningVi }),
         ...(data.type !== undefined && { type: data.type }),
         ...(data.example !== undefined && { example: data.example }),
+        ...(data.phonetic !== undefined && { phonetic: data.phonetic }),
+        ...(data.audioUrl !== undefined && { audioUrl: data.audioUrl }),
       },
       include: {
         relations: true,
@@ -236,6 +328,60 @@ export class DashboardWordsService {
     });
 
     return updated;
+  }
+
+  async transferOwnership(wordId: number, newOwnerId: number) {
+    const [word, newOwner] = await Promise.all([
+      this.prisma.word.findUnique({
+        where: { id: wordId },
+        select: { id: true, word: true, ownerId: true },
+      }),
+      this.prisma.user.findUnique({
+        where: { id: newOwnerId },
+        select: { id: true, fullName: true, email: true },
+      }),
+    ]);
+
+    if (!word) throw new NotFoundException(`Word with ID ${wordId} not found`);
+    if (!newOwner) {
+      throw new NotFoundException(`User with ID ${newOwnerId} not found`);
+    }
+    if (word.ownerId === newOwnerId) {
+      throw new ConflictException('Word is already owned by this user');
+    }
+
+    try {
+      await this.prisma.word.update({
+        where: { id: wordId },
+        data: { ownerId: newOwnerId },
+      });
+    } catch (error) {
+      if (this.isUniqueConstraintError(error)) {
+        throw new ConflictException(
+          'The target user already owns a word with the same spelling',
+        );
+      }
+      throw error;
+    }
+
+    await this.auditService.logAction({
+      action: 'WORD_TRANSFER_OWNERSHIP',
+      targetType: 'WORD',
+      targetId: String(wordId),
+      details: {
+        word: word.word,
+        previousOwnerId: word.ownerId,
+        newOwnerId,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Word ownership transferred successfully',
+      wordId,
+      previousOwnerId: word.ownerId,
+      newOwner,
+    };
   }
 
   async addRelation(wordId: number, type: string, value: string) {

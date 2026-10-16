@@ -2,9 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Award } from 'lucide-react';
 import Card from '../../../../components/Card';
+import type { StudyStats } from '../../../../types';
 
 interface LearningProgressProps {
-  stats: any;
+  stats: StudyStats;
   mounted: boolean;
   onClick: () => void;
 }

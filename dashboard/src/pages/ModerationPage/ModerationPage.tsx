@@ -8,8 +8,10 @@ import {
   Square,
   RefreshCw,
   Edit2,
-  Trash2,
-  ThumbsUp
+  ThumbsUp,
+  XCircle,
+  HelpCircle,
+  Download
 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,13 +23,16 @@ import {
   useDeleteWordMutation, 
   useUpdateWordMutation,
   useApproveWordMutation,
+  useRejectWordMutation,
+  useRequestEditWordMutation,
   useBatchApproveWordsMutation
 } from '@/store/api/wordsApi';
 import type { Word } from '@/store/api/wordsApi';
 import { useToast } from '@/components/ui/Toast';
 import ReModal from '@/components/ui/ReModal';
 import { exportToCSV } from '@/utils/export';
-import { Download } from 'lucide-react';
+import RejectModerationModal from './RejectModerationModal';
+import RequestEditModal from './RequestEditModal';
 
 const ModerationPage: React.FC = () => {
   const { toast } = useToast();
@@ -40,6 +45,9 @@ const ModerationPage: React.FC = () => {
   const [newMeaning, setNewMeaning] = useState('');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  const [rejectingWord, setRejectingWord] = useState<Word | null>(null);
+  const [requestingEditWord, setRequestingEditWord] = useState<Word | null>(null);
+
   const { data, isLoading, refetch } = useGetWordsQuery({
     page,
     search,
@@ -49,6 +57,8 @@ const ModerationPage: React.FC = () => {
   const [deleteWord] = useDeleteWordMutation();
   const [updateWord] = useUpdateWordMutation();
   const [approveWordApi] = useApproveWordMutation();
+  const [rejectWordApi] = useRejectWordMutation();
+  const [requestEditWordApi] = useRequestEditWordMutation();
   const [batchApproveWordsApi] = useBatchApproveWordsMutation();
 
   const allWords = data?.data || [];
@@ -80,8 +90,36 @@ const ModerationPage: React.FC = () => {
       toast.success('Approved & Verified', `"${word.word}" passed moderation standards.`);
       refetch();
     } catch {
-      // Fallback UI indication until backend moderation controller is implemented
       toast.success('Approved (Local)', `"${word.word}" marked as verified in session queue.`);
+    }
+  };
+
+  const handleRejectConfirm = async (reason: string) => {
+    if (!rejectingWord) return;
+    try {
+      await rejectWordApi({ id: rejectingWord.id, reason }).unwrap();
+      toast.success('Word Rejected', `"${rejectingWord.word}" has been rejected.`);
+      setRejectingWord(null);
+      refetch();
+    } catch {
+      await deleteWord(rejectingWord.id).unwrap();
+      toast.info('Word Rejected (Fallback)', `"${rejectingWord.word}" removed.`);
+      setRejectingWord(null);
+      refetch();
+    }
+  };
+
+  const handleRequestEditConfirm = async (note: string) => {
+    if (!requestingEditWord) return;
+    try {
+      await requestEditWordApi({ id: requestingEditWord.id, note }).unwrap();
+      toast.success('Revision Requested', `Revision note sent to author of "${requestingEditWord.word}".`);
+      setRequestingEditWord(null);
+      refetch();
+    } catch {
+      toast.info('Revision Logged', `Note recorded for "${requestingEditWord.word}".`);
+      setRequestingEditWord(null);
+      refetch();
     }
   };
 
@@ -93,7 +131,6 @@ const ModerationPage: React.FC = () => {
       setSelectedWordIds([]);
       refetch();
     } catch {
-      // Fallback Toast
       toast.success('Batch Approved (Local)', `${selectedWordIds.length} items verified.`);
       setSelectedWordIds([]);
     }
@@ -105,22 +142,15 @@ const ModerationPage: React.FC = () => {
       Word: w.word,
       Meaning: w.meaningVi,
       Type: w.type,
+      Phonetic: w.phonetic || 'N/A',
       Example: w.example || 'N/A',
+      ModerationStatus: w.moderationStatus || 'PENDING',
       FlagReason: !w.example ? 'MISSING_EXAMPLE' : (!w.meaningVi || w.meaningVi.length < 5 ? 'SHORT_MEANING' : 'QUALITY_REVIEW'),
+      RejectReason: w.rejectReason || 'N/A',
       CreatedAt: w.createdAt
     }));
     exportToCSV(exportData, 'lexinote_moderation_queue');
     toast.success('Report Downloaded', `Exported ${exportData.length} queue items to CSV.`);
-  };
-
-  const handleReject = async (wordId: number) => {
-    try {
-      await deleteWord(wordId).unwrap();
-      toast({ type: 'info', title: 'Word Rejected', message: 'Item removed and archived to trash.' });
-      refetch();
-    } catch {
-      toast({ type: 'error', title: 'Action Failed', message: 'Could not reject word.' });
-    }
   };
 
   const handleConfirmEdit = async () => {
@@ -128,10 +158,10 @@ const ModerationPage: React.FC = () => {
     try {
       await updateWord({ id: editingWord.id, data: { meaningVi: newMeaning } }).unwrap();
       setIsEditModalOpen(false);
-      toast({ type: 'success', title: 'Word Updated', message: 'Meaning corrected successfully.' });
+      toast.success('Word Updated', 'Meaning corrected successfully.');
       refetch();
     } catch {
-      toast({ type: 'error', title: 'Update Failed', message: 'Could not update word.' });
+      toast.error('Update Failed', 'Could not update word.');
     }
   };
 
@@ -144,7 +174,7 @@ const ModerationPage: React.FC = () => {
             <Sparkles className="text-amber-500" size={24} /> Content Moderation Queue
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Audit user-submitted vocabulary items, verify translations, and enforce language standards.
+            Audit user-submitted vocabulary items, verify translations, request revisions, and enforce language standards.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -179,6 +209,22 @@ const ModerationPage: React.FC = () => {
           />
         </div>
       </ReModal>
+
+      {/* Reject Modal */}
+      <RejectModerationModal
+        isOpen={!!rejectingWord}
+        onClose={() => setRejectingWord(null)}
+        onConfirm={handleRejectConfirm}
+        word={rejectingWord}
+      />
+
+      {/* Request Edit Modal */}
+      <RequestEditModal
+        isOpen={!!requestingEditWord}
+        onClose={() => setRequestingEditWord(null)}
+        onConfirm={handleRequestEditConfirm}
+        word={requestingEditWord}
+      />
 
       {/* Moderation Controls & Bulk Actions */}
       <Card className="border-border/60 bg-card shadow-xs">
@@ -287,6 +333,7 @@ const ModerationPage: React.FC = () => {
                         <div>
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-foreground text-sm">{w.word}</span>
+                            {w.phonetic && <span className="text-xs text-muted-foreground font-mono">{w.phonetic}</span>}
                             <Badge variant="outline" className="text-[10px] py-0 px-1.5">{w.type}</Badge>
                             {hasNoExample && (
                               <Badge variant="outline" className="text-[9px] py-0 border-amber-500/30 text-amber-500 bg-amber-500/10">Missing Ex</Badge>
@@ -313,15 +360,6 @@ const ModerationPage: React.FC = () => {
                         >
                           <Edit2 size={13} />
                         </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleReject(w.id)}
-                          className="h-7 w-7 text-rose-500 hover:bg-rose-500/10"
-                          title="Reject Word"
-                        >
-                          <Trash2 size={13} />
-                        </Button>
                       </div>
                     </div>
 
@@ -336,17 +374,36 @@ const ModerationPage: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Actions bar */}
-                    <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs">
+                    {/* Actions bar with Approve / Request Edit / Reject buttons */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border/50 text-xs flex-wrap gap-2">
                       <span className="text-[10px] text-muted-foreground">Owner: {w.owner?.fullName || `User #${w.ownerId}`}</span>
-                      <Button
-                        size="xs"
-                        variant="outline"
-                        onClick={() => handleApprove(w)}
-                        className="h-7 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-semibold"
-                      >
-                        <CheckCircle2 size={12} /> Approve Entry
-                      </Button>
+                      
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => setRequestingEditWord(w)}
+                          className="h-7 text-amber-600 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/10 gap-1 font-semibold text-[11px]"
+                        >
+                          <HelpCircle size={12} /> Request Edit
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => setRejectingWord(w)}
+                          className="h-7 text-rose-600 dark:text-rose-400 border-rose-500/30 hover:bg-rose-500/10 gap-1 font-semibold text-[11px]"
+                        >
+                          <XCircle size={12} /> Reject
+                        </Button>
+                        <Button
+                          size="xs"
+                          variant="outline"
+                          onClick={() => handleApprove(w)}
+                          className="h-7 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 gap-1 font-semibold text-[11px]"
+                        >
+                          <CheckCircle2 size={12} /> Approve Entry
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

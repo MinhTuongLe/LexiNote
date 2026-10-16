@@ -4,13 +4,17 @@ import {
   useCreateUserMutation,
   useUpdateUserMutation,
   useDeleteUserMutation,
-  useUpdateUserRoleMutation 
+  useUpdateUserRoleMutation,
+  useBanUserMutation,
+  useUnbanUserMutation,
 } from '@/store/api/usersApi';
 import { useState } from 'react';
 
 export interface CreateUserData {
   fullName: string;
   email: string;
+  password?: string;
+  role?: 'ADMIN' | 'MEMBER';
 }
 
 export interface UpdateUserData {
@@ -27,6 +31,8 @@ export interface DashboardUserItem {
   createdAt: number | string;
   wordCount?: number;
   role?: string;
+  status?: string;
+  banReason?: string | null;
 }
 
 export function useUsers() {
@@ -44,6 +50,8 @@ export function useUsers() {
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
   const [updateUserRole] = useUpdateUserRoleMutation();
+  const [banUser] = useBanUserMutation();
+  const [unbanUser] = useUnbanUserMutation();
 
   const users: DashboardUserItem[] = data?.data || [];
   const totalPages = data?.meta?.totalPages || 1;
@@ -74,6 +82,14 @@ export function useUsers() {
     return updateUserRole({ id, role }).unwrap();
   };
 
+  const handleBanUser = async (id: number, reason: string) => {
+    return banUser({ id, reason }).unwrap();
+  };
+
+  const handleUnbanUser = async (id: number) => {
+    return unbanUser(id).unwrap();
+  };
+
   const formatDate = (epoch: number | string | undefined | null) => {
     if (!epoch) return 'N/A';
     return new Date(Number(epoch)).toLocaleDateString('en-US', {
@@ -99,6 +115,8 @@ export function useUsers() {
     handleUpdateUser,
     handleDeleteUser,
     handleUpdateRole,
+    handleBanUser,
+    handleUnbanUser,
     formatDate
   };
 }

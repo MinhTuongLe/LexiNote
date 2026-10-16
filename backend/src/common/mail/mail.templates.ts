@@ -65,7 +65,10 @@ export const renderBaseTemplate = (contentHtml: string): string => {
 /**
  * Account Verification Email Template
  */
-export const renderVerificationEmailTemplate = (fullName: string, verificationCode: string): string => {
+export const renderVerificationEmailTemplate = (
+  fullName: string,
+  verificationCode: string,
+): string => {
   const content = `
     <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Chào mừng bạn đến với LexiNote, ${fullName}! 🌸</h2>
     <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
@@ -88,7 +91,10 @@ export const renderVerificationEmailTemplate = (fullName: string, verificationCo
 /**
  * Forgot Password Email Template
  */
-export const renderForgotPasswordTemplate = (fullName: string, resetCode: string): string => {
+export const renderForgotPasswordTemplate = (
+  fullName: string,
+  resetCode: string,
+): string => {
   const content = `
     <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Yêu cầu đặt lại mật khẩu 🔑</h2>
     <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
@@ -112,7 +118,10 @@ export const renderForgotPasswordTemplate = (fullName: string, resetCode: string
 /**
  * Admin Password Reset Notification Template
  */
-export const renderAdminPasswordResetTemplate = (fullName: string, newDefaultPassword: string): string => {
+export const renderAdminPasswordResetTemplate = (
+  fullName: string,
+  newDefaultPassword: string,
+): string => {
   const content = `
     <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Thông báo Đặt lại Mật khẩu từ Quản trị viên 🛡️</h2>
     <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
@@ -135,7 +144,11 @@ export const renderAdminPasswordResetTemplate = (fullName: string, newDefaultPas
 /**
  * Welcome New User Created by Admin Template
  */
-export const renderWelcomeNewUserTemplate = (fullName: string, email: string, rawPassword: string): string => {
+export const renderWelcomeNewUserTemplate = (
+  fullName: string,
+  email: string,
+  rawPassword: string,
+): string => {
   const content = `
     <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Chào mừng bạn đến với hệ thống LexiNote! 🎉</h2>
     <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
@@ -180,12 +193,15 @@ export const renderPasswordChangedTemplate = (fullName: string): string => {
 /**
  * Account Status Changed (Deactivated / Reactivated) Template
  */
-export const renderAccountStatusChangedTemplate = (fullName: string, isActive: boolean): string => {
+export const renderAccountStatusChangedTemplate = (
+  fullName: string,
+  isActive: boolean,
+): string => {
   const isDeactivated = !isActive;
   const title = isDeactivated
     ? 'Thông báo Tạm khóa Tài khoản 🚨'
     : 'Thông báo Kích hoạt lại Tài khoản 🎉';
-  
+
   const alertBg = isDeactivated ? '#FFF0F4' : '#F0FFF8';
   const alertBorder = isDeactivated ? '#FF7096' : '#4EBA97';
   const alertColor = isDeactivated ? '#D64567' : '#2C7A60';
@@ -233,9 +249,14 @@ export const renderAccountDeletedTemplate = (fullName: string): string => {
 /**
  * User Role Updated Template
  */
-export const renderUserRoleUpdatedTemplate = (fullName: string, newRole: string): string => {
+export const renderUserRoleUpdatedTemplate = (
+  fullName: string,
+  newRole: string,
+): string => {
   const isTargetAdmin = newRole === 'ADMIN';
-  const roleTitle = isTargetAdmin ? 'Quản trị viên (ADMIN)' : 'Thành viên (MEMBER)';
+  const roleTitle = isTargetAdmin
+    ? 'Quản trị viên (ADMIN)'
+    : 'Thành viên (MEMBER)';
   const content = `
     <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">Cập nhật Quyền hạn Tài khoản 🎖️</h2>
     <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
@@ -268,3 +289,38 @@ export const renderSessionsRevokedTemplate = (fullName: string): string => {
   `;
   return renderBaseTemplate(content);
 };
+
+/**
+ * Word moderation decision notification template.
+ */
+export const renderWordModerationNotificationTemplate = (
+  fullName: string,
+  status: 'REJECTED' | 'NEEDS_EDIT',
+  reason: string,
+): string => {
+  const isRejected = status === 'REJECTED';
+  const title = isRejected ? 'Word submission rejected' : 'Word revision requested';
+  const statusText = isRejected
+    ? 'Your vocabulary submission was rejected by a LexiNote moderator.'
+    : 'Your vocabulary submission needs changes before it can be approved.';
+  const safeName = escapeHtml(fullName);
+  const safeReason = escapeHtml(reason);
+  const content = `
+    <h2 style="margin: 0 0 16px; color: #33272A; font-size: 22px; font-weight: 700;">${title}</h2>
+    <p style="color: #594A4E; font-size: 15px; line-height: 1.6; margin-bottom: 24px;">
+      Hello <strong>${safeName}</strong>,<br>${statusText}
+    </p>
+    <div style="background-color: #FFF0F4; border: 1.5px solid #FF7096; border-radius: 12px; padding: 16px; color: #594A4E; font-size: 14px; line-height: 1.6;">
+      <strong>Moderator note:</strong><br>${safeReason}
+    </div>
+  `;
+  return renderBaseTemplate(content);
+};
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');

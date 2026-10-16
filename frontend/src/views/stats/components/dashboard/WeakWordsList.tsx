@@ -2,9 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Target } from 'lucide-react';
 import Card from '../../../../components/Card';
+import type { StudyStats } from '../../../../types';
 
 interface WeakWordsListProps {
-  weakestWords: any[];
+  weakestWords: StudyStats['weakestWords'];
   mounted: boolean;
   onClick: () => void;
 }

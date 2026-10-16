@@ -11,7 +11,8 @@ import {
   useGetUserSessionsQuery,
   useRevokeUserSessionMutation,
   useRevokeAllUserSessionsMutation,
-  useResetUserPasswordMutation
+  useResetUserPasswordMutation,
+  useResetUserSrsMutation
 } from '@/store/api/usersApi';
 import { 
   Mail, 
@@ -24,7 +25,8 @@ import {
   Layers,
   LogOut,
   Globe,
-  Key
+  Key,
+  RotateCcw
 } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -84,7 +86,9 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
   const [revokeSession] = useRevokeUserSessionMutation();
   const [revokeAllSessions, { isLoading: isRevokingAll }] = useRevokeAllUserSessionsMutation();
   const [resetPassword, { isLoading: isResettingPassword }] = useResetUserPasswordMutation();
+  const [resetUserSrs, { isLoading: isResettingSrs }] = useResetUserSrsMutation();
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isResetSrsConfirmOpen, setIsResetSrsConfirmOpen] = useState(false);
 
   if (!isOpen || !userId) return null;
 
@@ -143,6 +147,21 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       if (activeTab === 'sessions') refetchSessions();
     } catch {
       toast.error('Reset Thất Bại', 'Không thể đặt lại mật khẩu người dùng.');
+    }
+  };
+
+  const handleConfirmResetSrs = async () => {
+    try {
+      const res = await resetUserSrs(userId).unwrap();
+      toast.success(
+        'Đã Reset Tiến Độ SRS!',
+        `Đã đặt lại toàn bộ tiến độ ôn tập của ${res.resetCount ?? 'tất cả'} từ vựng về trạng thái Từ mới.`
+      );
+      refetch();
+    } catch {
+      toast.error('Reset SRS Thất Bại', 'Không thể đặt lại tiến độ học của người dùng.');
+    } finally {
+      setIsResetSrsConfirmOpen(false);
     }
   };
 
@@ -232,6 +251,19 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   >
                     <Key size={12} />
                     Reset Password (123456)
+                  </Button>
+                </Tooltip>
+
+                <Tooltip content="Reset all vocabulary SRS review progress to New for this user" side="top">
+                  <Button
+                    size="xs"
+                    variant="outline"
+                    className="h-7 text-xs gap-1 border-purple-500/30 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10"
+                    onClick={() => setIsResetSrsConfirmOpen(true)}
+                    disabled={isResettingSrs}
+                  >
+                    <RotateCcw size={12} />
+                    Reset SRS
                   </Button>
                 </Tooltip>
               </div>
@@ -463,6 +495,17 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         confirmText="Reset Về 123456"
         variant="warning"
         isLoading={isResettingPassword}
+      />
+
+      <ConfirmModal
+        isOpen={isResetSrsConfirmOpen}
+        onClose={() => setIsResetSrsConfirmOpen(false)}
+        onConfirm={handleConfirmResetSrs}
+        title="Reset Toàn Bộ Tiến Độ SRS"
+        description={`Bạn có chắc chắn muốn đặt lại toàn bộ tiến độ ôn tập SRS của ${user?.fullName || 'người dùng này'} về trạng thái Từ mới không? Hành động này sẽ đưa toàn bộ số lượt đúng/sai về 0.`}
+        confirmText="Reset Toàn Bộ SRS"
+        variant="warning"
+        isLoading={isResettingSrs}
       />
     </ReModal>
   );

@@ -21,10 +21,10 @@ import {
   useImportWordsMutation,
   useGetDashboardStatsQuery
 } from '../store/apiSlice';
-import { useCuteDialog } from '../context/DialogContext';
+import { useCuteDialog } from '../context/useCuteDialog';
 import CuteSelect from '../components/CuteSelect';
 import SkeletonWordCard from '../components/SkeletonWordCard';
-import type { Word } from '../types';
+import type { Word, CreateWordDTO, ImportedWord, CustomWordType } from '../types';
 import { useTranslation } from 'react-i18next';
 import { WORD_TYPES } from '../constants/wordTypes';
 import { speakText } from '../utils/speech';
@@ -35,6 +35,7 @@ const Library: React.FC = () => {
   const { data: settingsData } = useGetSettingsQuery();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
@@ -48,7 +49,7 @@ const Library: React.FC = () => {
   const limit = 20;
 
   // RTK Query
-  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType });
+  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType, status: filterStatus });
   const [triggerGetWords] = useLazyGetWordsQuery();
   const meta = wordsData?.meta;
 
@@ -67,8 +68,8 @@ const Library: React.FC = () => {
         showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
         setLoadedWords(prev => prev.filter(w => w.id !== id));
         setSelectedIds(prev => prev.filter(sid => sid !== id));
-      } catch (err) {
-        console.error(err);
+      } catch {
+        showAlert(t('common.error'), t('common.error'), 'error');
       }
     });
   };
@@ -85,40 +86,40 @@ const Library: React.FC = () => {
           showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
           setLoadedWords(prev => prev.filter(w => !selectedIds.includes(w.id)));
           setSelectedIds([]);
-        } catch (err) {
+      } catch {
           showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
     );
   };
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: CreateWordDTO) => {
     if (!editingWord) return;
     try {
       await updateWord({ id: editingWord.id, data }).unwrap();
       showAlert(t('library.update_success_title'), t('library.update_success_msg'), 'success');
       setEditingWord(null);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('common.error'), 'error');
     }
   };
 
-  const handleAddWord = async (data: any) => {
+  const handleAddWord = async (data: CreateWordDTO) => {
     try {
       await createWord(data).unwrap();
       showAlert(t('common.success'), t('dashboard.add_success'), 'success');
       setIsAddModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.add_error'), 'error');
     }
   };
 
-  const handleImport = async (words: any[]) => {
+  const handleImport = async (words: ImportedWord[]) => {
     try {
       await importWords(words).unwrap();
       showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
       setIsImportModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.import_error'), 'error');
     }
   };
@@ -130,7 +131,8 @@ const Library: React.FC = () => {
       const result = await triggerGetWords({ 
         limit: 'all', 
         search, 
-        type: filterType 
+        type: filterType,
+        status: filterStatus 
       }).unwrap();
       
       const allWords = result.data || [];
@@ -151,7 +153,7 @@ const Library: React.FC = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "MyWords");
       XLSX.writeFile(workbook, `LexiNote_Library_${new Date().toISOString().split('T')[0]}.xlsx`);
-    } catch (err) {
+    } catch {
       console.error('Export failed:', err);
       showAlert(t('common.error'), t('common.error'), 'error');
     } finally {
@@ -171,7 +173,7 @@ const Library: React.FC = () => {
           await resetProgress(targets).unwrap();
           showAlert(t('library.reset_success_title'), t('library.reset_success_msg'), 'success');
           setSelectedIds([]);
-        } catch (err) {
+        } catch {
           showAlert(t('common.error'), t('common.error'), 'error');
         }
       }
@@ -206,7 +208,14 @@ const Library: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [search, filterType]);
+  }, [search, filterType, filterStatus]);
+
+  const statusOptions = [
+    { value: 'all', label: t('library.status_all') },
+    { value: 'new', label: t('library.status_new') },
+    { value: 'learning', label: t('library.status_learning') },
+    { value: 'mastered', label: t('library.status_mastered') }
+  ];
 
   const wordTypeOptions = [
     { value: 'all', label: t('library.type_filter') },
@@ -214,7 +223,7 @@ const Library: React.FC = () => {
       value: type.value,
       label: t(`library.word_types.${type.value}`)
     })),
-    ...(settingsData?.wordTypes?.custom || []).map((type: any) => ({
+    ...(settingsData?.wordTypes?.custom || []).map((type: CustomWordType) => ({
       value: type.value,
       label: type.label
     }))
@@ -223,8 +232,19 @@ const Library: React.FC = () => {
   const getTypeLabel = (typeValue: string) => {
     const defaultType = WORD_TYPES.find(t => t.value === typeValue);
     if (defaultType) return t(`library.word_types.${typeValue}`);
-    const customType = settingsData?.wordTypes?.custom?.find((t: any) => t.value === typeValue);
+    const customType = settingsData?.wordTypes?.custom?.find((type) => type.value === typeValue);
     return customType ? customType.label : typeValue;
+  };
+
+  const getSRSBadge = (word: Word) => {
+    const review = word.reviews && word.reviews.length > 0 ? word.reviews[0] : null;
+    if (!review || review.correctCount === 0) {
+      return { label: t('library.status_new'), className: 'srs-badge new' };
+    }
+    if (review.correctCount >= 4 && review.interval >= 14) {
+      return { label: t('library.status_mastered'), className: 'srs-badge mastered' };
+    }
+    return { label: t('library.status_learning'), className: 'srs-badge learning' };
   };
 
   const selectAll = () => {
@@ -265,6 +285,13 @@ const Library: React.FC = () => {
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
+          <CuteSelect 
+            options={statusOptions}
+            value={filterStatus}
+            onChange={(val) => setFilterStatus(val)}
+            className="library-status-select"
+            align='right'
+          />
           <CuteSelect 
             options={wordTypeOptions}
             value={filterType}
@@ -345,6 +372,10 @@ const Library: React.FC = () => {
                     <div className="word-main">
                       <h3>{word.word}</h3>
                       <span className="type-badge">{getTypeLabel(word.type)}</span>
+                      {(() => {
+                        const badge = getSRSBadge(word);
+                        return <span className={badge.className}>{badge.label}</span>;
+                      })()}
                     </div>
                   </div>
                   <div className="word-card-actions">
@@ -429,7 +460,7 @@ const Library: React.FC = () => {
       >
         {editingWord && (
           <WordForm 
-            initialData={editingWord as any}
+            initialData={editingWord}
             onSubmit={handleUpdate}
             onCancel={() => setEditingWord(null)}
           />

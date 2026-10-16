@@ -1,33 +1,62 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from './Button';
 import { Upload, AlertCircle, FileText, ClipboardPaste } from 'lucide-react';
 import * as XLSX from 'xlsx';
+import type { ImportedWord } from '../types';
 import './WordImport.css';
 
 interface WordImportProps {
-  onImport: (words: any[]) => void;
+  onImport: (words: ImportedWord[]) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
+
+const normalizeData = (jsonData: Record<string, unknown>[]): ImportedWord[] => {
+  const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
+  return jsonData.map(item => {
+    const entry: ImportedWord = { word: '', meaningVi: '', type: 'other' };
+    const getVal = (keys: string[]) => {
+      const foundKey = Object.keys(item).find(k => keys.includes(k.toLowerCase().replace(/[^a-z]/g, '')));
+      return foundKey && item[foundKey] !== undefined && item[foundKey] !== null ? String(item[foundKey]).trim() : '';
+    };
+
+    entry.word = getVal(['word', 'text', 'english']);
+    entry.meaningVi = getVal(['meaningvi', 'vietnamese', 'nghia', 'definitionvi']);
+    entry.example = getVal(['example', 'sentence', 'vidu']);
+    const rawType = getVal(['type', 'loaitu', 'category']).toLowerCase();
+    const firstType = rawType.split(/[/,]/)[0].trim();
+    entry.type = validTypes.includes(firstType) ? firstType : 'other';
+    return entry;
+  }).filter(entry => entry.word && entry.meaningVi);
+};
+
+const parsePastedText = (text: string): ImportedWord[] => {
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+  if (lines.length === 0) return [];
+
+  const separator = text.includes('\t') ? '\t' : ',';
+  const firstLineCols = lines[0].split(separator).map(header => header.trim().toLowerCase());
+  const isHeaderRow = firstLineCols.some(header => ['word', 'text', 'english'].includes(header.replace(/[^a-z]/g, '')));
+  const headers = isHeaderRow ? firstLineCols : ['word', 'meaningvi', 'type', 'example'];
+  const dataLines = isHeaderRow ? lines.slice(1) : lines;
+  const jsonData = dataLines.map(line => {
+    const values = line.split(separator).map(value => value.trim());
+    const entry: Record<string, unknown> = {};
+    headers.forEach((header, index) => { entry[header] = values[index] || ''; });
+    return entry;
+  });
+  return normalizeData(jsonData);
+};
 
 const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }) => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'upload' | 'paste'>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [pasteText, setPasteText] = useState('');
-  const [preview, setPreview] = useState<any[]>([]);
+  const [filePreview, setFilePreview] = useState<ImportedWord[]>([]);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
-
-  useEffect(() => {
-    // Auto parse paste text when it changes
-    if (activeTab === 'paste' && pasteText.trim()) {
-      parsePastedText(pasteText);
-    } else if (activeTab === 'paste' && !pasteText.trim()) {
-      setPreview([]);
-    }
-  }, [pasteText, activeTab]);
 
   const processFile = (selectedFile: File) => {
     const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls');
@@ -63,87 +92,20 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
     if (selectedFile) processFile(selectedFile);
   };
 
-  const normalizeData = (jsonData: any[]) => {
-    const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
-    const normalized = jsonData.map(item => {
-      const entry: any = {};
-      const getVal = (keys: string[]) => {
-        const foundKey = Object.keys(item).find(k => keys.includes(k.toLowerCase().replace(/[^a-z]/g, '')));
-        return foundKey ? String(item[foundKey]).trim() : '';
-      };
-
-      entry.word = getVal(['word', 'text', 'english']);
-      entry.meaningVi = getVal(['meaningvi', 'vietnamese', 'nghia', 'definitionvi']);
-      entry.example = getVal(['example', 'sentence', 'vidu']);
-      
-      const rawType = getVal(['type', 'loaitu', 'category']).toLowerCase();
-      
-      if (rawType.includes('/') || rawType.includes(',')) {
-        const firstPart = rawType.split(/[/,]/)[0].trim();
-        entry.type = validTypes.includes(firstPart) ? firstPart : 'other';
-      } else {
-        entry.type = validTypes.includes(rawType) ? rawType : 'other';
-      }
-      
-      return entry;
-    }).filter(e => e.word && e.meaningVi);
-
-    setPreview(normalized);
-  };
-
-  const parsePastedText = (text: string) => {
-    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
-    if (lines.length === 0) {
-      setPreview([]);
-      return;
-    }
-
-    // Usually copy from excel is tab separated
-    const separator = text.includes('\t') ? '\t' : ',';
-    const firstLineCols = lines[0].split(separator).map(h => h.trim().toLowerCase());
-    
-    // Check if the first line is actually a header row
-    const isHeaderRow = firstLineCols.some(h => ['word', 'text', 'english'].includes(h.replace(/[^a-z]/g, '')));
-    
-    let headers: string[];
-    let dataLines: string[];
-
-    if (isHeaderRow) {
-      headers = firstLineCols;
-      dataLines = lines.slice(1);
-    } else {
-      // User didn't copy headers, assume default column order
-      headers = ['word', 'meaningvi', 'type', 'example'];
-      dataLines = lines; // Don't skip the first line!
-    }
-
-    const jsonData = dataLines.map(line => {
-      const values = line.split(separator).map(v => v.trim());
-      const entry: any = {};
-      headers.forEach((h, i) => {
-        entry[h] = values[i] || '';
-      });
-      return entry;
-    });
-
-    setError('');
-    normalizeData(jsonData);
-  };
-
   const parseFile = (file: File, isExcel: boolean) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const data = e.target?.result;
-      let jsonData: any[] = [];
+      let jsonData: Record<string, unknown>[] = [];
 
       if (isExcel) {
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        jsonData = XLSX.utils.sheet_to_json(worksheet);
-        normalizeData(jsonData);
+        jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
+        setFilePreview(normalizeData(jsonData));
       } else {
-        parsePastedText(data as string);
+        if (typeof data === 'string') setFilePreview(parsePastedText(data));
       }
     };
 
@@ -154,18 +116,23 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
     }
   };
 
+  const preview = useMemo(
+    () => activeTab === 'paste' ? parsePastedText(pasteText) : filePreview,
+    [activeTab, filePreview, pasteText]
+  );
+
   return (
     <div className="word-import">
       <div className="import-tabs">
         <button 
           className={`import-tab ${activeTab === 'upload' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('upload'); setPreview([]); setError(''); }}
+          onClick={() => { setActiveTab('upload'); setFilePreview([]); setError(''); }}
         >
           <Upload size={18} /> {t('words.tab_upload')}
         </button>
         <button 
           className={`import-tab ${activeTab === 'paste' ? 'active' : ''}`}
-          onClick={() => { setActiveTab('paste'); setPreview([]); setError(''); }}
+          onClick={() => { setActiveTab('paste'); setFilePreview([]); setError(''); }}
         >
           <ClipboardPaste size={18} /> {t('words.tab_paste')}
         </button>

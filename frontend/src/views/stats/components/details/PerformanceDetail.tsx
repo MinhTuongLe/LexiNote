@@ -1,9 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import Card from '../../../../components/Card';
+import type { StudyStats } from '../../../../types';
 
 interface PerformanceDetailProps {
-  stats: any;
+  stats: StudyStats;
 }
 
 const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
@@ -39,7 +40,7 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
                <p>{t('stats.accuracy_desc')}</p>
                
                <div className="accuracy-trend-mini">
-                  {stats.weeklyActivity.map((d: any, i: number) => (
+                  {stats.weeklyActivity.map((d, i: number) => (
                      <div key={i} className="trend-bar-wrapper">
                         <div 
                            className="trend-bar" 

@@ -9,11 +9,10 @@
   transition: all 0.2s ease;
   box-shadow: var(--shadow);
   color: var(--text);
-  margin-bottom: 4px;
-  margin-right: 4px;
   white-space: nowrap; /* Prevent wrapping */
-  flex-shrink: 1; /* Allow scaling down in flex containers */
+  flex-shrink: 0;
   min-width: fit-content;
+  box-sizing: border-box;
 }
 
 @media (max-width: 600px) {
@@ -28,26 +27,33 @@
 
 .btn-primary {
   background-color: var(--primary);
+  color: var(--text);
 }
 
 .btn-secondary {
   background-color: var(--secondary);
+  color: var(--text);
 }
 
 .btn-accent {
   background-color: var(--accent);
+  color: var(--text);
+}
+
+.btn-purple {
+  background-color: #E0C3FC;
+  color: var(--text);
 }
 
 .btn-outline {
   background-color: white;
+  color: var(--text);
 }
 
 .btn-ghost {
   background-color: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
-  margin-right: 0;
-  margin-bottom: 0;
 }
 
 .btn-ghost:hover {

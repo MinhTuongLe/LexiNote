@@ -4,9 +4,10 @@ import { Target } from 'lucide-react';
 import Card from '../../../../components/Card';
 import CountUp from '../../../../components/CountUp';
 import { formatTimeSpent } from '../../../../utils/time';
+import type { StudyStats } from '../../../../types';
 
 interface OverviewCardProps {
-  stats: any;
+  stats: StudyStats;
   mounted: boolean;
   onClick: () => void;
 }

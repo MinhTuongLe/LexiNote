@@ -1,18 +1,17 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings } from 'lucide-react';
+import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings, Layers, Sparkles } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
 import { useLogoutServerMutation } from '../store/apiSlice';
 import { useTranslation } from 'react-i18next';
-import { useCuteDialog } from '../context/DialogContext';
+import { useCuteDialog } from '../context/useCuteDialog';
+import type { RootState } from '../store';
 import './Navbar.css';
 
-interface NavbarProps {}
-
-const Navbar: React.FC<NavbarProps> = () => {
+const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, refreshToken } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, refreshToken } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { showConfirm } = useCuteDialog();
@@ -66,6 +65,10 @@ const Navbar: React.FC<NavbarProps> = () => {
       <NavLink to="/library" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Plus size={24} className="nav-icon" />
         <span>{t('nav.library')}</span>
+      </NavLink>
+      <NavLink to="/decks" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+        <Layers size={24} className="nav-icon" />
+        <span>Bộ từ vựng</span>
       </NavLink>
       <NavLink to="/stats" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
         <Trophy size={24} className="nav-icon" />

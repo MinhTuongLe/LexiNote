@@ -4,9 +4,10 @@ import { useRegisterMutation } from '../../store/apiSlice';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import { Eye, EyeOff } from 'lucide-react';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import { useTranslation } from 'react-i18next';
 import './Auth.css';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 interface RegisterProps {
   onSwitch: () => void;
@@ -28,8 +29,8 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
       const result = await register({ email, password, fullName }).unwrap();
       showAlert(t('common.success'), result.message || `Welcome to LexiNote, ${fullName}!`, 'success');
       navigate(`/verify-email?email=${encodeURIComponent(email)}`);
-    } catch (err: any) {
-      showAlert(t('common.error'), err.data?.message || 'Try a different email.', 'error');
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, 'Try a different email.'), 'error');
     }
   };
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Shield, 
   Globe, 
@@ -11,7 +11,8 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useGetConfigQuery, useUpdateConfigMutation } from '@/store/api/configApi';
+import { useGetConfigQuery, useUpdateConfigMutation, usePurgeExpiredTokensMutation, useCleanOrphanedRecordsMutation } from '@/store/api/configApi';
+import { useGetServerHealthQuery } from '@/store/api/analyticsApi';
 import { useToast } from '@/components/ui/Toast';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { ConfigPageSkeleton } from '@/components/ui/skeletons';
@@ -20,18 +21,34 @@ const SystemConfigPage: React.FC = () => {
   const { toast } = useToast();
   const { data: config, isLoading } = useGetConfigQuery();
   const [updateConfig] = useUpdateConfigMutation();
+  const [purgeExpiredTokens] = usePurgeExpiredTokensMutation();
+  const [cleanOrphanedRecords] = useCleanOrphanedRecordsMutation();
+  const { data: health } = useGetServerHealthQuery(undefined, { pollingInterval: 30000 });
 
   const [rateLimit, setRateLimit] = useState(100);
   const [corsEnabled, setCorsEnabled] = useState(true);
   const [autoBackup, setAutoBackup] = useState(true);
   const [debugMode, setDebugMode] = useState(false);
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(true);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (config) {
+      setRateLimit(config.config?.rateLimit ?? config.security?.rateLimit ?? 100);
+      setCorsEnabled(config.config?.corsEnabled ?? true);
+      setIsMaintenanceMode(config.config?.isMaintenanceMode ?? config.isMaintenanceMode ?? false);
+      setIsRegistrationOpen(config.config?.isRegistrationOpen ?? config.isRegistrationOpen ?? true);
+    }
+  }, [config]);
 
   const confirmReset = () => {
     setRateLimit(100);
     setCorsEnabled(true);
     setAutoBackup(true);
     setDebugMode(false);
+    setIsMaintenanceMode(false);
+    setIsRegistrationOpen(true);
     toast.info('Parameters Reverted', 'Infrastructure parameters reverted to factory defaults.');
   };
 
@@ -40,6 +57,8 @@ const SystemConfigPage: React.FC = () => {
       await updateConfig({ 
           rateLimit,
           corsEnabled,
+          isMaintenanceMode,
+          isRegistrationOpen,
           autoBackup,
           debugMode,
           timestamp: Date.now() 
@@ -47,6 +66,24 @@ const SystemConfigPage: React.FC = () => {
       toast.success('Config Saved', 'System configuration updated safely.');
     } catch {
       toast.error('Update Failed', 'Failed to update system config.');
+    }
+  };
+
+  const handlePurgeTokens = async () => {
+    try {
+      const result = await purgeExpiredTokens().unwrap();
+      toast.success('Cleaner Complete', result.message);
+    } catch {
+      toast.error('Cleaner Failed', 'Could not purge expired refresh tokens.');
+    }
+  };
+
+  const handleCleanOrphans = async () => {
+    try {
+      const result = await cleanOrphanedRecords().unwrap();
+      toast.success('Cleaner Complete', result.message);
+    } catch {
+      toast.error('Cleaner Failed', 'Could not clean orphaned records.');
     }
   };
 
@@ -183,6 +220,23 @@ const SystemConfigPage: React.FC = () => {
                   <div className={`w-5 h-5 bg-white rounded-full shadow-xs transition-transform ${corsEnabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
                 </button>
               </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <label className="flex items-center justify-between gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+                  <span>
+                    <span className="block text-xs font-bold text-foreground">Maintenance mode</span>
+                    <span className="block text-[11px] text-muted-foreground">Pause client APIs with HTTP 503</span>
+                  </span>
+                  <input aria-label="Maintenance mode" type="checkbox" checked={isMaintenanceMode} onChange={(event) => setIsMaintenanceMode(event.target.checked)} />
+                </label>
+                <label className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                  <span>
+                    <span className="block text-xs font-bold text-foreground">Registration open</span>
+                    <span className="block text-[11px] text-muted-foreground">Allow new member accounts</span>
+                  </span>
+                  <input aria-label="Registration open" type="checkbox" checked={isRegistrationOpen} onChange={(event) => setIsRegistrationOpen(event.target.checked)} />
+                </label>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -233,6 +287,28 @@ const SystemConfigPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </div>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-xs p-5">
+            <div className="flex items-center gap-2.5 mb-5">
+              <div className="w-7 h-7 bg-primary/10 rounded-md flex items-center justify-center text-primary">
+                <Cpu size={15} />
+              </div>
+              <h3 className="text-xs font-bold uppercase text-foreground tracking-wider">Server Health</h3>
+            </div>
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between"><span className="text-muted-foreground">Memory</span><span className="font-semibold">{health?.data.memory.usagePercentage ?? 0}%</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">RSS</span><span className="font-semibold">{health?.data.memory.rssMB ?? 0} MB</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">Uptime</span><span className="font-semibold">{health?.data.uptimeFormatted ?? '—'}</span></div>
+            </div>
+          </Card>
+
+          <Card className="border-border/60 bg-card shadow-xs p-5">
+            <h3 className="text-xs font-bold uppercase text-foreground tracking-wider mb-4">Infrastructure Cleaners</h3>
+            <div className="space-y-2">
+              <Button variant="outline" className="w-full justify-start" onClick={handlePurgeTokens} aria-label="Purge expired tokens">Purge expired tokens</Button>
+              <Button variant="outline" className="w-full justify-start" onClick={handleCleanOrphans} aria-label="Clean orphaned records">Clean orphaned records</Button>
             </div>
           </Card>
         </div>

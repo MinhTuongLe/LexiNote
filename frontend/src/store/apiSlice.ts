@@ -1,15 +1,16 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery, AiExtractedWord, VocabularyDeck, VocabularyDeckSummary } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
+import type { RootState } from './index';
 import i18n from '../i18n';
 
 // Base query with auth header
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:1337/api/v1/client',
   prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as any).auth.token;
+    const token = (getState() as RootState).auth.token;
     if (token) {
       headers.set('authorization', `Bearer ${token}`);
     }
@@ -30,7 +31,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   if (result.error) {
     // Handle 401 Unauthorized -> Refresh Token Flow
     if (result.error.status === 401) {
-      const refreshToken = (api.getState() as any).auth.refreshToken;
+      const refreshToken = (api.getState() as RootState).auth.refreshToken;
 
       if (refreshToken) {
         // Try to get a new access token
@@ -62,6 +63,16 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         window.dispatchEvent(new CustomEvent('system-error', { detail: 'Phiên đăng nhập không hợp lệ!' }));
       }
     } 
+    // Handle 503 Service Unavailable -> Maintenance Mode
+    else if (result.error.status === 503) {
+      const errorData = result.error.data as { message?: string } | undefined;
+      const maintenanceDetail =
+        errorData?.message ||
+        'Hệ thống đang trong thời gian bảo trì nâng cấp. Vui lòng quay lại sau ít phút!';
+      window.dispatchEvent(
+        new CustomEvent('system-maintenance', { detail: maintenanceDetail })
+      );
+    }
     // Handle System Errors (Network down, Server Error >= 500, etc)
     else if (
       result.error.status === 'FETCH_ERROR' || 
@@ -82,7 +93,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const apiSlice = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Words', 'Reviews', 'User'],
+  tagTypes: ['Words', 'Reviews', 'User', 'Leaderboard'],
   endpoints: (builder) => ({
     // Auth
     login: builder.mutation<{ user: User; token: string; refreshToken: string }, { email: string; password: string }>({
@@ -106,7 +117,9 @@ export const apiSlice = createApi({
         try {
           const { data } = await queryFulfilled;
           dispatch(updateUser(data.user));
-        } catch (err) {}
+        } catch {
+          // The session is allowed to remain anonymous when the profile lookup fails.
+        }
       },
     }),
     refreshToken: builder.mutation<{ user: User; token: string; refreshToken: string }, { refreshToken: string }>({
@@ -181,7 +194,7 @@ export const apiSlice = createApi({
     }),
 
     // Words
-    getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string } | void>({
+    getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string; status?: string } | void>({
       query: (params) => ({
         url: '/words',
         params: params || {},
@@ -220,11 +233,36 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
-    importWords: builder.mutation<{ imported: number }, any[]>({
+    importWords: builder.mutation<{ imported: number }, ImportedWord[]>({
       query: (words) => ({
         url: '/words/import',
         method: 'POST',
         body: { words },
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
+    aiExtractWords: builder.mutation<{ success: boolean; words: AiExtractedWord[] }, { text: string; maxWords?: number }>({
+      query: (body) => ({
+        url: '/words/ai-extract',
+        method: 'POST',
+        body,
+      }),
+    }),
+    getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
+      query: (params) => ({
+        url: '/decks/curated',
+        params: params || undefined,
+      }),
+      providesTags: ['Words'],
+    }),
+    getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
+      query: (id) => `/decks/${id}`,
+    }),
+    importDeck: builder.mutation<{ success: boolean; importedCount: number; skippedCount: number; message: string }, { id: number; words?: string[] }>({
+      query: ({ id, words }) => ({
+        url: `/decks/${id}/import`,
+        method: 'POST',
+        body: words ? { words } : {},
       }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
@@ -258,7 +296,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
-    updateSettings: builder.mutation<{ settings: any; message: string }, any>({
+    updateSettings: builder.mutation<{ settings: UserSettings; message: string }, Partial<UserSettings> & Record<string, unknown>>({
       query: (settings) => ({
         url: '/settings',
         method: 'PATCH',
@@ -268,14 +306,16 @@ export const apiSlice = createApi({
       async onQueryStarted(_arg, { dispatch, queryFulfilled, getState }) {
         try {
           const { data } = await queryFulfilled;
-          const currentUser = (getState() as any).auth.user;
+          const currentUser = (getState() as RootState).auth.user;
           if (currentUser) {
             dispatch(updateUser({ ...currentUser, settings: data.settings }));
           }
-        } catch (err) {}
+        } catch {
+          // The mutation result already reports the error to the caller.
+        }
       },
     }),
-    getSettings: builder.query<{ preferences: any; wordTypes: { system: string[], custom: any[] } }, void>({
+    getSettings: builder.query<SettingsData, void>({
       query: () => '/settings',
       providesTags: ['User'],
     }),
@@ -297,20 +337,48 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['User'],
     }),
-    recordGameSessionFull: builder.mutation<{ success: boolean; sessionId: number; newPersonalBest: boolean }, { gameType?: string; score: number; timeSpentSeconds: number; wordIds: number[] }>({
+    recordGameSessionFull: builder.mutation<{ success: boolean; sessionId: number; newPersonalBest: boolean }, { gameType?: GameType; score: number; timeSpentSeconds: number; wordIds: number[] }>({
       query: (data) => ({
         url: '/games/session',
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['User', 'Reviews'],
+      invalidatesTags: ['User', 'Reviews', 'Leaderboard'],
     }),
-    getGameLeaderboard: builder.query<Array<{ rank: number; user: { id: number; fullName: string; avatar?: string }; bestScore: number; bestTimeSeconds: number }>, { gameType?: string; limit?: number } | void>({
+    getGameLeaderboard: builder.query<LeaderboardEntry[], LeaderboardQuery | void>({
       query: (params) => ({
         url: '/games/leaderboard',
         params: params || undefined,
       }),
+      providesTags: ['Leaderboard'],
     }),
+    aiExtractWords: builder.mutation<{ success: boolean; words: AiExtractedWord[] }, { text: string; maxWords?: number }>({
+      query: (data) => ({
+        url: '/words/ai-extract',
+        method: 'POST',
+        body: data,
+      }),
+    }),
+    getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
+      query: (params) => ({
+        url: '/../dashboard/decks/curated',
+        params: params || undefined,
+      }),
+    }),
+    getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
+      query: (id) => `/../dashboard/decks/${id}`,
+    }),
+    importDeck: builder.mutation<{ success: boolean; importedCount: number; message: string }, { id: number; words?: string[] }>({
+      query: ({ id, words }) => ({
+        url: `/../dashboard/decks/${id}/import`,
+        method: 'POST',
+        body: { words },
+      }),
+      invalidatesTags: ['Words', 'Reviews'],
+    }),
+
+
+
   }),
 });
 
@@ -346,4 +414,8 @@ export const {
   useUnlockAchievementMutation,
   useRecordGameSessionFullMutation,
   useGetGameLeaderboardQuery,
+  useAiExtractWordsMutation,
+  useGetCuratedDecksQuery,
+  useGetDeckQuery,
+  useImportDeckMutation,
 } = apiSlice;

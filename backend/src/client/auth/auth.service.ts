@@ -8,10 +8,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '../user/user.service';
-import { User } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
-import { VALID_WORD_TYPES } from '../word/word.constants';
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { MailService } from '../../common/mail/mail.service';
@@ -43,7 +41,9 @@ export class AuthService {
       throw new UnauthorizedException('error.auth.account_deactivated');
     }
 
-    const { password, ...result } = user;
+    const result = Object.fromEntries(
+      Object.entries(user).filter(([key]) => key !== 'password'),
+    );
     return result;
   }
 
@@ -98,6 +98,16 @@ export class AuthService {
 
   async register(registrationData: any) {
     const { email, password, fullName } = registrationData;
+
+    const systemConfig = await (this.prisma as any).systemConfig.findUnique({
+      where: { id: 1 },
+      select: { isRegistrationOpen: true },
+    });
+    if (systemConfig && !systemConfig.isRegistrationOpen) {
+      throw new ForbiddenException(
+        'New user registrations are currently disabled by the administrator.',
+      );
+    }
 
     if (!email || !password || !fullName) {
       throw new BadRequestException('error.auth.missing_fields');
@@ -154,7 +164,7 @@ export class AuthService {
       decoded = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_SECRET'),
       });
-    } catch (err) {
+    } catch {
       throw new UnauthorizedException('error.auth.invalid_refresh');
     }
 
@@ -481,7 +491,7 @@ export class AuthService {
         if (decoded?.sid) {
           await this.prisma.refreshToken.delete({ where: { id: decoded.sid } });
         }
-      } catch (e) {
+      } catch {
         // Just clear all if decode fails
         await this.prisma.refreshToken.deleteMany({ where: { userId } });
       }

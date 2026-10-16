@@ -9,7 +9,9 @@ import {
   ShieldCheck,
   BadgeCheck,
   Key,
-  Mail
+  Mail,
+  Ban,
+  Unlock
 } from 'lucide-react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,7 @@ import { useToast } from '@/components/ui/Toast';
 import { exportToCSV } from '@/utils/export';
 import { UserDetailModal } from './UserDetailModal';
 import { UserFormModal } from './UserFormModal';
+import { BanUserModal } from './BanUserModal';
 import { useNavigate } from 'react-router-dom';
 import { useResetUserPasswordMutation } from '@/store/api/usersApi';
 import Tooltip from '@/components/ui/Tooltip';
@@ -50,6 +53,8 @@ const UserManagementPage: React.FC = () => {
     handleUpdateUser,
     handleDeleteUser,
     handleUpdateRole,
+    handleBanUser,
+    handleUnbanUser,
     formatDate
   } = useUsers();
 
@@ -64,6 +69,9 @@ const UserManagementPage: React.FC = () => {
 
   const [roleConfirmUser, setRoleConfirmUser] = useState<DashboardUserItem | null>(null);
   const [resetConfirmUser, setResetConfirmUser] = useState<DashboardUserItem | null>(null);
+  const [banConfirmUser, setBanConfirmUser] = useState<DashboardUserItem | null>(null);
+  const [unbanConfirmUser, setUnbanConfirmUser] = useState<DashboardUserItem | null>(null);
+
   const [resetPassword, { isLoading: isResettingPassword }] = useResetUserPasswordMutation();
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -95,11 +103,16 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const handleAddSubmit = async (data: { fullName: string; email?: string }) => {
+  const handleAddSubmit = async (data: { fullName: string; email?: string; password?: string; role?: 'ADMIN' | 'MEMBER' }) => {
     setIsActionLoading(true);
     try {
-      await handleCreateUser({ fullName: data.fullName, email: data.email || '' });
-      toast.success('Account Created', `Created account for ${data.fullName}`);
+      await handleCreateUser({ 
+        fullName: data.fullName, 
+        email: data.email || '', 
+        password: data.password, 
+        role: data.role 
+      });
+      toast.success('Account Created', `Created account for ${data.fullName} as ${data.role || 'MEMBER'}.`);
     } catch {
       toast.error('Creation Failed', 'Could not create new user account.');
     } finally {
@@ -115,6 +128,34 @@ const UserManagementPage: React.FC = () => {
       toast.success('Profile Updated', 'User information saved.');
     } catch {
       toast.error('Update Failed', 'Could not update user information.');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleBanConfirm = async (reason: string) => {
+    if (!banConfirmUser) return;
+    setIsActionLoading(true);
+    try {
+      await handleBanUser(banConfirmUser.id, reason);
+      toast.success('Account Banned', `${banConfirmUser.fullName} has been suspended.`);
+      setBanConfirmUser(null);
+    } catch {
+      toast.error('Ban Failed', 'Could not suspend user account.');
+    } finally {
+      setIsActionLoading(false);
+    }
+  };
+
+  const handleUnbanConfirm = async () => {
+    if (!unbanConfirmUser) return;
+    setIsActionLoading(true);
+    try {
+      await handleUnbanUser(unbanConfirmUser.id);
+      toast.success('Account Restored', `${unbanConfirmUser.fullName} is now active.`);
+      setUnbanConfirmUser(null);
+    } catch {
+      toast.error('Unban Failed', 'Could not restore user account.');
     } finally {
       setIsActionLoading(false);
     }
@@ -141,6 +182,8 @@ const UserManagementPage: React.FC = () => {
       Email: u.email,
       Role: u.role,
       IsActive: u.isActive,
+      Status: u.status || (u.isActive ? 'active' : 'suspended'),
+      BanReason: u.banReason || 'N/A',
       WordsCount: u.wordCount || 0,
       CreatedAt: formatDate(u.createdAt)
     }));
@@ -216,6 +259,27 @@ const UserManagementPage: React.FC = () => {
         onClose={() => setIsEditModalOpen(false)}
         onSubmit={handleEditSubmit}
         user={selectedUser}
+        isLoading={isActionLoading}
+      />
+
+      {/* Ban User Modal */}
+      <BanUserModal
+        isOpen={!!banConfirmUser}
+        onClose={() => setBanConfirmUser(null)}
+        onConfirm={handleBanConfirm}
+        user={banConfirmUser}
+        isLoading={isActionLoading}
+      />
+
+      {/* Unban User Confirmation Modal */}
+      <ConfirmModal
+        isOpen={!!unbanConfirmUser}
+        onClose={() => setUnbanConfirmUser(null)}
+        onConfirm={handleUnbanConfirm}
+        title="Restore Banned User Account"
+        description={`Are you sure you want to unban ${unbanConfirmUser?.fullName || 'this user'}? Their access will be restored.`}
+        confirmText="Restore Account"
+        variant="info"
         isLoading={isActionLoading}
       />
 
@@ -298,142 +362,160 @@ const UserManagementPage: React.FC = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
-                    <TableCell className="px-6 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-xs shrink-0 overflow-hidden">
-                          {user.avatar ? (
-                            user.avatar.startsWith('http') ? (
-                              <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+                users.map((user) => {
+                  const isBanned = user.status === 'banned' || (!user.isActive && !!user.banReason);
+
+                  return (
+                    <TableRow key={user.id} className="hover:bg-muted/30 transition-colors group">
+                      <TableCell className="px-6 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary text-xs shrink-0 overflow-hidden">
+                            {user.avatar ? (
+                              user.avatar.startsWith('http') ? (
+                                <img src={user.avatar} alt={user.fullName} className="w-full h-full object-cover" />
+                              ) : (
+                                <span className="text-base">{user.avatar}</span>
+                              )
                             ) : (
-                              <span className="text-base">{user.avatar}</span>
-                            )
-                          ) : (
-                            user.fullName.charAt(0).toUpperCase()
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
-                              {user.fullName}
-                            </span>
-                            {user.isEmailVerified && (
-                              <Tooltip content="Verified Email Account" side="top">
-                                <span className="inline-flex items-center">
-                                  <BadgeCheck size={14} className="text-emerald-500 shrink-0" />
-                                </span>
-                              </Tooltip>
+                              user.fullName.charAt(0).toUpperCase()
                             )}
                           </div>
-                          <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors truncate">
+                                {user.fullName}
+                              </span>
+                              {user.isEmailVerified && (
+                                <Tooltip content="Verified Email Account" side="top">
+                                  <span className="inline-flex items-center">
+                                    <BadgeCheck size={14} className="text-emerald-500 shrink-0" />
+                                  </span>
+                                </Tooltip>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-muted-foreground truncate">{user.email}</span>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
+                      </TableCell>
 
-                    <TableCell className="px-6 py-3.5">
-                      <UserRoleBadge
-                        role={user.role || 'MEMBER'}
-                        onClick={() => onToggleRole(user)}
-                        tooltipContent={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`}
-                      />
-                    </TableCell>
+                      <TableCell className="px-6 py-3.5">
+                        <UserRoleBadge
+                          role={user.role || 'MEMBER'}
+                          onClick={() => onToggleRole(user)}
+                          tooltipContent={`Toggle role (${user.role === 'ADMIN' ? 'Demote to MEMBER' : 'Promote to ADMIN'})`}
+                        />
+                      </TableCell>
 
-                    <TableCell className="px-6 py-3.5 text-center">
-                      <StatusBadge
-                        isActive={user.isActive}
-                        onClick={async () => {
-                          await handleToggleStatus(user.id);
-                          toast.success('Status Updated', `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.`);
-                        }}
-                        tooltipContent={user.isActive ? "Click to deactivate user" : "Click to activate user"}
-                      />
-                    </TableCell>
-
-                    <TableCell className="px-6 py-3.5 text-center font-mono text-xs font-medium text-foreground">
-                      {(user.wordCount ?? 0).toLocaleString()}
-                    </TableCell>
-
-                    <TableCell className="px-6 py-3.5 text-xs text-muted-foreground">
-                      {formatDate(user.createdAt)}
-                    </TableCell>
-
-                    <TableCell className="px-6 py-3.5 text-right">
-                      <div className="flex justify-end gap-1">
-                        <Tooltip content="Inspect Details & SRS Progress" side="top">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => {
-                              setInspectUserId(user.id);
-                              setIsDetailModalOpen(true);
-                            }}
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          >
-                            <Eye size={14} />
-                          </Button>
-                        </Tooltip>
-
-                        <Tooltip content="Reset Password to 123456" side="top">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => setResetConfirmUser(user)}
-                            className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
-                          >
-                            <Key size={14} />
-                          </Button>
-                        </Tooltip>
-
-                        <Tooltip content="Edit User Profile" side="top">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsEditModalOpen(true);
-                            }}
-                            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
-                          >
-                            <Edit2 size={14} />
-                          </Button>
-                        </Tooltip>
-
-                        <Tooltip content={user.isActive ? "Deactivate User" : "Activate User"} side="top">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                      <TableCell className="px-6 py-3.5 text-center">
+                        {isBanned ? (
+                          <Tooltip content={`Banned: ${user.banReason || 'Violation'}`} side="top">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-500/10 text-rose-500 border border-rose-500/20 cursor-help">
+                              <Ban size={12} /> Banned
+                            </span>
+                          </Tooltip>
+                        ) : (
+                          <StatusBadge
+                            isActive={user.isActive}
                             onClick={async () => {
                               await handleToggleStatus(user.id);
                               toast.success('Status Updated', `${user.fullName} is now ${!user.isActive ? 'Active' : 'Inactive'}.`);
                             }}
-                            className={`h-7 w-7 ${
-                              user.isActive 
-                                ? 'text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10' 
-                                : 'text-muted-foreground hover:text-emerald-500 hover:bg-emerald-500/10'
-                            }`}
-                          >
-                            <ShieldCheck size={14} />
-                          </Button>
-                        </Tooltip>
+                            tooltipContent={user.isActive ? "Click to deactivate user" : "Click to activate user"}
+                          />
+                        )}
+                      </TableCell>
 
-                        <Tooltip content="Delete User" side="top">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => {
-                              setSelectedUser(user);
-                              setIsDeleteModalOpen(true);
-                            }}
-                            className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                          >
-                            <Trash2 size={14} />
-                          </Button>
-                        </Tooltip>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
+                      <TableCell className="px-6 py-3.5 text-center font-mono text-xs font-medium text-foreground">
+                        {(user.wordCount ?? 0).toLocaleString()}
+                      </TableCell>
+
+                      <TableCell className="px-6 py-3.5 text-xs text-muted-foreground">
+                        {formatDate(user.createdAt)}
+                      </TableCell>
+
+                      <TableCell className="px-6 py-3.5 text-right">
+                        <div className="flex justify-end gap-1">
+                          <Tooltip content="Inspect Details & SRS Progress" side="top">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setInspectUserId(user.id);
+                                setIsDetailModalOpen(true);
+                              }}
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                              <Eye size={14} />
+                            </Button>
+                          </Tooltip>
+
+                          <Tooltip content="Reset Password to 123456" side="top">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => setResetConfirmUser(user)}
+                              className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
+                            >
+                              <Key size={14} />
+                            </Button>
+                          </Tooltip>
+
+                          <Tooltip content="Edit User Profile" side="top">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsEditModalOpen(true);
+                              }}
+                              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted"
+                            >
+                              <Edit2 size={14} />
+                            </Button>
+                          </Tooltip>
+
+                          {isBanned ? (
+                            <Tooltip content="Restore Banned User Account" side="top">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => setUnbanConfirmUser(user)}
+                                className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
+                              >
+                                <Unlock size={14} />
+                              </Button>
+                            </Tooltip>
+                          ) : (
+                            <Tooltip content="Ban User & Revoke Sessions" side="top">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => setBanConfirmUser(user)}
+                                className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
+                              >
+                                <Ban size={14} />
+                              </Button>
+                            </Tooltip>
+                          )}
+
+                          <Tooltip content="Delete User" side="top">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setIsDeleteModalOpen(true);
+                              }}
+                              className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 size={14} />
+                            </Button>
+                          </Tooltip>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

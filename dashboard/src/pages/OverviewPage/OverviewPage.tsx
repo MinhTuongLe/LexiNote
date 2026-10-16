@@ -1,6 +1,5 @@
 import React from 'react';
-import { 
-  MoreVertical,
+import {
   Layers,
   Zap,
   ShieldCheck, 
@@ -10,14 +9,17 @@ import {
   Clock,
   BrainCircuit,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  RotateCcw,
+  Cpu
 } from 'lucide-react';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MetricCardSkeleton, ChartSkeleton, ActivityStreamSkeleton } from '@/components/ui/skeletons';
 import { useOverview } from './useOverview';
-import { useGetRecentActivityQuery } from '@/store/api/analyticsApi';
+import { useGetRecentActivityQuery, useGetServerHealthQuery } from '@/store/api/analyticsApi';
+import { useResetWordSrsMutation } from '@/store/api/wordsApi';
 import { useToast } from '@/components/ui/Toast';
 import PageHeader from '@/components/common/PageHeader';
 
@@ -28,7 +30,34 @@ const OverviewPage: React.FC = () => {
   const { toast } = useToast();
   const { kpis, srsStats, rawStats, chartData, timeRange, setTimeRange, isLoading } = useOverview();
   const { data: recentActivities, isLoading: isActivityLoading } = useGetRecentActivityQuery();
+  const { data: serverHealth, refetch: refetchHealth } = useGetServerHealthQuery(undefined, { pollingInterval: 15000 });
+  const [resetWordSrs] = useResetWordSrsMutation();
+  const [resettingWordId, setResettingWordId] = React.useState<number | null>(null);
+  const [isRefetchingHealth, setIsRefetchingHealth] = React.useState(false);
+  const [chartMetric, setChartMetric] = React.useState<'both' | 'words' | 'users'>('both');
   const [isScanning, setIsScanning] = React.useState(false);
+
+  const handleResetSingleWord = async (id: number, word: string) => {
+    try {
+      setResettingWordId(id);
+      await resetWordSrs(id).unwrap();
+      toast.success('SRS Progress Reset', `Reset tiến độ SRS của từ "${word}" thành công!`);
+    } catch {
+      toast.error('Reset Failed', `Không thể reset tiến độ từ "${word}".`);
+    } finally {
+      setResettingWordId(null);
+    }
+  };
+
+  const handleRefreshHealth = async () => {
+    setIsRefetchingHealth(true);
+    try {
+      await refetchHealth();
+      toast.success('Health Refreshed', 'Server resource metrics updated.');
+    } finally {
+      setIsRefetchingHealth(false);
+    }
+  };
 
   const handleScan = () => {
     setIsScanning(true);
@@ -165,23 +194,57 @@ const OverviewPage: React.FC = () => {
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
                 <div>
-                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Traffic & Learning Statistics</h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">Vocabulary acquisition trends</p>
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">Acquisition & Growth Trends</h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">New vocabulary and user registration trends</p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border border-border/40 self-start sm:self-auto">
-                  {(['7d', '30d', '90d', '1y'] as const).map((r) => (
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                  <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-lg border border-border/40">
                     <button
-                      key={r}
-                      onClick={() => setTimeRange(r)}
-                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all uppercase ${
-                        timeRange === r
+                      onClick={() => setChartMetric('both')}
+                      className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                        chartMetric === 'both'
                           ? 'bg-card text-foreground shadow-xs border border-border/50'
-                          : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                          : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      {r}
+                      All
                     </button>
-                  ))}
+                    <button
+                      onClick={() => setChartMetric('words')}
+                      className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                        chartMetric === 'words'
+                          ? 'bg-card text-foreground shadow-xs border border-border/50'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Words
+                    </button>
+                    <button
+                      onClick={() => setChartMetric('users')}
+                      className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${
+                        chartMetric === 'users'
+                          ? 'bg-card text-foreground shadow-xs border border-border/50'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      New Users
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-muted/60 p-1 rounded-lg border border-border/40">
+                    {(['7d', '30d', '90d', '1y'] as const).map((r) => (
+                      <button
+                        key={r}
+                        onClick={() => setTimeRange(r)}
+                        className={`px-2.5 py-1 text-[11px] font-semibold rounded-md transition-all uppercase ${
+                          timeRange === r
+                            ? 'bg-card text-foreground shadow-xs border border-border/50'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-card/50'
+                        }`}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               
@@ -192,6 +255,10 @@ const OverviewPage: React.FC = () => {
                       <linearGradient id="colorWords" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.25}/>
                         <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.00}/>
+                      </linearGradient>
+                      <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.25}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.00}/>
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-border/40" />
@@ -224,16 +291,40 @@ const OverviewPage: React.FC = () => {
                       }}
                       cursor={{ stroke: '#f43f5e', strokeWidth: 1.5, strokeDasharray: '4 4' }}
                     />
-                    <Area 
-                      type="monotone" 
-                      dataKey="words" 
-                      stroke="#f43f5e" 
-                      strokeWidth={2.5} 
-                      fillOpacity={1} 
-                      fill="url(#colorWords)" 
-                    />
+                    {(chartMetric === 'both' || chartMetric === 'words') && (
+                      <Area 
+                        type="monotone" 
+                        name="New Words"
+                        dataKey="words" 
+                        stroke="#f43f5e" 
+                        strokeWidth={2.5} 
+                        fillOpacity={1} 
+                        fill="url(#colorWords)" 
+                      />
+                    )}
+                    {(chartMetric === 'both' || chartMetric === 'users') && (
+                      <Area 
+                        type="monotone" 
+                        name="New Users"
+                        dataKey="newUsers" 
+                        stroke="#10b981" 
+                        strokeWidth={2.5} 
+                        fillOpacity={1} 
+                        fill="url(#colorUsers)" 
+                      />
+                    )}
                   </AreaChart>
                 </ResponsiveContainer>
+              </div>
+              <div className="flex items-center gap-5 mt-3 pt-3 border-t border-border/40 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#f43f5e]"></span>
+                  <span className="text-muted-foreground font-medium">New Words</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></span>
+                  <span className="text-muted-foreground font-medium">New Users</span>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -274,29 +365,76 @@ const OverviewPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Security Banner */}
-          <div className="bg-gradient-to-br from-slate-900 via-rose-950/40 to-slate-900 p-6 rounded-xl border border-rose-500/20 text-white relative overflow-hidden shadow-sm">
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400">
-                  <ShieldCheck size={16} />
+          {/* Real-time Server Health & Resource Monitor */}
+          <Card className="border-border/60 bg-card shadow-xs overflow-hidden">
+            <CardContent className="p-5 space-y-4">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+                    <Cpu size={16} />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Server Health & Resources</h4>
+                    <p className="text-[10px] text-muted-foreground">Real-time resource telemetry</p>
+                  </div>
                 </div>
-                <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">Security Shield</span>
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] font-semibold border border-emerald-500/20">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Live 15s
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                    onClick={handleRefreshHealth}
+                    title="Refresh server telemetry"
+                  >
+                    <RefreshCw size={12} className={isRefetchingHealth ? 'animate-spin' : ''} />
+                  </Button>
+                </div>
               </div>
-              <h4 className="text-base font-bold mb-1">Endpoint Protection</h4>
-              <p className="text-xs text-slate-300/80 leading-relaxed">
-                System is running in hardened mode. 14 firewall rules active.
-              </p>
-              <Button 
-                size="sm"
-                className="mt-4 h-8 bg-rose-500 hover:bg-rose-600 text-white font-semibold text-xs rounded-lg transition-colors border-none"
-                onClick={() => toast.success('Integrity Scan', 'All endpoints secure.')}
-              >
-                Scan Integrity
-              </Button>
-            </div>
-            <ArrowUpRight className="absolute -bottom-6 -right-6 text-white/5" size={140} />
-          </div>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between items-center text-xs mb-1">
+                    <span className="text-muted-foreground">RAM Heap Usage</span>
+                    <span className="font-bold font-mono text-foreground">
+                      {serverHealth?.data.memory.heapUsedMB || 0} MB / {serverHealth?.data.memory.heapTotalMB || 0} MB ({serverHealth?.data.memory.usagePercentage || 0}%)
+                    </span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        (serverHealth?.data.memory.usagePercentage || 0) > 85
+                          ? 'bg-rose-500'
+                          : (serverHealth?.data.memory.usagePercentage || 0) > 70
+                          ? 'bg-amber-500'
+                          : 'bg-emerald-500'
+                      }`}
+                      style={{ width: `${Math.min(serverHealth?.data.memory.usagePercentage || 0, 100)}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+                  <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                    <span className="text-muted-foreground block text-[10px]">RSS Memory</span>
+                    <span className="font-bold font-mono text-foreground">{serverHealth?.data.memory.rssMB || 0} MB</span>
+                  </div>
+                  <div className="p-2 rounded-lg bg-muted/30 border border-border/40">
+                    <span className="text-muted-foreground block text-[10px]">Node Uptime</span>
+                    <span className="font-bold font-mono text-foreground truncate block">{serverHealth?.data.uptimeFormatted || '—'}</span>
+                  </div>
+                </div>
+
+                <div className="text-[10px] text-muted-foreground pt-1 flex justify-between items-center">
+                  <span>Runtime: Node.js {serverHealth?.data.nodeVersion || 'v22'}</span>
+                  <span className="capitalize">{serverHealth?.data.platform || 'Server'}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -368,7 +506,7 @@ const OverviewPage: React.FC = () => {
                 {srsStats.hardestWords.map((item) => (
                   <div 
                     key={item.id} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/20 border border-border/40 hover:bg-muted/40 transition-colors"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-muted/20 border border-border/40 hover:bg-muted/40 transition-colors"
                   >
                     <div className="flex flex-col min-w-0">
                       <div className="flex items-center gap-2">
@@ -380,7 +518,7 @@ const OverviewPage: React.FC = () => {
                       <span className="text-[11px] text-muted-foreground truncate">{item.meaningVi}</span>
                     </div>
 
-                    <div className="flex items-center gap-4 shrink-0 font-mono text-xs">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 font-mono text-xs w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40">
                       <div className="text-right">
                         <div className="text-rose-500 font-bold">✗ {item.wrongCount} errors</div>
                         <div className="text-[10px] text-muted-foreground">✓ {item.correctCount} correct</div>
@@ -389,6 +527,17 @@ const OverviewPage: React.FC = () => {
                         <div className="text-purple-500 font-bold">EF {item.easeFactor}</div>
                         <div className="text-[10px] text-muted-foreground">Ease Factor</div>
                       </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 px-2 text-[10px] font-semibold text-muted-foreground hover:text-foreground hover:border-primary/50"
+                        disabled={resettingWordId === item.id}
+                        onClick={() => handleResetSingleWord(item.id, item.word)}
+                        title="Reset SRS progress to default"
+                      >
+                        <RotateCcw size={11} className={`mr-1 ${resettingWordId === item.id ? 'animate-spin' : ''}`} />
+                        Reset SRS
+                      </Button>
                     </div>
                   </div>
                 ))}

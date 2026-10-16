@@ -9,6 +9,8 @@ import WordImport from './components/WordImport';
 import WelcomePage from './views/guide/WelcomePage';
 import Library from './views/Library';
 import StudyMode from './views/StudyMode';
+import DecksPage from './views/decks/DecksPage';
+import AiExtractModal from './components/AiExtractModal';
 import ProfilePage from './views/profile/ProfilePage';
 import SettingsPage from './views/settings/SettingsPage';
 import LanguageSettingsPage from './views/settings/LanguageSettingsPage';
@@ -17,14 +19,14 @@ import MatchGame from './views/games/MatchGame';
 import StatsPage from './views/stats/StatsPage';
 import ScrollToTop from './components/ScrollToTop';
 import SkeletonWordCard from './components/SkeletonWordCard';
-import { Plus, Play, Book, TrendingUp, Upload, Gamepad2 } from 'lucide-react';
+import { Plus, Play, Book, TrendingUp, Upload, Gamepad2, Sparkles, Layers } from 'lucide-react';
 import { 
   useGetDashboardStatsQuery,
   useCreateWordMutation, 
   useImportWordsMutation,
   useGetMeQuery
 } from './store/apiSlice';
-import { useCuteDialog } from './context/DialogContext';
+import { useCuteDialog } from './context/useCuteDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized, logout } from './store/authSlice';
@@ -33,7 +35,8 @@ import { checkHasSeenGuide } from './utils/authUtils';
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
 import VerifyEmail from './views/auth/VerifyEmail';
-import type { CreateWordDTO } from './types';
+import type { CreateWordDTO, ImportedWord } from './types';
+import type { RootState } from './store';
 import CountUp from './components/CountUp';
 import { getTypeLabel } from './utils/wordUtils';
 import './components/Skeleton.css';
@@ -44,8 +47,10 @@ function App() {
   const location = useLocation();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isAiExtractModalOpen, setIsAiExtractModalOpen] = useState(false);
+  const [maintenanceNotice, setMaintenanceNotice] = useState<string | null>(null);
   
-  const { user, isAuthenticated, isInitialized } = useSelector((state: any) => state.auth);
+  const { user, isAuthenticated, isInitialized } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const { showAlert, closeDialog } = useCuteDialog();
   const { t } = useTranslation();
@@ -68,12 +73,23 @@ function App() {
 
   // Global error handler for system-wide failures
   useEffect(() => {
-    const handleSystemError = (e: any) => {
-      showAlert(t('common.error'), e.detail || t('common.system_error'), 'error');
+    const handleSystemError = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      showAlert(t('common.error'), detail || t('common.system_error'), 'error');
     };
     window.addEventListener('system-error', handleSystemError);
     return () => window.removeEventListener('system-error', handleSystemError);
   }, [showAlert, t]);
+
+  // Handle scheduled maintenance notifications gracefully
+  useEffect(() => {
+    const handleMaintenance = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      setMaintenanceNotice(detail || 'Hệ thống đang được bảo trì định kỳ.');
+    };
+    window.addEventListener('system-maintenance', handleMaintenance);
+    return () => window.removeEventListener('system-maintenance', handleMaintenance);
+  }, []);
 
   // RTK Query hooks - Top level (required by React)
   const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
@@ -143,17 +159,17 @@ function App() {
       await createWord(data).unwrap();
       showAlert(t('common.success'), t('dashboard.add_success'), 'success');
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.add_error'), 'error');
     }
   };
 
-  const handleImport = async (words: any[]) => {
+  const handleImport = async (words: ImportedWord[]) => {
     try {
       await importWords(words).unwrap();
       showAlert(t('common.success'), t('dashboard.import_success', { count: words.length }), 'success');
       setIsImportModalOpen(false);
-    } catch (err) {
+    } catch {
       showAlert(t('common.error'), t('dashboard.import_error'), 'error');
     }
   };
@@ -258,6 +274,22 @@ function App() {
                 </div>
               </Card>
 
+              <Card className="stat-card purple clickable" onClick={() => setIsAiExtractModalOpen(true)}>
+                <div className="stat-icon"><Sparkles size={32} /></div>
+                <div className="stat-info">
+                  <h3>AI Extract</h3>
+                  <p>Trích xuất từ vựng AI</p>
+                </div>
+              </Card>
+
+              <Card className="stat-card blue clickable" onClick={() => navigate('/decks')}>
+                <div className="stat-icon"><Layers size={32} /></div>
+                <div className="stat-info">
+                  <h3>Bộ Từ Vựng</h3>
+                  <p>IELTS, TOEIC, IT Tech</p>
+                </div>
+              </Card>
+
               <Card className="stat-card green clickable" onClick={() => navigate('/match-game')}>
                 <div className="stat-icon"><Gamepad2 size={32} /></div>
                 <div className="stat-info">
@@ -304,7 +336,7 @@ function App() {
                     <p>{t('dashboard.empty_library')}</p>
                   </Card>
                 ) : (
-                  stats.recentWords.map((word: any) => (
+                  stats.recentWords.map((word) => (
                     <Card key={word.id} className="word-item">
                       <div className="word-header">
                         <h3>{word.word}</h3>
@@ -326,6 +358,7 @@ function App() {
           } />
 
           <Route path="/library" element={<Library />} />
+          <Route path="/decks" element={<DecksPage />} />
           
           <Route path="/stats" element={<StatsPage onBack={() => navigate('/dashboard')} />} />
           <Route path="/stats/activity" element={<StatsPage onBack={() => navigate('/stats')} detail="activity" />} />
@@ -359,6 +392,31 @@ function App() {
           onCancel={() => setIsImportModalOpen(false)} 
           isLoading={isImporting}
         />
+      </Modal>
+
+      <AiExtractModal
+        isOpen={isAiExtractModalOpen}
+        onClose={() => setIsAiExtractModalOpen(false)}
+      />
+
+      <Modal
+        isOpen={Boolean(maintenanceNotice)}
+        onClose={() => setMaintenanceNotice(null)}
+        title="🚧 Đang Bảo Trì Hệ Thống"
+      >
+        <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+          <p style={{ fontSize: '1rem', lineHeight: '1.6', marginBottom: '1.5rem', color: 'var(--text-muted, #64748b)' }}>
+            {maintenanceNotice}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+            <Button variant="outline" onClick={() => setMaintenanceNotice(null)}>
+              Đóng
+            </Button>
+            <Button variant="primary" onClick={() => window.location.reload()}>
+              Thử lại 🔄
+            </Button>
+          </div>
+        </div>
       </Modal>
 
       <ScrollToTop />

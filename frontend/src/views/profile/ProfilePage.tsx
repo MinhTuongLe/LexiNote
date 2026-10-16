@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { updateUser, logout } from '../../store/authSlice';
 import { useUpdateProfileMutation, useChangePasswordMutation, useDeactivateAccountMutation } from '../../store/apiSlice';
-import { useCuteDialog } from '../../context/DialogContext';
+import { useCuteDialog } from '../../context/useCuteDialog';
 import Button from '../../components/Button';
 import Card from '../../components/Card';
 import Modal from '../../components/Modal';
@@ -11,6 +11,8 @@ import { User, Mail, Lock, Pencil, Check, Eye, EyeOff, ShieldAlert, Trash2 } fro
 import BackButton from '../../components/BackButton';
 import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
+import type { RootState } from '../../store';
+import { getApiErrorMessage } from '../../utils/errorUtils';
 
 const AVATAR_OPTIONS = ['🐰', '🐱', '🐶', '🦊', '🐼', '🐨', '🐸', '🦄', '🐻', '🐧', '🦁', '🐯', '🐮', '🐷', '🐵', '🦋', '🌸', '🌟', '⭐', '🔥', '💎', '🎯', '🎨', '🎭'];
 
@@ -19,7 +21,7 @@ interface ProfilePageProps {
 }
 
 const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
-  const { user } = useSelector((state: any) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -43,13 +45,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
 
-  useEffect(() => {
-    if (user) {
-      setFullName(user.fullName);
-      setSelectedAvatar(user.avatar);
-    }
-  }, [user]);
-
   const handleSaveProfile = async () => {
     try {
       const result = await updateProfile({
@@ -59,8 +54,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
       dispatch(updateUser(result.user));
       setIsEditingProfile(false);
       showAlert('Updated! ✨', 'Your profile has been updated!', 'success');
-    } catch (err: any) {
-      showAlert('Error! 😿', err.data?.message || 'Failed to update profile.', 'error');
+    } catch (error: unknown) {
+      showAlert('Error! 😿', getApiErrorMessage(error, 'Failed to update profile.'), 'error');
     }
   };
 
@@ -85,8 +80,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-    } catch (err: any) {
-      showAlert('Error! 😿', err.data?.message || 'Failed to change password.', 'error');
+    } catch (error: unknown) {
+      showAlert('Error! 😿', getApiErrorMessage(error, 'Failed to change password.'), 'error');
     }
   };
 
@@ -184,8 +179,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
                       showAlert(t('common.success'), t('profile.delete_success_msg') || 'Tài khoản của bạn đã được xóa và đăng xuất!', 'success');
                       dispatch(logout());
                       navigate('/login');
-                    } catch (err: any) {
-                      showAlert(t('common.error'), err.data?.message || 'Failed to delete data', 'error');
+                    } catch (error: unknown) {
+                      showAlert(t('common.error'), getApiErrorMessage(error, 'Failed to delete data'), 'error');
                     }
                   }
                 )} 

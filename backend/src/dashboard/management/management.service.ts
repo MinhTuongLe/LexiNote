@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { MailService } from '../../common/mail/mail.service';
@@ -39,6 +39,8 @@ export class ManagementService {
           fullName: true,
           role: true,
           isActive: true,
+          status: true,
+          banReason: true,
           isEmailVerified: true,
           createdAt: true,
           avatar: true,
@@ -81,6 +83,8 @@ export class ManagementService {
         fullName: true,
         role: true,
         isActive: true,
+        status: true,
+        banReason: true,
         isEmailVerified: true,
         createdAt: true,
         words: {
@@ -111,6 +115,8 @@ export class ManagementService {
         fullName: user.fullName,
         role: user.role,
         isActive: user.isActive,
+        status: user.status,
+        banReason: user.banReason,
         isEmailVerified: user.isEmailVerified,
         createdAt: new Date(Number(user.createdAt)).toISOString(),
         wordCount: user.words.length,
@@ -133,6 +139,7 @@ export class ManagementService {
         updatedAt: true,
         avatar: true,
         status: true,
+        banReason: true,
       },
     });
 
@@ -207,6 +214,84 @@ export class ManagementService {
         avgEaseFactor,
       },
       words: formattedWords,
+    };
+  }
+
+  async resetUserSrs(
+    userId: number,
+    actorId?: number,
+    actorEmail?: string,
+  ) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+    if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
+
+    const words = await this.prisma.word.findMany({
+      where: { ownerId: userId },
+      select: { id: true },
+    });
+    const wordIds = words.map(({ id }) => id);
+    const resetAt = BigInt(Date.now());
+
+    if (wordIds.length > 0) {
+      const existingReviews = await this.prisma.review.findMany({
+        where: { wordId: { in: wordIds } },
+        select: { wordId: true },
+      });
+      const existingWordIds = new Set(
+        existingReviews.map(({ wordId }) => wordId),
+      );
+      const missingWordIds = wordIds.filter(
+        (wordId) => !existingWordIds.has(wordId),
+      );
+
+      await this.prisma.$transaction([
+        this.prisma.review.updateMany({
+          where: { wordId: { in: wordIds } },
+          data: {
+            interval: 0,
+            easeFactor: 2.5,
+            correctCount: 0,
+            wrongCount: 0,
+            lastReviewed: null,
+            nextReview: resetAt,
+            updatedAt: resetAt,
+          },
+        }),
+        ...(missingWordIds.length > 0
+          ? [
+              this.prisma.review.createMany({
+                data: missingWordIds.map((wordId) => ({
+                  wordId,
+                  interval: 0,
+                  easeFactor: 2.5,
+                  correctCount: 0,
+                  wrongCount: 0,
+                  lastReviewed: null,
+                  nextReview: resetAt,
+                  updatedAt: resetAt,
+                })),
+              }),
+            ]
+          : []),
+      ]);
+    }
+
+    await this.auditService.logAction({
+      actorId,
+      actorEmail,
+      action: 'USER_RESET_SRS',
+      targetType: 'User',
+      targetId: String(userId),
+      details: { userId, wordsCount: wordIds.length },
+    });
+
+    return {
+      success: true,
+      message: `Reset SRS progress for ${wordIds.length} words belonging to user #${userId}`,
+      resetCount: wordIds.length,
     };
   }
 
@@ -362,6 +447,112 @@ export class ManagementService {
         'Password reset successfully to default (123456). Active sessions revoked.',
       defaultPassword,
       revokedSessionsCount: revoked.count,
+    };
+  }
+
+  async banUser(id: number, reason: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const banReason = reason.trim();
+    if (!banReason) {
+      throw new BadRequestException('Ban reason is required');
+    }
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        isActive: false,
+        status: 'banned',
+        banReason,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatar: true,
+        role: true,
+        isActive: true,
+        status: true,
+        banReason: true,
+        isEmailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    const revoked = await this.prisma.refreshToken.deleteMany({
+      where: { userId: id },
+    });
+
+    await this.auditService.logAction({
+      action: 'USER_BAN',
+      targetType: 'USER',
+      targetId: String(id),
+      details: { reason: banReason, email: user.email, revokedSessionsCount: revoked.count },
+    });
+
+    await this.mailService.sendAccountStatusChangedNotification(
+      user.email,
+      user.fullName,
+      false,
+    );
+
+    return {
+      ...updated,
+      createdAt: updated.createdAt.toString(),
+      updatedAt: updated.updatedAt.toString(),
+      revokedSessionsCount: revoked.count,
+    };
+  }
+
+  async unbanUser(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id },
+      data: {
+        isActive: true,
+        status: 'active',
+        banReason: null,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        avatar: true,
+        role: true,
+        isActive: true,
+        status: true,
+        banReason: true,
+        isEmailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    await this.auditService.logAction({
+      action: 'USER_UNBAN',
+      targetType: 'USER',
+      targetId: String(id),
+      details: { email: user.email },
+    });
+
+    await this.mailService.sendAccountStatusChangedNotification(
+      user.email,
+      user.fullName,
+      true,
+    );
+
+    return {
+      ...updated,
+      createdAt: updated.createdAt.toString(),
+      updatedAt: updated.updatedAt.toString(),
+      revokedSessionsCount: 0,
     };
   }
 

@@ -4,7 +4,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 describe('ReviewService', () => {
   let service: ReviewService;
-  let prisma: PrismaService;
 
   const mockPrisma: any = {
     word: {
@@ -30,19 +29,18 @@ describe('ReviewService', () => {
     }).compile();
 
     service = module.get<ReviewService>(ReviewService);
-    prisma = module.get<PrismaService>(PrismaService);
     jest.clearAllMocks();
   });
 
   describe('getStudyStats', () => {
-    it('should return mock fallback if no words exist', async () => {
+    it('should return empty stats if no reviews exist', async () => {
       mockPrisma.word.count.mockResolvedValue(0);
       mockPrisma.review.findMany.mockResolvedValue([]);
 
       const stats = await service.getStudyStats(1);
 
-      expect(stats.streak).toBe(12); // Fallback value
-      expect(stats.totalReviewed).toBe(208); // Fallback value
+      expect(stats.streak).toBe(0);
+      expect(stats.totalReviewed).toBe(0);
     });
 
     it('should calculate correct mastery breakdown', async () => {

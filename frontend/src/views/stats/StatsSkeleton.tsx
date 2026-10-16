@@ -2,6 +2,8 @@ import React from 'react';
 import Card from '../../components/Card';
 import '../../components/Skeleton.css';
 
+const skeletonBarHeights = [42, 68, 51, 76, 57, 84, 63];
+
 const StatsSkeleton: React.FC = () => {
   return (
     <div className="stats-page skeleton-page">
@@ -42,7 +44,7 @@ const StatsSkeleton: React.FC = () => {
           <div className="skeleton-chart-area">
             {[1, 2, 3, 4, 5, 6, 7].map(i => (
               <div key={i} className="skeleton-chart-col">
-                <div className="skeleton-bar" style={{ height: `${Math.random() * 60 + 30}%` }}></div>
+                <div className="skeleton-bar" style={{ height: `${skeletonBarHeights[i - 1]}%` }}></div>
                 <div className="skeleton-text short label-skele"></div>
               </div>
             ))}

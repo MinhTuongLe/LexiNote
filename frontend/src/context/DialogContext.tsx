@@ -1,22 +1,6 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
+import React, { useState, type ReactNode } from 'react';
 import Dialog from '../components/Dialog';
-
-interface DialogConfig {
-  title: string;
-  message: string;
-  type: 'alert' | 'confirm' | 'success' | 'error';
-  confirmText?: string;
-  cancelText?: string;
-  onConfirm?: () => void;
-}
-
-interface DialogContextType {
-  showAlert: (title: string, message: string, type?: 'alert' | 'success' | 'error') => void;
-  showConfirm: (title: string, message: string, onConfirm: () => void, config?: Partial<DialogConfig>) => void;
-  closeDialog: () => void;
-}
-
-const DialogContext = createContext<DialogContextType | undefined>(undefined);
+import { DialogContext, type DialogConfig } from './useCuteDialog';
 
 export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,10 +45,4 @@ export const DialogProvider: React.FC<{ children: ReactNode }> = ({ children }) 
       />
     </DialogContext.Provider>
   );
-};
-
-export const useCuteDialog = () => {
-  const context = useContext(DialogContext);
-  if (!context) throw new Error('useCuteDialog must be used within a DialogProvider');
-  return context;
 };

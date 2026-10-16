@@ -6,9 +6,7 @@ import {
   UseGuards,
   Request,
   Patch,
-  Query,
   Req,
-  Res,
 } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { AuthService } from './auth.service';

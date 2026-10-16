@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next';
 import { WORD_TYPES } from '../constants/wordTypes';
+import type { UserSettings } from '../types';
 
 /**
  * Get translated or custom label for a word type
@@ -7,7 +8,7 @@ import { WORD_TYPES } from '../constants/wordTypes';
  * @param t Translation function
  * @param userSettings Optional user settings containing custom word types
  */
-export const getTypeLabel = (typeValue: string, t: TFunction, userSettings?: any) => {
+export const getTypeLabel = (typeValue: string, t: TFunction, userSettings?: UserSettings) => {
   if (!typeValue) return t('library.word_types.other');
   
   const lowerType = typeValue.toLowerCase().trim();
@@ -20,7 +21,7 @@ export const getTypeLabel = (typeValue: string, t: TFunction, userSettings?: any
 
   // 2. Check custom user types if settings provided
   if (userSettings?.wordTypes) {
-    const customType = userSettings.wordTypes.find((ct: any) => ct.value === lowerType);
+    const customType = userSettings.wordTypes.custom?.find((ct) => ct.value === lowerType);
     if (customType) return customType.label;
   }
 

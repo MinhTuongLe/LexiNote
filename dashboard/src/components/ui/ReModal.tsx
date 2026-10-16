@@ -39,7 +39,7 @@ const ReModal: React.FC<ModalProps> = ({
   const modalRoot = document.body;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+    <div className="fixed inset-0 flex items-center justify-center p-4 z-9999">
       {/* Overlay */}
       <div 
         className="absolute inset-0 bg-[#181c32]/60 backdrop-blur-md animate-in fade-in duration-300"
@@ -47,28 +47,28 @@ const ReModal: React.FC<ModalProps> = ({
       ></div>
 
       {/* Modal Content */}
-      <div className="relative w-full max-w-lg bg-white rounded-[2rem] shadow-[0_30px_70px_rgba(0,0,0,0.25)] overflow-hidden animate-in zoom-in-95 fade-in duration-300">
-        <div className="p-8 pb-0 flex justify-between items-start">
+      <div className="relative w-full max-w-lg bg-card text-card-foreground rounded-3xl border border-border/80 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in zoom-in-95 fade-in duration-300">
+        <div className="flex items-start justify-between pb-0 p-7">
           <div>
-            <h2 className="text-xl font-bold text-[#181c32]">{title}</h2>
+            <h2 className="text-xl font-bold text-foreground">{title}</h2>
             {description && (
-              <p className="text-xs font-semibold text-[#a1a5b7] mt-1">{description}</p>
+              <p className="mt-1 text-xs font-semibold text-muted-foreground">{description}</p>
             )}
           </div>
           <button 
             onClick={onClose}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-[#f5f8fa] text-[#a1a5b7] hover:bg-[#fff5f8] hover:text-[#f1416c] transition-all"
+            className="flex items-center justify-center transition-all w-9 h-9 rounded-xl bg-muted/60 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
-        <div className="p-8">
+        <div className="p-7">
           {children}
         </div>
 
         {footer && (
-          <div className="p-8 pt-0 flex justify-end gap-3">
+          <div className="flex justify-end gap-3 pt-0 p-7">
             {footer}
           </div>
         )}

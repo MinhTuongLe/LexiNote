@@ -9,6 +9,41 @@ export interface Word {
   reviews?: Review[];
 }
 
+export interface CustomWordType {
+  value: string;
+  label: string;
+}
+
+export interface UserSettings {
+  preferences?: {
+    soundEnabled?: boolean;
+    flashcardFront?: 'en' | 'vi';
+    hasSeenGuide?: boolean;
+  };
+  wordTypes?: {
+    system?: string[];
+    custom?: CustomWordType[];
+  };
+  soundEnabled?: boolean;
+  flashcardFront?: 'en' | 'vi';
+  hasSeenGuide?: boolean;
+}
+
+export interface ImportedWord {
+  word: string;
+  meaningVi: string;
+  example?: string;
+  type: string;
+}
+
+export interface SettingsData {
+  preferences?: UserSettings['preferences'];
+  wordTypes?: {
+    system: string[];
+    custom: CustomWordType[];
+  };
+}
+
 export interface WordRelation {
   id: number;
   type: 'synonym' | 'antonym';
@@ -76,4 +111,47 @@ export interface DashboardStats {
   weeklyActivity: { date: string; count: number }[];
   accuracy: number;
   totalTimeSpentMinutes: number;
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  user: {
+    id: number;
+    fullName: string;
+    avatar?: string | null;
+  };
+  bestScore: number;
+  bestTimeSeconds: number;
+}
+
+export const GAME_TYPES = ['MATCH_GAME'] as const;
+export type GameType = (typeof GAME_TYPES)[number];
+
+export interface LeaderboardQuery {
+  gameType?: GameType;
+  limit?: number;
+}
+
+export interface AiExtractedWord {
+  word: string;
+  meaningVi: string;
+  type: string;
+  phonetic: string;
+  example: string;
+  context: string;
+}
+
+export interface VocabularyDeckSummary {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  level?: string | null;
+  coverImage?: string | null;
+  wordCount: number;
+  isCurated: boolean;
+}
+
+export interface VocabularyDeck extends Omit<VocabularyDeckSummary, 'wordCount'> {
+  words: Array<Omit<AiExtractedWord, 'context'> & { audioUrl?: string | null }>;
 }

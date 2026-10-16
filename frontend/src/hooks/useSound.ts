@@ -1,7 +1,8 @@
 import { useSelector } from 'react-redux';
+import type { RootState } from '../store';
 
 export const useSound = () => {
-  const { user } = useSelector((state: any) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const soundEnabled = user?.settings?.preferences?.soundEnabled ?? true;
 
   const playSound = (type: 'success' | 'error' | 'click' | 'flip' | 'win' | 'pop') => {

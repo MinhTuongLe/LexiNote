@@ -23,10 +23,7 @@ export class DashboardAuthController {
 
   @Post('login')
   @ApiOperation({ summary: 'Admin login for dashboard' })
-  async login(
-    @Body() loginDto: LoginDto,
-    @Req() req: Record<string, unknown>,
-  ) {
+  async login(@Body() loginDto: LoginDto, @Req() req: Record<string, unknown>) {
     console.log('>>> [DashboardAuthController] Login payload:', loginDto);
 
     const user = (await this.authService.validateUser(
