@@ -249,21 +249,52 @@ export const apiSlice = createApi({
       }),
     }),
     getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
-      query: (params) => ({
-        url: '/decks/curated',
-        params: params || undefined,
-      }),
+      queryFn: async (params, _queryApi, _extraOptions, fetchWithBQ) => {
+        let result = await fetchWithBQ({
+          url: '/decks/curated',
+          params: params || undefined,
+        });
+        if (result.error && result.error.status === 404) {
+          result = await fetchWithBQ({
+            url: '/../dashboard/decks/curated',
+            params: params || undefined,
+          });
+        }
+        return result.data
+          ? { data: result.data as { success: boolean; data: VocabularyDeckSummary[] } }
+          : { error: result.error as FetchBaseQueryError };
+      },
       providesTags: ['Words'],
     }),
     getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
-      query: (id) => `/decks/${id}`,
+      queryFn: async (id, _queryApi, _extraOptions, fetchWithBQ) => {
+        let result = await fetchWithBQ(`/decks/${id}`);
+        if (result.error && result.error.status === 404) {
+          result = await fetchWithBQ(`/../dashboard/decks/${id}`);
+        }
+        return result.data
+          ? { data: result.data as { success: boolean; data: VocabularyDeck } }
+          : { error: result.error as FetchBaseQueryError };
+      },
     }),
     importDeck: builder.mutation<{ success: boolean; importedCount: number; skippedCount: number; message: string }, { id: number; words?: string[] }>({
-      query: ({ id, words }) => ({
-        url: `/decks/${id}/import`,
-        method: 'POST',
-        body: words ? { words } : {},
-      }),
+      queryFn: async ({ id, words }, _queryApi, _extraOptions, fetchWithBQ) => {
+        let result = await fetchWithBQ({
+          url: `/decks/${id}/import`,
+          method: 'POST',
+          body: words ? { words } : {},
+        });
+        if (result.error && result.error.status === 404) {
+          result = await fetchWithBQ({
+            url: `/../dashboard/decks/${id}/import`,
+            method: 'POST',
+            body: words ? { words } : {},
+          });
+        }
+        return result.data
+          ? { data: result.data as { success: boolean; importedCount: number; skippedCount: number; message: string } }
+          : { error: result.error as FetchBaseQueryError };
+      },
       invalidatesTags: ['Words', 'Reviews'],
     }),
 

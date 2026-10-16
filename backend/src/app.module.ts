@@ -19,6 +19,7 @@ import { ModerationModule } from './dashboard/moderation/moderation.module';
 import { AchievementModule } from './client/achievement/achievement.module';
 import { GameModule } from './client/game/game.module';
 import { DeckModule } from './client/deck/deck.module';
+import { DeckAdminModule } from './dashboard/decks/deck-admin.module';
 import { SystemMaintenanceGuard } from './common/guards/system-maintenance.guard';
 
 import { MailModule } from './common/mail/mail.module';
@@ -47,6 +48,7 @@ import { MailModule } from './common/mail/mail.module';
     DashboardConfigModule,
     AuditModule,
     ModerationModule,
+    DeckAdminModule,
     MetaModule,
     ThrottlerModule.forRoot([
       {
@@ -79,7 +81,7 @@ import { MailModule } from './common/mail/mail.module';
           { path: '/', module: DashboardConfigModule },
           { path: '/', module: AuditModule },
           { path: '/', module: ModerationModule },
-          { path: '/', module: DeckModule },
+          { path: '/', module: DeckAdminModule },
         ],
       },
     ]),
