@@ -352,30 +352,7 @@ export const apiSlice = createApi({
       }),
       providesTags: ['Leaderboard'],
     }),
-    aiExtractWords: builder.mutation<{ success: boolean; words: AiExtractedWord[] }, { text: string; maxWords?: number }>({
-      query: (data) => ({
-        url: '/words/ai-extract',
-        method: 'POST',
-        body: data,
-      }),
-    }),
-    getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
-      query: (params) => ({
-        url: '/../dashboard/decks/curated',
-        params: params || undefined,
-      }),
-    }),
-    getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
-      query: (id) => `/../dashboard/decks/${id}`,
-    }),
-    importDeck: builder.mutation<{ success: boolean; importedCount: number; message: string }, { id: number; words?: string[] }>({
-      query: ({ id, words }) => ({
-        url: `/../dashboard/decks/${id}/import`,
-        method: 'POST',
-        body: { words },
-      }),
-      invalidatesTags: ['Words', 'Reviews'],
-    }),
+
 
 
 

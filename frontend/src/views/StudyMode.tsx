@@ -9,9 +9,7 @@ import {
   X, 
   Volume2, 
   VolumeX, 
-  Send, 
-  Sparkles,
-  HelpCircle
+  Send,
 } from 'lucide-react';
 import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
 import { useCuteDialog } from '../context/useCuteDialog';

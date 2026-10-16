@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings, Layers, Sparkles } from 'lucide-react';
+import { BookOpen, Trophy, Plus, LogOut, User as UserIcon, Settings, Layers } from 'lucide-react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../store/authSlice';
@@ -45,7 +45,7 @@ const Navbar: React.FC = () => {
       t('common.logout_confirm_msg'),
       async () => {
         try {
-          await logoutServer({ refreshToken }).unwrap();
+          await logoutServer({ refreshToken: refreshToken || undefined }).unwrap();
         } catch (err) {
           console.warn('Failed to logout on server, still logging out locally', err);
         } finally {
