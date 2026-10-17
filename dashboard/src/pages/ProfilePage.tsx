@@ -10,10 +10,41 @@ import { Button } from "@/components/ui/button";
 import { useSelector } from 'react-redux';
 import type { RootState } from '../store';
 import { useToast } from '@/components/ui/Toast';
+import { Input } from '@/components/ui/input';
+import { useUpdateUserMutation } from '@/store/api/usersApi';
+import { useDispatch } from 'react-redux';
+import { setCredentials } from '@/store/slices/authSlice';
 
 const ProfilePage: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const { toast } = useToast();
+  const dispatch = useDispatch();
+  const [updateUser, { isLoading: isSaving }] = useUpdateUserMutation();
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [fullName, setFullName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+
+  const openEditor = () => {
+    setFullName(user?.fullName || '');
+    setEmail(user?.email || '');
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!user || !fullName.trim() || !email.trim()) return;
+
+    try {
+      const updatedUser = await updateUser({
+        id: user.id,
+        data: { fullName: fullName.trim(), email: email.trim() },
+      }).unwrap();
+      dispatch(setCredentials({ user: { ...user, ...updatedUser }, token: localStorage.getItem('admin_token') || '' }));
+      setIsEditing(false);
+      toast.success('Identity Updated', 'Administrator profile details saved successfully.');
+    } catch {
+      toast.error('Update Failed', 'Could not update administrator profile.');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -62,13 +93,30 @@ const ProfilePage: React.FC = () => {
             </div>
             
             <div className="w-full mt-6">
-              <Button 
-                size="sm"
-                className="w-full font-medium shadow-xs"
-                onClick={() => toast.info('Feature Coming Soon', `Profile update for ${user?.fullName} will be available in future releases.`)}
-              >
-                Edit Identity
-              </Button>
+              {!isEditing ? (
+                <Button size="sm" className="w-full font-medium shadow-xs" onClick={openEditor}>
+                  Edit Identity
+                </Button>
+              ) : (
+                <div className="space-y-3 text-left">
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Full name
+                    <Input value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-1" />
+                  </label>
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    Email
+                    <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1" />
+                  </label>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" className="flex-1" onClick={() => setIsEditing(false)} disabled={isSaving}>
+                      Cancel
+                    </Button>
+                    <Button size="sm" className="flex-1" onClick={handleSave} disabled={isSaving || !fullName.trim() || !email.trim()}>
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

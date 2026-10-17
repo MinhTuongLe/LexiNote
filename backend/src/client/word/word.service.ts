@@ -69,9 +69,11 @@ export class WordService {
     const candidates = [...text.matchAll(/[A-Za-z][A-Za-z'-]{5,}/g)]
       .map((match) => match[0].replace(/^['-]+|['-]+$/g, ''))
       .filter((word) => !stopWords.has(word.toLowerCase()))
-      .filter((word, index, words) =>
-        words.findIndex((item) => item.toLowerCase() === word.toLowerCase()) ===
-        index,
+      .filter(
+        (word, index, words) =>
+          words.findIndex(
+            (item) => item.toLowerCase() === word.toLowerCase(),
+          ) === index,
       )
       .slice(0, maxWords);
 
@@ -109,7 +111,9 @@ export class WordService {
   private findSentence(text: string, word: string) {
     return text
       .split(/(?<=[.!?])\s+/)
-      .find((sentence) => new RegExp(`\\b${this.escapeRegExp(word)}\\b`, 'i').test(sentence))
+      .find((sentence) =>
+        new RegExp(`\\b${this.escapeRegExp(word)}\\b`, 'i').test(sentence),
+      )
       ?.trim();
   }
 
@@ -240,10 +244,7 @@ export class WordService {
           some: {
             correctCount: { gt: 0 },
             NOT: {
-              AND: [
-                { correctCount: { gte: 4 } },
-                { interval: { gte: 14 } },
-              ],
+              AND: [{ correctCount: { gte: 4 } }, { interval: { gte: 14 } }],
             },
           },
         };

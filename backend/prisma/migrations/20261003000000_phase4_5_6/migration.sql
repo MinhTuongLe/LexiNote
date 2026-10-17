@@ -30,6 +30,8 @@ CREATE TABLE "system_config" (
   "is_registration_open" BOOLEAN NOT NULL DEFAULT true,
   "rateLimit" INTEGER NOT NULL DEFAULT 100,
   "cors_enabled" BOOLEAN NOT NULL DEFAULT true,
+  "auto_backup" BOOLEAN NOT NULL DEFAULT true,
+  "debug_mode" BOOLEAN NOT NULL DEFAULT false,
   "createdAt" BIGINT NOT NULL DEFAULT (extract(epoch from now()) * 1000),
   "updatedAt" BIGINT NOT NULL DEFAULT (extract(epoch from now()) * 1000),
   CONSTRAINT "system_config_pkey" PRIMARY KEY ("id")

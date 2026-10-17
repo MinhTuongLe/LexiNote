@@ -114,11 +114,7 @@ export class ManagementController {
     @Req() req: { user?: { id?: number; userId?: number; email?: string } },
   ) {
     const actorId = req.user?.id ?? req.user?.userId;
-    return this.managementService.resetUserSrs(
-      id,
-      actorId,
-      req.user?.email,
-    );
+    return this.managementService.resetUserSrs(id, actorId, req.user?.email);
   }
 
   @Post('users/:id/reset-password')

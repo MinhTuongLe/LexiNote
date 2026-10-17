@@ -36,6 +36,7 @@ export class AuditController {
     const logs = await this.auditService.exportAuditLogs(
       query.search,
       query.action,
+      query.targetType,
     );
     response.header('Content-Type', 'text/csv; charset=utf-8');
     response.header(
@@ -55,6 +56,21 @@ export class AuditController {
         'createdAt',
       ],
       logs,
+    );
+  }
+
+  @Get('archives/export')
+  @ApiOperation({ summary: 'Export archived database records' })
+  async exportArchives(@Res({ passthrough: true }) response: FastifyReply) {
+    const archives = await this.auditService.exportArchiveLogs();
+    response.header('Content-Type', 'text/csv; charset=utf-8');
+    response.header(
+      'Content-Disposition',
+      `attachment; filename="lexinote_export_archives_${Date.now()}.csv"`,
+    );
+    return toCsv(
+      ['id', 'fromModel', 'originalRecordId', 'originalRecord', 'createdAt'],
+      archives,
     );
   }
 

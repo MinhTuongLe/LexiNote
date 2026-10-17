@@ -10,7 +10,7 @@ export class DashboardConfigService {
   ) {}
 
   async getSystemConfig() {
-    const dbStatus = await this.checkDbHealth();
+    const database = await this.getDatabaseMetrics();
     const config = await this.getOrCreateConfig();
 
     return {
@@ -21,6 +21,8 @@ export class DashboardConfigService {
         isRegistrationOpen: config.isRegistrationOpen,
         rateLimit: config.rateLimit,
         corsEnabled: config.corsEnabled,
+        autoBackup: config.autoBackup,
+        debugMode: config.debugMode,
       },
       infrastructure: {
         baseUrl:
@@ -36,13 +38,11 @@ export class DashboardConfigService {
         cors:
           this.configService.get<string>('ALLOWED_ORIGINS')?.split(',') || [],
         corsEnabled: config.corsEnabled,
+        autoBackup: config.autoBackup,
+        debugMode: config.debugMode,
         jwtExpires: '7d',
       },
-      database: {
-        status: dbStatus ? 'Operational' : 'Disrupted',
-        shards: 1,
-        activeConnections: 0,
-      },
+      database,
     };
   }
 
@@ -67,6 +67,14 @@ export class DashboardConfigService {
           typeof data.corsEnabled === 'boolean'
             ? data.corsEnabled
             : current.corsEnabled,
+        autoBackup:
+          typeof data.autoBackup === 'boolean'
+            ? data.autoBackup
+            : current.autoBackup,
+        debugMode:
+          typeof data.debugMode === 'boolean'
+            ? data.debugMode
+            : current.debugMode,
         updatedAt: BigInt(Date.now()),
       },
     });
@@ -107,7 +115,9 @@ export class DashboardConfigService {
           })
         : this.prisma.wordRelation.deleteMany(),
       wordIds.length
-        ? this.prisma.review.deleteMany({ where: { wordId: { notIn: wordIds } } })
+        ? this.prisma.review.deleteMany({
+            where: { wordId: { notIn: wordIds } },
+          })
         : this.prisma.review.deleteMany(),
     ]);
 
@@ -132,12 +142,16 @@ export class DashboardConfigService {
     isRegistrationOpen: boolean;
     rateLimit: number;
     corsEnabled: boolean;
+    autoBackup: boolean;
+    debugMode: boolean;
   }) {
     return {
       isMaintenanceMode: config.isMaintenanceMode,
       isRegistrationOpen: config.isRegistrationOpen,
       rateLimit: config.rateLimit,
       corsEnabled: config.corsEnabled,
+      autoBackup: config.autoBackup,
+      debugMode: config.debugMode,
     };
   }
 
@@ -147,6 +161,36 @@ export class DashboardConfigService {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  private async getDatabaseMetrics() {
+    try {
+      const [sizeRows, connectionRows] = await Promise.all([
+        this.prisma.$queryRaw<Array<{ size_bytes: bigint }>>`
+          SELECT pg_database_size(current_database()) AS size_bytes
+        `,
+        this.prisma.$queryRaw<Array<{ active_connections: bigint }>>`
+          SELECT count(*) AS active_connections
+          FROM pg_stat_activity
+          WHERE datname = current_database()
+        `,
+      ]);
+      return {
+        status: 'Operational',
+        shards: 1,
+        activeConnections: Number(connectionRows[0]?.active_connections || 0),
+        sizeMb: Number(
+          (Number(sizeRows[0]?.size_bytes || 0n) / 1024 / 1024).toFixed(1),
+        ),
+      };
+    } catch {
+      return {
+        status: 'Disrupted',
+        shards: 1,
+        activeConnections: 0,
+        sizeMb: 0,
+      };
     }
   }
 }

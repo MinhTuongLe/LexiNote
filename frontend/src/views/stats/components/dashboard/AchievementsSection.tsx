@@ -1,81 +1,39 @@
 import React from 'react';
 import Card from '../../../../components/Card';
 import { Award, Lock, CheckCircle2 } from 'lucide-react';
-import type { StudyStats } from '../../../../types';
 import { useGetUserAchievementsQuery, useUnlockAchievementMutation } from '../../../../store/apiSlice';
+import { mapAchievement } from '../../achievementUtils';
 
 interface AchievementsSectionProps {
-  stats: StudyStats;
   mounted?: boolean;
 }
 
-export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats, mounted }) => {
-  const { data: userAchievementsData } = useGetUserAchievementsQuery();
+export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ mounted }) => {
+  const { data: userAchievementsData, isLoading, isError } = useGetUserAchievementsQuery();
   const [unlockAchievementApi] = useUnlockAchievementMutation();
 
-  const totalWords = stats.totalWords || 0;
-  const streak = stats.streak || 0;
-  const accuracy = stats.accuracy || 0;
-  const masteredWords = stats.masteryBreakdown?.mastered || 0;
-
-  const serverUnlockedIds = React.useMemo(
-    () => new Set((userAchievementsData?.achievements || []).filter(a => a.unlocked).map(a => a.id)),
-    [userAchievementsData?.achievements]
+  const achievements = React.useMemo(
+    () => (userAchievementsData?.achievements || []).map(mapAchievement),
+    [userAchievementsData?.achievements],
   );
 
-  const achievements = React.useMemo(() => [
-    {
-      id: 'beginner',
-      icon: '🐰',
-      title: 'Lexi Beginner',
-      desc: 'Add your first 10 vocabulary words',
-      current: totalWords,
-      target: 10,
-      unlocked: totalWords >= 10 || serverUnlockedIds.has('beginner'),
-      badgeColor: '#ffeaa7'
-    },
-    {
-      id: 'streak',
-      icon: '🔥',
-      title: 'Streak Master',
-      desc: 'Reach a 7-day study streak',
-      current: streak,
-      target: 7,
-      unlocked: streak >= 7 || serverUnlockedIds.has('streak'),
-      badgeColor: '#ff7675'
-    },
-    {
-      id: 'mastery',
-      icon: '🧠',
-      title: 'Memory Wizard',
-      desc: 'Master 20 words with 100% SRS memory',
-      current: masteredWords,
-      target: 20,
-      unlocked: masteredWords >= 20 || serverUnlockedIds.has('mastery'),
-      badgeColor: '#a29bfe'
-    },
-    {
-      id: 'accuracy',
-      icon: '🎯',
-      title: 'Sharpshooter',
-      desc: 'Achieve 80% or higher overall accuracy',
-      current: Math.round(accuracy),
-      target: 80,
-      unlocked: accuracy >= 80 || serverUnlockedIds.has('accuracy'),
-      badgeColor: '#55efc4'
-    }
-  ], [accuracy, masteredWords, serverUnlockedIds, streak, totalWords]);
-
-  // Auto-sync unlocks to server
   React.useEffect(() => {
     achievements.forEach(a => {
-      if (a.unlocked && !serverUnlockedIds.has(a.id)) {
-        unlockAchievementApi(a.id).catch(() => {});
+      if (!a.unlocked && a.progress >= a.target) {
+        void unlockAchievementApi(a.id).unwrap().catch(() => undefined);
       }
     });
-  }, [achievements, serverUnlockedIds, unlockAchievementApi]);
+  }, [achievements, unlockAchievementApi]);
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
+
+  if (isLoading) {
+    return <Card className="achievements-section-card"><p>Loading achievements...</p></Card>;
+  }
+
+  if (isError) {
+    return <Card className="achievements-section-card"><p>Unable to load achievements.</p></Card>;
+  }
 
   return (
     <Card className={`achievements-section-card ${mounted ? 'mounted' : ''}`} style={{ marginTop: '20px' }}>
@@ -91,7 +49,6 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats,
 
       <div className="achievements-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
         {achievements.map((item) => {
-          const progressPercent = Math.min(100, Math.round((item.current / item.target) * 100));
           return (
             <div 
               key={item.id} 
@@ -135,7 +92,7 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({ stats,
                   <div 
                     style={{ 
                       height: '100%', 
-                      width: `${progressPercent}%`, 
+                      width: `${item.progressPercent}%`,
                       background: item.unlocked ? '#00b894' : 'var(--primary)',
                       borderRadius: '10px',
                       transition: 'width 0.4s ease'

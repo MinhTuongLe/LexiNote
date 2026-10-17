@@ -249,52 +249,18 @@ export const apiSlice = createApi({
       }),
     }),
     getCuratedDecks: builder.query<{ success: boolean; data: VocabularyDeckSummary[] }, { category?: string; search?: string } | void>({
-      queryFn: async (params, _queryApi, _extraOptions, fetchWithBQ) => {
-        let result = await fetchWithBQ({
-          url: '/decks/curated',
-          params: params || undefined,
-        });
-        if (result.error && result.error.status === 404) {
-          result = await fetchWithBQ({
-            url: '/../dashboard/decks/curated',
-            params: params || undefined,
-          });
-        }
-        return result.data
-          ? { data: result.data as { success: boolean; data: VocabularyDeckSummary[] } }
-          : { error: result.error as FetchBaseQueryError };
-      },
+      query: (params) => ({ url: '/decks/curated', params: params || undefined }),
       providesTags: ['Words'],
     }),
     getDeck: builder.query<{ success: boolean; data: VocabularyDeck }, number>({
-      queryFn: async (id, _queryApi, _extraOptions, fetchWithBQ) => {
-        let result = await fetchWithBQ(`/decks/${id}`);
-        if (result.error && result.error.status === 404) {
-          result = await fetchWithBQ(`/../dashboard/decks/${id}`);
-        }
-        return result.data
-          ? { data: result.data as { success: boolean; data: VocabularyDeck } }
-          : { error: result.error as FetchBaseQueryError };
-      },
+      query: (id) => `/decks/${id}`,
     }),
     importDeck: builder.mutation<{ success: boolean; importedCount: number; skippedCount: number; message: string }, { id: number; words?: string[] }>({
-      queryFn: async ({ id, words }, _queryApi, _extraOptions, fetchWithBQ) => {
-        let result = await fetchWithBQ({
+      query: ({ id, words }) => ({
           url: `/decks/${id}/import`,
           method: 'POST',
           body: words ? { words } : {},
-        });
-        if (result.error && result.error.status === 404) {
-          result = await fetchWithBQ({
-            url: `/../dashboard/decks/${id}/import`,
-            method: 'POST',
-            body: words ? { words } : {},
-          });
-        }
-        return result.data
-          ? { data: result.data as { success: boolean; importedCount: number; skippedCount: number; message: string } }
-          : { error: result.error as FetchBaseQueryError };
-      },
+      }),
       invalidatesTags: ['Words', 'Reviews'],
     }),
 
@@ -308,14 +274,6 @@ export const apiSlice = createApi({
         url: '/reviews/update',
         method: 'POST',
         body: data,
-      }),
-      invalidatesTags: ['Reviews', 'Words'],
-    }),
-    recordGameSession: builder.mutation<{ count: number }, number[]>({
-      query: (wordIds) => ({
-        url: '/reviews/game-session',
-        method: 'POST',
-        body: { wordIds },
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
@@ -357,7 +315,17 @@ export const apiSlice = createApi({
       }),
     }),
     // Achievements & Games
-    getUserAchievements: builder.query<{ achievements: Array<{ id: string; unlocked: boolean; unlockedAt?: string }> }, void>({
+    getUserAchievements: builder.query<{
+      achievements: Array<{
+        id: string;
+        title: string;
+        desc: string;
+        unlocked: boolean;
+        unlockedAt?: string | null;
+        progress: number;
+        target: number;
+      }>;
+    }, void>({
       query: () => '/user/achievements',
       providesTags: ['User'],
     }),
@@ -414,7 +382,6 @@ export const {
   useImportWordsMutation,
   useGetDueReviewsQuery,
   useUpdateSRSMutation,
-  useRecordGameSessionMutation,
   useResetProgressMutation,
   useLazyGetWordsQuery,
   useDeactivateAccountMutation,

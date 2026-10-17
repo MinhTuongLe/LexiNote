@@ -7,22 +7,55 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/components/ui/Toast';
 
+interface EnvironmentSettings {
+  lang: string;
+  toggles: {
+    density: boolean;
+    sync: boolean;
+    acceleration: boolean;
+  };
+}
+
+const defaultSettings: EnvironmentSettings = {
+  lang: 'VN',
+  toggles: { density: true, sync: true, acceleration: false },
+};
+
+const readSettings = (): EnvironmentSettings => {
+  try {
+    const stored = localStorage.getItem('lexi_settings');
+    if (!stored) return defaultSettings;
+    const parsed = JSON.parse(stored) as Partial<EnvironmentSettings>;
+    return {
+      lang: parsed.lang === 'EN' ? 'EN' : 'VN',
+      toggles: { ...defaultSettings.toggles, ...parsed.toggles },
+    };
+  } catch {
+    return defaultSettings;
+  }
+};
+
 const SettingsPage: React.FC = () => {
   const { toast } = useToast();
-  const [lang, setLang] = useState('VN');
-  const [toggles, setToggles] = useState({
-    density: true,
-    sync: true,
-    acceleration: false
-  });
+  const [savedSettings, setSavedSettings] = useState<EnvironmentSettings>(readSettings);
+  const [lang, setLang] = useState(savedSettings.lang);
+  const [toggles, setToggles] = useState(savedSettings.toggles);
 
   const handleToggle = (key: keyof typeof toggles) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handleSave = () => {
-    localStorage.setItem('lexi_settings', JSON.stringify({ lang, toggles }));
+    const nextSettings = { lang, toggles };
+    localStorage.setItem('lexi_settings', JSON.stringify(nextSettings));
+    setSavedSettings(nextSettings);
     toast.success('Settings Synchronized', 'Environment settings synchronized with local storage.');
+  };
+
+  const handleDiscard = () => {
+    setLang(savedSettings.lang);
+    setToggles(savedSettings.toggles);
+    toast.info('Changes Discarded', 'Unsaved environment changes were reverted.');
   };
 
   return (
@@ -112,7 +145,7 @@ const SettingsPage: React.FC = () => {
         </Card>
         
         <div className="flex justify-end gap-2.5 pt-2">
-          <Button variant="outline" size="sm" className="px-5 text-muted-foreground hover:text-foreground">
+          <Button variant="outline" size="sm" className="px-5 text-muted-foreground hover:text-foreground" onClick={handleDiscard}>
             Discard
           </Button>
           <Button size="sm" className="px-5 font-medium shadow-xs" onClick={handleSave}>

@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Users, 
   BookOpen, 
+  Library,
   Settings, 
   Search,
   User,
@@ -30,6 +31,7 @@ const AdminLayout: React.FC = () => {
   const dispatch = useDispatch();
   const { user } = useSelector((state: RootState) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [quickSearch, setQuickSearch] = React.useState('');
   const { isDark, toggleTheme } = useTheme();
 
 
@@ -38,10 +40,23 @@ const AdminLayout: React.FC = () => {
     navigate('/login');
   };
 
+  const handleQuickSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key !== 'Enter') return;
+    const value = quickSearch.trim();
+    if (!value) return;
+
+    const scopeMatch = value.match(/^(user|users|word|words):\s*(.+)$/i);
+    const scope = scopeMatch?.[1].toLowerCase();
+    const query = scopeMatch?.[2] || value;
+    const path = scope === 'user' || scope === 'users' ? '/dashboard/users' : '/dashboard/words';
+    navigate(`${path}?search=${encodeURIComponent(query)}`);
+  };
+
   const menuItems = [
     { title: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
     { title: 'User Management', path: '/dashboard/users', icon: Users },
     { title: 'Word Library', path: '/dashboard/words', icon: BookOpen },
+    { title: 'Deck Management', path: '/dashboard/decks', icon: Library },
     { title: 'Moderation Queue', path: '/dashboard/moderation', icon: Sparkles },
     { title: 'Audit Logs', path: '/dashboard/audit', icon: ShieldCheck },
     { title: 'Trash & Recovery', path: '/dashboard/trash', icon: Trash2 },
@@ -54,6 +69,7 @@ const AdminLayout: React.FC = () => {
       dashboard: 'Overview',
       users: 'User Management',
       words: 'Word Library',
+      decks: 'Deck Management',
       moderation: 'Moderation Queue',
       audit: 'Audit Logs',
       trash: 'Trash & Recovery',
@@ -250,6 +266,9 @@ const AdminLayout: React.FC = () => {
               <Input 
                 type="text" 
                 placeholder="Search words, users, configs..." 
+                value={quickSearch}
+                onChange={(event) => setQuickSearch(event.target.value)}
+                onKeyDown={handleQuickSearch}
                 className="bg-muted/40 border-border/60 rounded-lg h-8 pl-9 pr-12 text-xs focus-visible:ring-1 focus-visible:ring-primary w-full transition-all placeholder:text-muted-foreground/70"
               />
               <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] font-mono font-medium text-muted-foreground/80 bg-background/80 border border-border px-1.5 py-0.5 rounded shadow-2xs">

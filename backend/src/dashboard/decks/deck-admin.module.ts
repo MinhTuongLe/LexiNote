@@ -7,4 +7,3 @@ import { DeckModule } from '../../client/deck/deck.module';
   controllers: [DeckAdminController],
 })
 export class DeckAdminModule {}
-

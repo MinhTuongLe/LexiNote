@@ -21,12 +21,12 @@ import { useUsers } from './useUsers';
 import type { DashboardUserItem } from './useUsers';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useToast } from '@/components/ui/Toast';
-import { exportToCSV } from '@/utils/export';
+import { downloadTextFile } from '@/utils/export';
 import { UserDetailModal } from './UserDetailModal';
 import { UserFormModal } from './UserFormModal';
 import { BanUserModal } from './BanUserModal';
 import { useNavigate } from 'react-router-dom';
-import { useResetUserPasswordMutation } from '@/store/api/usersApi';
+import { useLazyExportUsersQuery, useResetUserPasswordMutation } from '@/store/api/usersApi';
 import Tooltip from '@/components/ui/Tooltip';
 import PageHeader from '@/components/common/PageHeader';
 import Pagination from '@/components/common/Pagination';
@@ -58,6 +58,7 @@ const UserManagementPage: React.FC = () => {
   } = useUsers();
 
   const { toast } = useToast();
+  const [exportUsers] = useLazyExportUsersQuery();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -174,20 +175,14 @@ const UserManagementPage: React.FC = () => {
     }
   };
 
-  const handleExport = () => {
-    const exportData = users.map(u => ({
-      ID: u.id,
-      FullName: u.fullName,
-      Email: u.email,
-      Role: u.role,
-      IsActive: u.isActive,
-      Status: u.status || (u.isActive ? 'active' : 'suspended'),
-      BanReason: u.banReason || 'N/A',
-      WordsCount: u.wordCount || 0,
-      CreatedAt: formatDate(u.createdAt)
-    }));
-    exportToCSV(exportData, `lexinote-users-page${page}`);
-    toast.info('CSV Exported', 'Downloaded current page user entries.');
+  const handleExport = async () => {
+    try {
+      const csv = await exportUsers({ search, isActive: status === 'ALL' ? undefined : status === 'ACTIVE' }).unwrap();
+      downloadTextFile(csv, 'lexinote-users');
+      toast.info('CSV Exported', 'Downloaded all users matching the current filters.');
+    } catch {
+      toast.error('Export Failed', 'Could not download users export.');
+    }
   };
 
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);

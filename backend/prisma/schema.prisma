@@ -224,6 +224,8 @@ model SystemConfig {
   isRegistrationOpen  Boolean  @default(true) @map("is_registration_open")
   rateLimit           Int      @default(100)
   corsEnabled         Boolean  @default(true) @map("cors_enabled")
+  autoBackup          Boolean  @default(true) @map("auto_backup")
+  debugMode           Boolean  @default(false) @map("debug_mode")
   createdAt           BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
   updatedAt           BigInt   @default(dbgenerated("extract(epoch from now()) * 1000"))
 

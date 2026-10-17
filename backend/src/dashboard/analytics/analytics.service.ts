@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsRange } from './dto/analytics-query.dto';
+import { formatPercentageChange } from './analytics.utils';
+import { buildWordClusters } from './cluster.utils';
 
 @Injectable()
 export class AnalyticsService {
@@ -8,6 +10,7 @@ export class AnalyticsService {
 
   async getSummary() {
     const now = Date.now();
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
     const [
       userCount,
       wordCount,
@@ -15,6 +18,10 @@ export class AnalyticsService {
       totalReviews,
       reviewAggregate,
       hardestReviews,
+      currentUsers,
+      previousUsers,
+      currentWords,
+      previousWords,
     ] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.word.count(),
@@ -41,13 +48,35 @@ export class AnalyticsService {
           },
         },
       }),
+      this.prisma.user.count({
+        where: { createdAt: { gte: BigInt(now - weekMs), lt: BigInt(now) } },
+      }),
+      this.prisma.user.count({
+        where: {
+          createdAt: {
+            gte: BigInt(now - weekMs * 2),
+            lt: BigInt(now - weekMs),
+          },
+        },
+      }),
+      this.prisma.word.count({
+        where: { createdAt: { gte: BigInt(now - weekMs), lt: BigInt(now) } },
+      }),
+      this.prisma.word.count({
+        where: {
+          createdAt: {
+            gte: BigInt(now - weekMs * 2),
+            lt: BigInt(now - weekMs),
+          },
+        },
+      }),
     ]);
 
     const totalCorrect = reviewAggregate._sum.correctCount || 0;
     const totalWrong = reviewAggregate._sum.wrongCount || 0;
     const totalAnswers = totalCorrect + totalWrong;
     const retentionRate =
-      totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 85;
+      totalAnswers > 0 ? Math.round((totalCorrect / totalAnswers) * 100) : 0;
     const avgEaseFactor = reviewAggregate._avg.easeFactor
       ? parseFloat(reviewAggregate._avg.easeFactor.toFixed(2))
       : 2.5;
@@ -57,8 +86,8 @@ export class AnalyticsService {
       totalWords: wordCount,
       activeSessions,
       totalReviews,
-      userChange: '+12.5%',
-      wordChange: '+5.2%',
+      userChange: formatPercentageChange(currentUsers, previousUsers),
+      wordChange: formatPercentageChange(currentWords, previousWords),
       srsStats: {
         totalCorrect,
         totalWrong,
@@ -133,7 +162,9 @@ export class AnalyticsService {
     }
 
     for (const user of newUsers) {
-      const point = points.get(this.toDateKey(new Date(Number(user.createdAt))));
+      const point = points.get(
+        this.toDateKey(new Date(Number(user.createdAt))),
+      );
       if (point) point.newUsers += 1;
     }
 
@@ -187,6 +218,11 @@ export class AnalyticsService {
         timestamp: Date.now(),
       },
     };
+  }
+
+  async getWordClusters() {
+    const words = await this.prisma.word.findMany({ select: { type: true } });
+    return buildWordClusters(words);
   }
 
   private toMb(bytes: number) {

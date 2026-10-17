@@ -79,6 +79,12 @@ export const auditApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['AuditLogs'],
     }),
+    exportAuditLogs: builder.query<string, { search?: string; action?: string; targetType?: string } | void>({
+      query: (params) => ({ url: '/audit/logs/export', params: params || undefined, responseHandler: 'text' }),
+    }),
+    exportArchiveLogs: builder.query<string, void>({
+      query: () => ({ url: '/audit/archives/export', responseHandler: 'text' }),
+    }),
   }),
 });
 
@@ -87,4 +93,6 @@ export const {
   useGetArchiveLogsQuery,
   useRestoreArchiveRecordMutation,
   useDeleteArchiveRecordMutation,
+  useLazyExportAuditLogsQuery,
+  useLazyExportArchiveLogsQuery,
 } = auditApi;

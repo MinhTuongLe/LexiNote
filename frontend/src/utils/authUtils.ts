@@ -7,7 +7,7 @@ import type { User } from '../store/authSlice';
 export const checkHasSeenGuide = (user: User | null): boolean => {
   if (!user) return false;
 
-  const userIdKey = user.id ?? (user as any).userId ?? (user as any)._id ?? user.email ?? 'unknown';
+  const userIdKey = user.id || user.email || 'unknown';
   const storageKey = `hasSeenGuide_${userIdKey}`;
   const locallySeen = localStorage.getItem(storageKey) === 'true';
 
@@ -22,7 +22,7 @@ export const checkHasSeenGuide = (user: User | null): boolean => {
  */
 export const markGuideAsSeenLocal = (user: User | null): void => {
   if (!user) return;
-  const userIdKey = user.id ?? (user as any).userId ?? (user as any)._id ?? user.email ?? 'unknown';
+  const userIdKey = user.id || user.email || 'unknown';
   const storageKey = `hasSeenGuide_${userIdKey}`;
   localStorage.setItem(storageKey, 'true');
 };

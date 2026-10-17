@@ -17,24 +17,29 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MetricCardSkeleton, ChartSkeleton, ActivityStreamSkeleton } from '@/components/ui/skeletons';
 import { useOverview } from './useOverview';
-import { useGetRecentActivityQuery, useGetServerHealthQuery } from '@/store/api/analyticsApi';
+import { useGetRecentActivityQuery, useGetServerHealthQuery, useGetSummaryQuery, useGetWordClustersQuery, useLazyExportAnalyticsQuery } from '@/store/api/analyticsApi';
 import { useResetWordSrsMutation } from '@/store/api/wordsApi';
 import { useToast } from '@/components/ui/Toast';
 import PageHeader from '@/components/common/PageHeader';
 
-import { exportToCSV } from '@/utils/export';
+import { downloadTextFile } from '@/utils/export';
 import { Download } from 'lucide-react';
+import ReModal from '@/components/ui/ReModal';
 
 const OverviewPage: React.FC = () => {
   const { toast } = useToast();
-  const { kpis, srsStats, rawStats, chartData, timeRange, setTimeRange, isLoading } = useOverview();
+  const { kpis, srsStats, chartData, timeRange, setTimeRange, isLoading } = useOverview();
   const { data: recentActivities, isLoading: isActivityLoading } = useGetRecentActivityQuery();
   const { data: serverHealth, refetch: refetchHealth } = useGetServerHealthQuery(undefined, { pollingInterval: 15000 });
+  const { refetch: refetchSummary } = useGetSummaryQuery();
+  const { data: clusters = [], isLoading: isClustersLoading } = useGetWordClustersQuery();
+  const [exportAnalytics] = useLazyExportAnalyticsQuery();
   const [resetWordSrs] = useResetWordSrsMutation();
   const [resettingWordId, setResettingWordId] = React.useState<number | null>(null);
   const [isRefetchingHealth, setIsRefetchingHealth] = React.useState(false);
   const [chartMetric, setChartMetric] = React.useState<'both' | 'words' | 'users'>('both');
   const [isScanning, setIsScanning] = React.useState(false);
+  const [isClustersOpen, setIsClustersOpen] = React.useState(false);
 
   const handleResetSingleWord = async (id: number, word: string) => {
     try {
@@ -58,44 +63,31 @@ const OverviewPage: React.FC = () => {
     }
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
     setIsScanning(true);
-    setTimeout(() => {
+    try {
+      const [healthResult, summaryResult] = await Promise.all([refetchHealth(), refetchSummary()]);
+      const health = healthResult.data?.data;
+      const summary = summaryResult.data;
+      toast.success(
+        'System Scan Complete',
+        `API healthy. ${summary?.totalUsers ?? 0} users, ${summary?.totalWords ?? 0} words, ${health?.memory.usagePercentage ?? 0}% heap usage.`,
+      );
+    } catch {
+      toast.error('System Scan Failed', 'Could not verify all system metrics.');
+    } finally {
       setIsScanning(false);
-      toast.success('System Scan Complete', '0 vulnerabilities found. Shards are synchronized.');
-    }, 2000);
+    }
   };
 
-  const handleExportAnalytics = () => {
-    const exportData = [
-      {
-        Metric: 'Total Users',
-        Value: rawStats?.totalUsers || 0,
-        Change: rawStats?.userChange || '+12.5%'
-      },
-      {
-        Metric: 'Total Words',
-        Value: rawStats?.totalWords || 0,
-        Change: rawStats?.wordChange || '+5.2%'
-      },
-      {
-        Metric: 'Active Sessions',
-        Value: rawStats?.activeSessions || 0,
-        Change: '-2.1%'
-      },
-      {
-        Metric: 'Total Reviews',
-        Value: rawStats?.totalReviews || 0,
-        Change: '+3.4%'
-      },
-      {
-        Metric: 'SRS Retention Rate',
-        Value: `${srsStats?.retentionRate || 0}%`,
-        Change: 'N/A'
-      }
-    ];
-    exportToCSV(exportData, 'lexinote_analytics_overview');
-    toast.success('Export Successful', 'Downloaded analytics summary CSV.');
+  const handleExportAnalytics = async () => {
+    try {
+      const csv = await exportAnalytics({ range: timeRange }).unwrap();
+      downloadTextFile(csv, 'lexinote_analytics_overview');
+      toast.success('Export Successful', 'Downloaded analytics report CSV.');
+    } catch {
+      toast.error('Export Failed', 'Could not download analytics report.');
+    }
   };
 
   return (
@@ -117,7 +109,7 @@ const OverviewPage: React.FC = () => {
               variant="outline" 
               size="sm"
               className="h-9 px-3.5 border-border/80 text-muted-foreground hover:text-foreground hover:bg-muted"
-              onClick={() => toast.info('Cluster Map Initialized', 'Cluster Map initialization sequence started.')}
+              onClick={() => setIsClustersOpen(true)}
             >
               <Layers size={14} className="mr-1.5" /> View Clusters
             </Button>
@@ -545,6 +537,36 @@ const OverviewPage: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+      <ReModal
+        isOpen={isClustersOpen}
+        onClose={() => setIsClustersOpen(false)}
+        title="Vocabulary Clusters"
+        description="Current vocabulary distribution grouped by lexical type."
+      >
+        {isClustersLoading ? (
+          <p className="text-sm text-muted-foreground">Loading cluster data...</p>
+        ) : clusters.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No vocabulary clusters found.</p>
+        ) : (
+          <div className="space-y-3">
+            {clusters.map((cluster) => {
+              const maxCount = clusters[0]?.count || 1;
+              const width = Math.max(8, (cluster.count / maxCount) * 100);
+              return (
+                <div key={cluster.name}>
+                  <div className="flex justify-between text-xs font-semibold mb-1">
+                    <span className="capitalize">{cluster.name}</span>
+                    <span className="font-mono text-muted-foreground">{cluster.count}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-muted overflow-hidden">
+                    <div className="h-full rounded-full bg-primary" style={{ width: `${width}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </ReModal>
     </div>
   );
 };

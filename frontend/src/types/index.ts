@@ -44,6 +44,9 @@ export interface SettingsData {
     system: string[];
     custom: CustomWordType[];
   };
+  learning?: {
+    monthlyGoalDays: number;
+  };
 }
 
 export interface WordRelation {
@@ -98,6 +101,13 @@ export interface StudyStats {
   totalWords?: number;
   totalSessions?: number;
   masteryBreakdown?: { mastered: number; learning: number; new: number };
+  accuracyChange?: number | null;
+  previousAccuracy?: number | null;
+  accuracyByDay?: { date: string; accuracy: number }[];
+  nextMilestone?: number;
+  monthlyGoalDays?: number;
+  monthlyStudiedDays?: number;
+  peerlessEligible?: boolean;
 }
 
 export interface TypeBreakdown {

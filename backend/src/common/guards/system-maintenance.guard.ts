@@ -11,7 +11,9 @@ export class SystemMaintenanceGuard implements CanActivate {
   constructor(private readonly configService: DashboardConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<{ url?: string; method?: string }>();
+    const request = context
+      .switchToHttp()
+      .getRequest<{ url?: string; method?: string }>();
     const url = request.url || '';
 
     if (request.method === 'OPTIONS' || url.includes('/v1/dashboard')) {

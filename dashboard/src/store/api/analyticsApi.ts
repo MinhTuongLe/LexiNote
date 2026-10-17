@@ -64,6 +64,11 @@ export interface ActivityItem {
   [key: string]: unknown;
 }
 
+export interface WordCluster {
+  name: string;
+  count: number;
+}
+
 export const analyticsApi = dashboardApi.injectEndpoints({
   endpoints: (builder) => ({
     getSummary: builder.query<AnalyticsSummary, void>({
@@ -85,6 +90,13 @@ export const analyticsApi = dashboardApi.injectEndpoints({
       query: () => '/analytics/server-health',
       providesTags: ['Health'],
     }),
+    getWordClusters: builder.query<WordCluster[], void>({
+      query: () => '/analytics/clusters',
+      providesTags: ['Stats'],
+    }),
+    exportAnalytics: builder.query<string, { range?: string } | void>({
+      query: (params) => ({ url: '/analytics/export', params: params || undefined, responseHandler: 'text' }),
+    }),
   }),
 });
 
@@ -93,4 +105,6 @@ export const {
   useGetChartDataQuery, 
   useGetRecentActivityQuery,
   useGetServerHealthQuery,
+  useGetWordClustersQuery,
+  useLazyExportAnalyticsQuery,
 } = analyticsApi;

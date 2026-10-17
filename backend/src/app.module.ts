@@ -13,6 +13,7 @@ import { ManagementModule } from './dashboard/management/management.module';
 import { DashboardAuthModule } from './dashboard/auth/dashboard-auth.module';
 import { DashboardWordsModule } from './dashboard/words/words.module';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { PrismaService } from './prisma/prisma.service';
 import { DashboardConfigModule } from './dashboard/config/dashboard-config.module';
 import { AuditModule } from './dashboard/audit/audit.module';
 import { ModerationModule } from './dashboard/moderation/moderation.module';
@@ -50,12 +51,22 @@ import { MailModule } from './common/mail/mail.module';
     ModerationModule,
     DeckAdminModule,
     MetaModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 100,
+    ThrottlerModule.forRootAsync({
+      imports: [PrismaModule],
+      inject: [PrismaService],
+      useFactory: async (prisma: PrismaService) => {
+        const config = await (
+          prisma as PrismaService & {
+            systemConfig?: {
+              findUnique: (
+                args: unknown,
+              ) => Promise<{ rateLimit?: number } | null>;
+            };
+          }
+        ).systemConfig?.findUnique({ where: { id: 1 } });
+        return [{ ttl: 60000, limit: config?.rateLimit ?? 100 }];
       },
-    ]),
+    }),
     RouterModule.register([
       {
         path: 'v1/client',

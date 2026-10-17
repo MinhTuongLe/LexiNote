@@ -10,6 +10,10 @@ export class ExportAuditQueryDto {
   search?: string;
 
   @IsOptional()
+  @IsString()
+  targetType?: string;
+
+  @IsOptional()
   @IsIn(['csv'])
   format?: 'csv';
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import Modal from '../components/Modal';
@@ -30,12 +31,14 @@ import { WORD_TYPES } from '../constants/wordTypes';
 import { speakText } from '../utils/speech';
 import '../components/Skeleton.css';
 import './Library.css';
+import { getInitialLibraryStatus } from './libraryFilters';
 
 const Library: React.FC = () => {
   const { data: settingsData } = useGetSettingsQuery();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>(() => getInitialLibraryStatus(searchParams));
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [editingWord, setEditingWord] = useState<Word | null>(null);
   const { showAlert, showConfirm } = useCuteDialog();
@@ -61,6 +64,11 @@ const Library: React.FC = () => {
   const [importWords, { isLoading: isImportingApi }] = useImportWordsMutation();
   const { data: stats } = useGetDashboardStatsQuery();
 
+  useEffect(() => {
+    const nextStatus = getInitialLibraryStatus(searchParams);
+    setFilterStatus((currentStatus) => currentStatus === nextStatus ? currentStatus : nextStatus);
+  }, [searchParams]);
+
   const handleDelete = async (id: number) => {
     showConfirm(t('library.delete_confirm_title'), t('library.delete_confirm_msg'), async () => {
       try {
@@ -68,7 +76,7 @@ const Library: React.FC = () => {
         showAlert(t('library.delete_success_title'), t('library.delete_success_msg'), 'success');
         setLoadedWords(prev => prev.filter(w => w.id !== id));
         setSelectedIds(prev => prev.filter(sid => sid !== id));
-      } catch (err) {
+      } catch {
         showAlert(t('common.error'), t('common.error'), 'error');
       }
     });

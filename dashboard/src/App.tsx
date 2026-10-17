@@ -21,6 +21,7 @@ const ProtectedRoute = () => {
 
 import ProfilePage from './pages/ProfilePage';
 import SettingsPage from './pages/SettingsPage';
+import DeckManagementPage from './pages/DeckManagementPage/DeckManagementPage';
 import AuditLogPage from './pages/AuditLogPage/AuditLogPage';
 import ModerationPage from './pages/ModerationPage/ModerationPage';
 import TrashPage from './pages/TrashPage/TrashPage';
@@ -36,6 +37,7 @@ function App() {
             <Route index element={<OverviewPage />} />
             <Route path="users" element={<UserManagementPage />} />
             <Route path="words" element={<WordLibraryPage />} />
+            <Route path="decks" element={<DeckManagementPage />} />
             <Route path="moderation" element={<ModerationPage />} />
             <Route path="audit" element={<AuditLogPage />} />
             <Route path="trash" element={<TrashPage />} />

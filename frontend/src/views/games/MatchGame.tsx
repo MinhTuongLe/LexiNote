@@ -1,15 +1,16 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Card from '../../components/Card';
 import Button from '../../components/Button';
 import { Trophy, RefreshCw } from 'lucide-react';
 import BackButton from '../../components/BackButton';
-import { useGetWordsQuery, useRecordGameSessionMutation, useRecordGameSessionFullMutation } from '../../store/apiSlice';
+import { useGetWordsQuery, useRecordGameSessionFullMutation } from '../../store/apiSlice';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../../hooks/useSound';
 import { speakText } from '../../utils/speech';
 import Confetti from '../../components/Confetti';
 import './MatchGame.css';
 import type { Word } from '../../types';
+import { createMatchGameSessionPayload } from './matchGameUtils';
 
 const EMPTY_WORDS: Word[] = [];
 
@@ -29,8 +30,8 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const words = wordsData?.data ?? EMPTY_WORDS;
   const { t } = useTranslation();
   const { playSound } = useSound();
-  const [recordGameSession] = useRecordGameSessionMutation();
   const [recordGameSessionFull] = useRecordGameSessionFullMutation();
+  const gameStartedAtRef = useRef<number | null>(null);
 
   const [items, setItems] = useState<GameItem[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -59,6 +60,7 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     setSelectedId(null);
     setErrorIds(null);
     setGameCompleted(false);
+    gameStartedAtRef.current = Date.now();
   }, [words]);
 
   useEffect(() => {
@@ -102,15 +104,11 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
           if (next.size === items.length / 2) {
             playSound('win');
             
-            // Record game session for all matched word IDs to update stats/streak
+            // Record one canonical game session for stats, streak and leaderboard.
             const wordIds = Array.from(next);
-            recordGameSession(wordIds);
-            recordGameSessionFull({
-              gameType: 'MATCH_GAME',
-              score: wordIds.length * 20,
-              timeSpentSeconds: 30,
-              wordIds
-            }).catch(() => undefined);
+            void recordGameSessionFull(
+              createMatchGameSessionPayload(wordIds, gameStartedAtRef.current ?? Date.now(), Date.now()),
+            ).unwrap().catch(() => undefined);
             
             setTimeout(() => setGameCompleted(true), 500);
           }

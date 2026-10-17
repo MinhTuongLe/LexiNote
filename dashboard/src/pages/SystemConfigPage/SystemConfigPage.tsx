@@ -35,10 +35,14 @@ const SystemConfigPage: React.FC = () => {
 
   useEffect(() => {
     if (config) {
-      setRateLimit(config.config?.rateLimit ?? config.security?.rateLimit ?? 100);
-      setCorsEnabled(config.config?.corsEnabled ?? true);
-      setIsMaintenanceMode(config.config?.isMaintenanceMode ?? config.isMaintenanceMode ?? false);
-      setIsRegistrationOpen(config.config?.isRegistrationOpen ?? config.isRegistrationOpen ?? true);
+      queueMicrotask(() => {
+        setRateLimit(config.config?.rateLimit ?? config.security?.rateLimit ?? 100);
+        setCorsEnabled(config.config?.corsEnabled ?? true);
+        setIsMaintenanceMode(config.config?.isMaintenanceMode ?? config.isMaintenanceMode ?? false);
+        setIsRegistrationOpen(config.config?.isRegistrationOpen ?? config.isRegistrationOpen ?? true);
+        setAutoBackup(config.config?.autoBackup ?? true);
+        setDebugMode(config.config?.debugMode ?? false);
+      });
     }
   }, [config]);
 
@@ -253,12 +257,10 @@ const SystemConfigPage: React.FC = () => {
             <div className="space-y-5">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs text-muted-foreground">Cluster Storage</span>
-                  <span className="text-xs font-bold text-foreground font-mono">84%</span>
+                  <span className="text-xs text-muted-foreground">Database Size</span>
+                  <span className="text-xs font-bold text-foreground font-mono">{config?.database?.sizeMb ?? 0} MB</span>
                 </div>
-                <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                  <div className="h-full w-[84%] bg-primary rounded-full"></div>
-                </div>
+                <p className="text-[10px] text-muted-foreground">Measured from the active PostgreSQL database.</p>
               </div>
 
               <div className="space-y-3.5 pt-3 border-t border-border/60">

@@ -52,8 +52,8 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
   const yearNum = viewDate.getFullYear();
   const isCurrentMonth = viewDate.getMonth() === new Date().getMonth() && viewDate.getFullYear() === new Date().getFullYear();
 
-  const studiedDaysCount = activeStats.weeklyActivity.filter((d) => d.count > 0).length;
-  const goalDays = 20;
+  const studiedDaysCount = activeStats.monthlyStudiedDays ?? activeStats.weeklyActivity.filter((d) => d.count > 0).length;
+  const goalDays = activeStats.monthlyGoalDays ?? 20;
   const goalPercent = Math.min((studiedDaysCount / goalDays) * 100, 100);
 
   return (
@@ -192,7 +192,7 @@ const ActivityDetail: React.FC<ActivityDetailProps> = ({ stats: initialStats }) 
                      <div className="badge-icon">👑</div>
                      <span>{t('stats.badge_persistent')}</span>
                   </div>
-                  <div className="badge-item locked">
+                  <div className={`badge-item ${activeStats.peerlessEligible ? 'earned' : 'locked'}`}>
                      <div className="badge-icon">💎</div>
                      <span>{t('stats.badge_peerless')}</span>
                   </div>

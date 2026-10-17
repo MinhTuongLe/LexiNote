@@ -299,7 +299,9 @@ export const renderWordModerationNotificationTemplate = (
   reason: string,
 ): string => {
   const isRejected = status === 'REJECTED';
-  const title = isRejected ? 'Word submission rejected' : 'Word revision requested';
+  const title = isRejected
+    ? 'Word submission rejected'
+    : 'Word revision requested';
   const statusText = isRejected
     ? 'Your vocabulary submission was rejected by a LexiNote moderator.'
     : 'Your vocabulary submission needs changes before it can be approved.';
