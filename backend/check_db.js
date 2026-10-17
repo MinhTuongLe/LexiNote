@@ -14,9 +14,9 @@ async function checkDb() {
     console.log('--- ADMIN USER RECORD ---');
     console.log(user);
 
-    if (user) {
-      const isMatch = await bcrypt.compare('123456', user.password);
-      console.log('Is "123456" valid password for admin?:', isMatch);
+    if (user && process.env.CHECK_ADMIN_PASSWORD) {
+      const isMatch = await bcrypt.compare(process.env.CHECK_ADMIN_PASSWORD, user.password);
+      console.log('Configured admin password matches:', isMatch);
     }
   } catch (err) {
     console.error('Error checking DB:', err);

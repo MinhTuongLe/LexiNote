@@ -81,7 +81,7 @@ const UserManagementPage: React.FC = () => {
       await resetPassword(resetConfirmUser.id).unwrap();
       toast.success(
         'Đã Reset Mật Khẩu!',
-        `Mật khẩu mặc định của ${resetConfirmUser.fullName} đã chuyển về 123456. Các phiên làm việc hiện tại đã bị thu hồi.`
+        `Mật khẩu tạm thời của ${resetConfirmUser.fullName} đã được gửi qua email. Các phiên làm việc hiện tại đã bị thu hồi.`
       );
     } catch {
       toast.error('Reset Thất Bại', 'Không thể đặt lại mật khẩu người dùng.');
@@ -189,13 +189,13 @@ const UserManagementPage: React.FC = () => {
   const [previewType, setPreviewType] = useState<'verification' | 'forgot_password' | 'admin_reset'>('admin_reset');
   const [previewRecipientName, setPreviewRecipientName] = useState('Nguyễn Văn A');
   const [previewRecipientEmail, setPreviewRecipientEmail] = useState('user@example.com');
-  const [previewCode, setPreviewCode] = useState('123456');
+  const [previewCode, setPreviewCode] = useState('000000');
 
   const openMailPreview = (
     type: 'verification' | 'forgot_password' | 'admin_reset' = 'admin_reset',
     name = 'Nguyễn Văn A',
     email = 'user@example.com',
-    code = '123456'
+    code = '000000'
   ) => {
     setPreviewType(type);
     setPreviewRecipientName(name);
@@ -443,7 +443,7 @@ const UserManagementPage: React.FC = () => {
                             </Button>
                           </Tooltip>
 
-                          <Tooltip content="Reset Password to 123456" side="top">
+                          <Tooltip content="Generate a temporary password and force logout" side="top">
                             <Button 
                               variant="ghost" 
                               size="icon" 
@@ -549,8 +549,8 @@ const UserManagementPage: React.FC = () => {
         onClose={() => setResetConfirmUser(null)}
         onConfirm={handleConfirmResetPassword}
         title="Reset Mật Khẩu Người Dùng"
-        description={`Bạn có chắc chắn muốn reset mật khẩu của ${resetConfirmUser?.fullName || 'người dùng này'} về 123456? Tất cả phiên đăng nhập hiện tại sẽ bị hủy và hệ thống sẽ tự động gửi Email thông báo kèm mật khẩu mặc định mới.`}
-        confirmText="Reset Về 123456"
+        description={`Bạn có chắc chắn muốn tạo mật khẩu tạm thời mới cho ${resetConfirmUser?.fullName || 'người dùng này'}? Mật khẩu sẽ được gửi qua email và tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
+        confirmText="Tạo mật khẩu tạm thời"
         variant="warning"
         isLoading={isResettingPassword}
       />

@@ -169,7 +169,16 @@ export class ReviewService {
   async getStudyStats(userId: number, year?: number, month?: number) {
     const reviews = await this.prisma.review.findMany({
       where: { word: { ownerId: userId } },
-      include: { word: true },
+      select: {
+        interval: true,
+        easeFactor: true,
+        correctCount: true,
+        wrongCount: true,
+        lastReviewed: true,
+        word: {
+          select: { type: true, word: true, meaningVi: true },
+        },
+      },
     });
 
     const streak = await this.getStreak(userId);

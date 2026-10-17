@@ -1,8 +1,15 @@
-import { IsBoolean, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class ImportWordsDto {
   @IsString()
   @MinLength(1)
+  @MaxLength(10000)
   rawWords!: string;
 
   @IsOptional()

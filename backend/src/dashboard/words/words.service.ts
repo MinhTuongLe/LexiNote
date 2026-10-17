@@ -50,8 +50,30 @@ export class DashboardWordsService {
           owner: {
             select: { id: true, fullName: true, email: true },
           },
-          reviews: true,
-          relations: true,
+          reviews: {
+            select: {
+              id: true,
+              wordId: true,
+              interval: true,
+              easeFactor: true,
+              correctCount: true,
+              wrongCount: true,
+              lastReviewed: true,
+              nextReview: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+          relations: {
+            select: {
+              id: true,
+              wordId: true,
+              type: true,
+              value: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),

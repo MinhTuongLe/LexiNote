@@ -16,6 +16,13 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CreateWordDto } from './dto/create-word.dto';
 import { UpdateWordDto } from './dto/update-word.dto';
 import { AiExtractDto } from './dto/ai-extract.dto';
+import { WordQueryDto } from './dto/word-query.dto';
+import {
+  BulkDeleteWordsDto,
+  BulkImportWordsDto,
+} from './dto/bulk-word-actions.dto';
+import { ParseIntPipe } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Words')
 @Controller('words') // Under /api prefix -> /api/words
@@ -25,6 +32,7 @@ export class WordController {
   constructor(private readonly wordService: WordService) {}
 
   @Post('ai-extract')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Extract vocabulary from English text' })
   async aiExtract(@Body() body: AiExtractDto) {
     return this.wordService.extractVocabulary(body.text, body.maxWords);
@@ -38,41 +46,42 @@ export class WordController {
 
   @Get()
   @ApiOperation({ summary: 'List all words for current user' })
-  async find(@Request() req: any, @Query() query: any) {
+  async find(@Request() req: any, @Query() query: WordQueryDto) {
     return this.wordService.find(req.user.userId, query);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single word detail' })
-  async findOne(@Request() req: any, @Param('id') id: string) {
-    return this.wordService.findOne(req.user.userId, parseInt(id));
+  async findOne(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.wordService.findOne(req.user.userId, id);
   }
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update a word' })
   async update(
     @Request() req: any,
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateWordDto,
   ) {
-    return this.wordService.update(req.user.userId, parseInt(id), body);
+    return this.wordService.update(req.user.userId, id, body);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a word' })
-  async destroy(@Request() req: any, @Param('id') id: string) {
-    return this.wordService.destroy(req.user.userId, parseInt(id));
+  async destroy(@Request() req: any, @Param('id', ParseIntPipe) id: number) {
+    return this.wordService.destroy(req.user.userId, id);
   }
 
   @Post('delete-bulk')
   @ApiOperation({ summary: 'Bulk delete words' })
-  async destroyBulk(@Request() req: any, @Body('wordIds') wordIds: number[]) {
-    return this.wordService.destroyBulk(req.user.userId, wordIds);
+  async destroyBulk(@Request() req: any, @Body() body: BulkDeleteWordsDto) {
+    return this.wordService.destroyBulk(req.user.userId, body.wordIds);
   }
 
   @Post('import')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @ApiOperation({ summary: 'Bulk import words' })
-  async importBulk(@Request() req: any, @Body('words') words: any[]) {
-    return this.wordService.importBulk(req.user.userId, words);
+  async importBulk(@Request() req: any, @Body() body: BulkImportWordsDto) {
+    return this.wordService.importBulk(req.user.userId, body.words);
   }
 }

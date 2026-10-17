@@ -3,12 +3,6 @@ import { GameType, Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { GameSessionDto } from './dto/game-session.dto';
 
-interface LeaderboardEntry {
-  user: { id: number; fullName: string; avatar: string | null };
-  bestScore: number;
-  bestTimeSeconds: number;
-}
-
 @Injectable()
 export class GameService {
   constructor(private readonly prisma: PrismaService) {}
@@ -64,49 +58,47 @@ export class GameService {
 
   async getLeaderboard(gameType: GameType = GameType.MATCH_GAME, limit = 10) {
     const startOfWeek = this.getStartOfWeek();
-    const sessions = await this.prisma.gameSession.findMany({
-      where: {
-        gameType,
-        createdAt: {
-          gte: BigInt(startOfWeek.getTime()),
-          lte: BigInt(Date.now()),
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const sessions = await this.prisma.$queryRaw<
+      Array<{
+        user_id: number;
+        full_name: string;
+        avatar: string | null;
+        score: number;
+        time_spent_seconds: number;
+      }>
+    >`
+      with best_per_user as (
+        select distinct on (gs.user_id)
+          gs.user_id,
+          u.full_name,
+          u.avatar,
+          gs.score,
+          gs.time_spent_seconds
+        from game_session gs
+        inner join "user" u on u.id = gs.user_id
+        where gs.game_type = ${gameType}
+          and gs.created_at >= ${BigInt(startOfWeek.getTime())}
+          and gs.created_at <= ${BigInt(Date.now())}
+        order by gs.user_id, gs.score desc, gs.time_spent_seconds asc, gs.created_at asc
+      )
+      select *
+      from best_per_user
+      order by score desc, time_spent_seconds asc, user_id asc
+      limit ${safeLimit}
+    `;
+
+    return sessions
+      .map((session) => ({
+        user: {
+          id: session.user_id,
+          fullName: session.full_name,
+          avatar: session.avatar,
         },
-      },
-      include: {
-        user: { select: { id: true, fullName: true, avatar: true } },
-      },
-    });
-
-    const bestByUser = new Map<number, LeaderboardEntry>();
-    for (const session of sessions) {
-      const current: LeaderboardEntry = {
-        user: session.user,
         bestScore: session.score,
-        bestTimeSeconds: session.timeSpentSeconds,
-      };
-      const previous = bestByUser.get(session.userId);
-      if (!previous || this.isBetter(current, previous)) {
-        bestByUser.set(session.userId, current);
-      }
-    }
-
-    return [...bestByUser.values()]
-      .sort((left, right) => {
-        if (right.bestScore !== left.bestScore) {
-          return right.bestScore - left.bestScore;
-        }
-        return left.bestTimeSeconds - right.bestTimeSeconds;
-      })
-      .slice(0, limit)
+        bestTimeSeconds: session.time_spent_seconds,
+      }))
       .map((entry, index) => ({ rank: index + 1, ...entry }));
-  }
-
-  private isBetter(current: LeaderboardEntry, previous: LeaderboardEntry) {
-    return (
-      current.bestScore > previous.bestScore ||
-      (current.bestScore === previous.bestScore &&
-        current.bestTimeSeconds < previous.bestTimeSeconds)
-    );
   }
 
   private getStartOfWeek(): Date {

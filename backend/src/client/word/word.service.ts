@@ -210,11 +210,20 @@ export class WordService {
     };
   }
 
-  async find(userId: number, filters: any) {
+  async find(
+    userId: number,
+    filters: {
+      search?: string;
+      type?: string;
+      status?: string;
+      page?: number;
+      limit?: number;
+    },
+  ) {
     const { search, type, status, page, limit } = filters;
-    const pageNum = parseInt(page) || 1;
-    const limitNum = limit === 'all' ? undefined : parseInt(limit) || 20;
-    const skip = limitNum ? (pageNum - 1) * limitNum : undefined;
+    const pageNum = page || 1;
+    const limitNum = limit || 20;
+    const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.WordWhereInput = {
       ownerId: userId,
@@ -281,8 +290,8 @@ export class WordService {
       meta: {
         total,
         page: pageNum,
-        limit: limitNum || total,
-        totalPages: limitNum ? Math.ceil(total / limitNum) : 1,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
       },
     };
   }
@@ -420,59 +429,74 @@ export class WordService {
     return { success: true, count: 0 };
   }
 
-  async importBulk(userId: number, words: any[]) {
-    // Process in chunks to avoid overwhelming the database connection pool
-    const chunkSize = 50;
-    let importedCount = 0;
+  async importBulk(
+    userId: number,
+    words: Array<{
+      word: string;
+      meaningVi: string;
+      example?: string;
+      type?: string;
+    }>,
+  ) {
     const validTypes = await this.getValidTypes(userId);
 
-    for (let i = 0; i < words.length; i += chunkSize) {
-      const chunk = words.slice(i, i + chunkSize);
+    const uniqueWords = Array.from(
+      new Map(
+        words.map((item) => [
+          item.word.trim(),
+          { ...item, word: item.word.trim() },
+        ]),
+      ).values(),
+    );
+    const existing = await this.prisma.word.findMany({
+      where: {
+        ownerId: userId,
+        word: { in: uniqueWords.map(({ word }) => word) },
+      },
+      select: { word: true },
+    });
+    const existingWords = new Set(existing.map(({ word }) => word));
+    const pendingWords = uniqueWords.filter(
+      ({ word }) => !existingWords.has(word),
+    );
 
-      const chunkPromises = chunk.map(async (data) => {
-        const { word, meaningVi, example, type } = data;
+    if (pendingWords.length === 0) return { imported: 0 };
 
-        // Simple duplicate check by word for THIS user
-        const existing = await this.prisma.word.findFirst({
-          where: { word, ownerId: userId },
-        });
-        if (existing) return null;
+    const nextReview = BigInt(Date.now());
+    const importedWords = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.word.createManyAndReturn({
+        data: pendingWords.map(({ word, meaningVi, example, type }) => {
+          let normalizedType = (type || 'other').toLowerCase().trim();
+          if (normalizedType.includes('/') || normalizedType.includes(',')) {
+            normalizedType = normalizedType.split(/[/,]/)[0].trim();
+          }
+          if (!validTypes.includes(normalizedType)) normalizedType = 'other';
 
-        let normalizedType = (type || 'other').toLowerCase().trim();
-        if (normalizedType.includes('/') || normalizedType.includes(',')) {
-          normalizedType = normalizedType.split(/[/,]/)[0].trim();
-        }
-        if (!validTypes.includes(normalizedType)) normalizedType = 'other';
-
-        return this.prisma.$transaction(async (tx) => {
-          const nw = await tx.word.create({
-            data: {
-              word,
-              meaningVi,
-              example: example || '',
-              type: normalizedType,
-              ownerId: userId,
-            },
-          });
-
-          await tx.review.create({
-            data: {
-              wordId: nw.id,
-              nextReview: BigInt(Date.now()),
-              interval: 0,
-              easeFactor: 2.5,
-            },
-          });
-
-          return nw;
-        });
+          return {
+            word,
+            meaningVi,
+            example: example || '',
+            type: normalizedType,
+            ownerId: userId,
+          };
+        }),
+        skipDuplicates: true,
+        select: { id: true },
       });
 
-      const results = await Promise.all(chunkPromises);
-      importedCount += results.filter(Boolean).length;
-    }
+      await tx.review.createMany({
+        data: created.map(({ id }) => ({
+          wordId: id,
+          nextReview,
+          interval: 0,
+          easeFactor: 2.5,
+        })),
+      });
 
-    return { imported: importedCount };
+      return created;
+    });
+
+    return { imported: importedWords.length };
   }
 
   async getDashboardStats(userId: number) {

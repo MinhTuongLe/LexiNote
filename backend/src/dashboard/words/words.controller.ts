@@ -24,6 +24,7 @@ import { ExportWordsQueryDto } from './dto/export-words-query.dto';
 import { ImportWordsDto } from './dto/import-words.dto';
 import { TransferOwnershipDto } from './dto/transfer-ownership.dto';
 import { UpdateDashboardWordDto } from './dto/update-word.dto';
+import { WordListQueryDto } from './dto/word-list-query.dto';
 
 @ApiTags('Dashboard Words')
 @ApiBearerAuth()
@@ -100,19 +101,13 @@ export class DashboardWordsController {
 
   @Get()
   @ApiOperation({ summary: 'Get all glossary items' })
-  async getWords(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('type') type?: string,
-    @Query('ownerId') ownerId?: string,
-  ) {
+  async getWords(@Query() query: WordListQueryDto) {
     return this.wordsService.getAllWords(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-      search,
-      type,
-      ownerId ? parseInt(ownerId) : undefined,
+      query.page,
+      query.limit,
+      query.search,
+      query.type,
+      query.ownerId,
     );
   }
 

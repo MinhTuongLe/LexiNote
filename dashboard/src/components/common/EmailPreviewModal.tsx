@@ -30,7 +30,7 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
   defaultType = 'admin_reset',
   defaultRecipientName = 'Nguyễn Văn A',
   defaultRecipientEmail = 'user@example.com',
-  defaultCode = '123456',
+  defaultCode = '000000',
 }) => {
   const [templateType, setTemplateType] = useState<TemplateType>(defaultType);
   const [fullName, setFullName] = useState(defaultRecipientName);
@@ -43,7 +43,7 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
     if (isOpen) {
       setTemplateType(defaultType);
       setFullName(defaultRecipientName || 'Nguyễn Văn A');
-      setSampleCode(defaultCode || '123456');
+      setSampleCode(defaultCode || '000000');
     }
   }
 
@@ -52,7 +52,7 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
     {
       type: templateType,
       fullName: fullName.trim() || 'Nguyễn Văn A',
-      code: sampleCode.trim() || '123456',
+      code: sampleCode.trim() || '000000',
     },
     { skip: !isOpen }
   );

@@ -1,5 +1,6 @@
 export const translations: Record<string, Record<string, string>> = {
   vi: {
+    'error.auth.invalid_credentials': 'Email hoặc mật khẩu không chính xác! ❌',
     'error.auth.email_not_found': 'Email không tồn tại! 📧',
     'error.auth.wrong_password': 'Mật khẩu không chính xác! ❌',
     'error.auth.unverified_email': 'Vui lòng xác thực email để đăng nhập! 📧',
@@ -60,6 +61,7 @@ export const translations: Record<string, Record<string, string>> = {
       'Nếu tài khoản tồn tại, mã xác thực đã được tạo! 📬',
   },
   en: {
+    'error.auth.invalid_credentials': 'Invalid email or password! ❌',
     'error.auth.email_not_found': 'Email does not exist! 📧',
     'error.auth.wrong_password': 'Incorrect password! ❌',
     'error.auth.unverified_email': 'Please verify your email to login! 📧',

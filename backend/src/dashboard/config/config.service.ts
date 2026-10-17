@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { UpdateConfigDto } from './dto/update-config.dto';
 
 @Injectable()
 export class DashboardConfigService {
@@ -46,7 +47,7 @@ export class DashboardConfigService {
     };
   }
 
-  async updateConfig(data: Record<string, unknown>) {
+  async updateConfig(data: UpdateConfigDto) {
     const current = await this.getOrCreateConfig();
     const next = await (this.prisma as any).systemConfig.update({
       where: { id: current.id },

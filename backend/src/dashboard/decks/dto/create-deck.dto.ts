@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
 import {
   IsArray,
+  ArrayMaxSize,
   IsOptional,
   IsString,
   MaxLength,
@@ -56,6 +57,7 @@ export class CreateDeckDto {
   coverImage?: string;
 
   @IsArray()
+  @ArrayMaxSize(200)
   @ValidateNested({ each: true })
   @Type(() => CreateDeckWordDto)
   words!: CreateDeckWordDto[];

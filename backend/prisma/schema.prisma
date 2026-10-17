@@ -53,6 +53,7 @@ model User {
   gameSessions             GameSession[]
   createdDecks             Deck[]
 
+  @@index([createdAt])
   @@map("user")
 }
 
@@ -77,6 +78,7 @@ model Word {
 
   @@unique([word, ownerId])
   @@index([ownerId])
+  @@index([createdAt])
   @@map("word")
 }
 
@@ -97,6 +99,7 @@ model Deck {
 
   @@index([category])
   @@index([isCurated])
+  @@index([creatorId])
   @@map("deck")
 }
 
@@ -145,6 +148,7 @@ model Review {
   word           Word     @relation(fields: [wordId], references: [id])
 
   @@index([nextReview])
+  @@index([lastReviewed])
   @@map("review")
 }
 

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
+import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
 
 export interface CreateAuditLogDto {
   actorId?: number;
@@ -206,15 +208,19 @@ export class AuditService {
       });
     } else if (model === 'User') {
       const userData = rawData as unknown as ArchivedUserPayload;
+      const restoredPassword = await bcrypt.hash(
+        crypto.randomBytes(32).toString('base64url'),
+        10,
+      );
       await this.prisma.user.create({
         data: {
           email: userData.email,
-          password: userData.password || 'restored_password_placeholder',
+          password: restoredPassword,
           fullName: userData.fullName,
           avatar: userData.avatar,
           role: userData.role || 'MEMBER',
           isActive: userData.isActive ?? true,
-          isEmailVerified: userData.isEmailVerified ?? false,
+          isEmailVerified: false,
         },
       });
     }
