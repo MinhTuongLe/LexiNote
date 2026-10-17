@@ -12,6 +12,7 @@ import {
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { DashboardConfigService } from './dashboard/config/config.service';
 import compression from '@fastify/compress';
 import helmet from '@fastify/helmet';
 import { I18nExceptionFilter } from './common/filters/i18n-exception.filter';
@@ -46,9 +47,13 @@ async function bootstrap() {
     contentSecurityPolicy: false,
   });
 
-  const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-    : true;
+  const runtimeConfig = await app.get(DashboardConfigService).getSystemConfig();
+  const allowedOrigins =
+    runtimeConfig.security.corsEnabled && process.env.ALLOWED_ORIGINS
+      ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+      : runtimeConfig.security.corsEnabled
+        ? true
+        : false;
 
   app.enableCors({
     origin: allowedOrigins,

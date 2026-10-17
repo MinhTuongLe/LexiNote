@@ -10,7 +10,9 @@ export class RejectWordDto {
 }
 
 export class RequestEditDto {
-  @ApiProperty({ example: 'Please add an example sentence and correct the translation' })
+  @ApiProperty({
+    example: 'Please add an example sentence and correct the translation',
+  })
   @IsString()
   @IsNotEmpty()
   @MaxLength(500)

@@ -159,7 +159,7 @@ export const wordsApi = dashboardApi.injectEndpoints({
       }),
       invalidatesTags: ['Words', 'Stats'],
     }),
-    resetWordSrs: builder.mutation<{ success: boolean; message: string; review: any }, number>({
+    resetWordSrs: builder.mutation<{ success: boolean; message: string; review: unknown }, number>({
       query: (id) => ({
         url: `/words/${id}/reset-srs`,
         method: 'POST',
@@ -169,6 +169,9 @@ export const wordsApi = dashboardApi.injectEndpoints({
     getDistinctWordTypes: builder.query<string[], void>({
       query: () => '/words/types',
       providesTags: ['Words'],
+    }),
+    exportWords: builder.query<string, { search?: string; type?: string; ownerId?: number } | void>({
+      query: (params) => ({ url: '/words/export', params: params || undefined, responseHandler: 'text' }),
     }),
   }),
 });
@@ -188,5 +191,6 @@ export const {
   useBatchApproveWordsMutation,
   useResetWordSrsMutation,
   useGetDistinctWordTypesQuery,
+  useLazyExportWordsQuery,
 } = wordsApi;
 

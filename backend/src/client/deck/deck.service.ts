@@ -59,14 +59,20 @@ export class DeckService {
     };
   }
 
-  async importToLibrary(deckId: number, userId: number, selectedWords?: string[]) {
+  async importToLibrary(
+    deckId: number,
+    userId: number,
+    selectedWords?: string[],
+  ) {
     const deck = await (this.prisma as any).deck.findUnique({
       where: { id: deckId },
       include: { words: true },
     });
     if (!deck) throw new NotFoundException('Deck not found.');
 
-    const normalizedSelection = selectedWords?.map((word) => word.toLowerCase());
+    const normalizedSelection = selectedWords?.map((word) =>
+      word.toLowerCase(),
+    );
     const words = normalizedSelection?.length
       ? deck.words.filter((word: any) =>
           normalizedSelection.includes(word.word.toLowerCase()),
@@ -142,6 +148,58 @@ export class DeckService {
         words: deck.words,
       },
     };
+  }
+
+  async update(id: number, data: Partial<CreateDeckDto>) {
+    const existing = await (this.prisma as any).deck.findUnique({
+      where: { id },
+    });
+    if (!existing) throw new NotFoundException('Deck not found.');
+
+    const updated = await this.prisma.$transaction(async (tx) => {
+      if (data.words) {
+        await (tx as any).deckWord.deleteMany({ where: { deckId: id } });
+      }
+      return (tx as any).deck.update({
+        where: { id },
+        data: {
+          ...(data.title !== undefined ? { title: data.title.trim() } : {}),
+          ...(data.description !== undefined
+            ? { description: data.description?.trim() || null }
+            : {}),
+          ...(data.category !== undefined ? { category: data.category } : {}),
+          ...(data.level !== undefined ? { level: data.level } : {}),
+          ...(data.coverImage !== undefined
+            ? { coverImage: data.coverImage || null }
+            : {}),
+          ...(data.words
+            ? {
+                words: {
+                  create: data.words.map((word) => ({
+                    word: word.word.trim(),
+                    meaningVi: word.meaningVi.trim(),
+                    type: word.type || 'noun',
+                    phonetic: word.phonetic,
+                    example: word.example,
+                    audioUrl: word.audioUrl,
+                  })),
+                },
+              }
+            : {}),
+        },
+        include: { words: true },
+      });
+    });
+    return { success: true, data: updated };
+  }
+
+  async remove(id: number) {
+    const existing = await (this.prisma as any).deck.findUnique({
+      where: { id },
+    });
+    if (!existing) throw new NotFoundException('Deck not found.');
+    await (this.prisma as any).deck.delete({ where: { id } });
+    return { success: true, id };
   }
 
   private serializeSummary(deck: {

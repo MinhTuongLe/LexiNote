@@ -27,6 +27,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
 
   // Settings state from user profile or defaults
   const isSoundEnabled = settingsData?.preferences?.soundEnabled ?? true;
+  const monthlyGoalDays = settingsData?.learning?.monthlyGoalDays ?? 20;
   const currentLang = i18n?.language?.startsWith('vi') ? 'vi' : (i18n?.language || 'en');
 
   const handleLanguageChange = (lng: string) => {
@@ -34,7 +35,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
     handleSaveSetting('language', lng);
   };
 
-  const handleSaveSetting = async (key: string, value: string | boolean) => {
+  const handleSaveSetting = async (key: string, value: string | boolean | number | Record<string, number>) => {
     try {
       await updateSettings({ [key]: value }).unwrap();
     } catch (error: unknown) {
@@ -85,6 +86,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
                   />
                   <span className="slider"></span>
                 </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>Monthly study goal</span>
+                  <p>Number of active study days to target each month.</p>
+                </div>
+                <input
+                  type="number"
+                  min={1}
+                  max={31}
+                  value={monthlyGoalDays}
+                  onChange={(event) => handleSaveSetting('learning', { monthlyGoalDays: Number(event.target.value) })}
+                  className="settings-cute-select"
+                />
               </div>
 
               <div className="setting-item">

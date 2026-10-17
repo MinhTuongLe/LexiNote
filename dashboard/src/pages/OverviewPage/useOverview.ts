@@ -1,4 +1,5 @@
 import { useGetSummaryQuery, useGetChartDataQuery } from '@/store/api/analyticsApi';
+import type { ChartDataPoint } from '@/store/api/analyticsApi';
 import { 
   Users, 
   BookOpen, 
@@ -62,7 +63,7 @@ export function useOverview() {
 
   const formattedChartData = useMemo(() => {
     if (!chartData || !Array.isArray(chartData)) return [];
-    return chartData.map((point: any) => {
+    return chartData.map((point: ChartDataPoint) => {
       const parts = point.date ? point.date.split('-') : [];
       const fallbackName = parts.length === 3 ? `${parts[2]}/${parts[1]}` : (point.date || '');
       return {

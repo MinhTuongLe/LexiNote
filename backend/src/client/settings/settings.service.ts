@@ -34,6 +34,9 @@ export class SettingsService {
         rate: currentSettings.audio?.rate ?? 1,
         pitch: currentSettings.audio?.pitch ?? 1,
       },
+      learning: {
+        monthlyGoalDays: currentSettings.learning?.monthlyGoalDays ?? 20,
+      },
     };
   }
 
@@ -55,6 +58,14 @@ export class SettingsService {
             audio: {
               ...(currentSettings.audio || {}),
               ...settings.audio,
+            },
+          }
+        : {}),
+      ...(settings.learning
+        ? {
+            learning: {
+              ...(currentSettings.learning || {}),
+              ...settings.learning,
             },
           }
         : {}),

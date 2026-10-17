@@ -36,6 +36,15 @@ export class AudioSettingsDto {
   pitch?: number;
 }
 
+export class LearningSettingsDto {
+  @ApiPropertyOptional({ minimum: 1, maximum: 31 })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(31)
+  monthlyGoalDays?: number;
+}
+
 export class UpdateSettingsDto {
   @ApiPropertyOptional()
   @IsOptional()
@@ -71,4 +80,10 @@ export class UpdateSettingsDto {
   @ValidateNested()
   @Type(() => AudioSettingsDto)
   audio?: AudioSettingsDto;
+
+  @ApiPropertyOptional({ type: LearningSettingsDto })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => LearningSettingsDto)
+  learning?: LearningSettingsDto;
 }

@@ -50,6 +50,12 @@ export class AnalyticsController {
     return this.analyticsService.getServerHealth();
   }
 
+  @Get('clusters')
+  @ApiOperation({ summary: 'Get vocabulary clusters by lexical type' })
+  getClusters() {
+    return this.analyticsService.getWordClusters();
+  }
+
   @Get('export')
   @ApiOperation({ summary: 'Export analytics report' })
   async exportChart(

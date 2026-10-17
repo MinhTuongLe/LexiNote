@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { MailService } from '../../common/mail/mail.service';
@@ -217,11 +221,7 @@ export class ManagementService {
     };
   }
 
-  async resetUserSrs(
-    userId: number,
-    actorId?: number,
-    actorEmail?: string,
-  ) {
+  async resetUserSrs(userId: number, actorId?: number, actorEmail?: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { id: true },
@@ -490,7 +490,11 @@ export class ManagementService {
       action: 'USER_BAN',
       targetType: 'USER',
       targetId: String(id),
-      details: { reason: banReason, email: user.email, revokedSessionsCount: revoked.count },
+      details: {
+        reason: banReason,
+        email: user.email,
+        revokedSessionsCount: revoked.count,
+      },
     });
 
     await this.mailService.sendAccountStatusChangedNotification(

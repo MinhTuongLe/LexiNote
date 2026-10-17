@@ -13,10 +13,10 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { AuditTableSkeleton } from '@/components/ui/skeletons';
 import ReModal from '@/components/ui/ReModal';
-import { useGetAuditLogsQuery, useGetArchiveLogsQuery } from '@/store/api/auditApi';
+import { useGetAuditLogsQuery, useGetArchiveLogsQuery, useLazyExportArchiveLogsQuery, useLazyExportAuditLogsQuery } from '@/store/api/auditApi';
 import type { AuditLogItem, ArchiveRecordItem } from '@/store/api/auditApi';
 import { useToast } from '@/components/ui/Toast';
-import { exportToCSV } from '@/utils/export';
+import { downloadTextFile } from '@/utils/export';
 
 const AuditLogPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'audit' | 'archive'>('audit');
@@ -28,6 +28,8 @@ const AuditLogPage: React.FC = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
   const { toast } = useToast();
+  const [exportAuditLogs] = useLazyExportAuditLogsQuery();
+  const [exportArchiveLogs] = useLazyExportArchiveLogsQuery();
 
   const { data: auditData, isLoading: isAuditLoading, refetch: refetchAudit } = useGetAuditLogsQuery({
     page,
@@ -71,28 +73,27 @@ const AuditLogPage: React.FC = () => {
     return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20';
   };
 
-  const handleExportLogs = () => {
+  const handleExportLogs = async () => {
     if (activeTab === 'audit') {
-      const exportData = logs.map(l => ({
-        ID: l.id,
-        ActorEmail: l.actorEmail || l.actorId || 'System',
-        Action: l.action,
-        TargetType: l.targetType || 'N/A',
-        TargetID: l.targetId || 'N/A',
-        IPAddress: l.ipAddress || '127.0.0.1',
-        Timestamp: l.createdAt
-      }));
-      exportToCSV(exportData, 'lexinote_audit_logs');
-      toast({ type: 'success', title: 'Audit Logs Downloaded', message: `Exported ${exportData.length} log items to CSV.` });
+      try {
+        const csv = await exportAuditLogs({
+          search,
+          action: actionFilter,
+          targetType: targetFilter,
+        }).unwrap();
+        downloadTextFile(csv, 'lexinote_audit_logs');
+        toast({ type: 'success', title: 'Audit Logs Downloaded', message: 'Exported the filtered audit logs to CSV.' });
+      } catch {
+        toast({ type: 'error', title: 'Export Failed', message: 'Unable to export audit logs.' });
+      }
     } else {
-      const exportData = archives.map(a => ({
-        ID: a.id,
-        FromModel: a.fromModel,
-        OriginalRecordID: a.originalRecordId || 'N/A',
-        Timestamp: a.createdAt
-      }));
-      exportToCSV(exportData, 'lexinote_archive_logs');
-      toast({ type: 'success', title: 'Archive Logs Downloaded', message: `Exported ${exportData.length} archive items to CSV.` });
+      try {
+        const csv = await exportArchiveLogs().unwrap();
+        downloadTextFile(csv, 'lexinote_archive_logs');
+        toast({ type: 'success', title: 'Archive Logs Downloaded', message: 'Exported all archived records to CSV.' });
+      } catch {
+        toast({ type: 'error', title: 'Export Failed', message: 'Unable to export archived records.' });
+      }
     }
   };
 

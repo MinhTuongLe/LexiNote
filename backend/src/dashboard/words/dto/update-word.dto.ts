@@ -25,7 +25,9 @@ export class UpdateDashboardWordDto {
   @MaxLength(100)
   phonetic?: string;
 
-  @ApiPropertyOptional({ example: 'https://cdn.example.com/audio/serendipity.mp3' })
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/audio/serendipity.mp3',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(2048)

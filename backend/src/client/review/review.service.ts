@@ -174,6 +174,10 @@ export class ReviewService {
 
     const streak = await this.getStreak(userId);
     const weeklyActivity = await this.getActivityData(userId, year, month);
+    const user = await this.prisma.user?.findUnique({
+      where: { id: userId },
+      select: { settings: true },
+    });
 
     let masteredCount = 0;
     let learningCount = 0;
@@ -226,6 +230,59 @@ export class ReviewService {
     const averageEaseFactor =
       totalReviewed > 0 ? totalEaseFactorReviewed / totalReviewed : 0;
 
+    const now = Date.now();
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const currentPeriod = reviews.filter(
+      (review) =>
+        review.lastReviewed !== null &&
+        Number(review.lastReviewed) >= now - weekMs,
+    );
+    const previousPeriod = reviews.filter(
+      (review) =>
+        review.lastReviewed !== null &&
+        Number(review.lastReviewed) >= now - weekMs * 2 &&
+        Number(review.lastReviewed) < now - weekMs,
+    );
+    const periodAccuracy = (period: typeof reviews): number | null => {
+      const correct = period.reduce(
+        (sum, review) => sum + review.correctCount,
+        0,
+      );
+      const wrong = period.reduce((sum, review) => sum + review.wrongCount, 0);
+      return correct + wrong > 0
+        ? Math.round((correct / (correct + wrong)) * 100)
+        : null;
+    };
+    const currentAccuracy = periodAccuracy(currentPeriod);
+    const previousAccuracy = periodAccuracy(previousPeriod);
+    const nextMilestone =
+      [80, 90, 95, 100].find((milestone) => milestone > accuracy) || 100;
+    const settings =
+      user?.settings && typeof user.settings === 'object'
+        ? (user.settings as Record<string, unknown>)
+        : {};
+    const learningSettings =
+      settings.learning && typeof settings.learning === 'object'
+        ? (settings.learning as Record<string, unknown>)
+        : {};
+    const monthlyGoalDays =
+      typeof learningSettings.monthlyGoalDays === 'number'
+        ? Math.max(
+            1,
+            Math.min(31, Math.floor(learningSettings.monthlyGoalDays)),
+          )
+        : 20;
+    const accuracyByDay = weeklyActivity.map((activity) => {
+      const dayReviews = reviews.filter((review) => {
+        if (review.lastReviewed === null) return false;
+        return (
+          new Date(Number(review.lastReviewed)).toISOString().slice(0, 10) ===
+          activity.date
+        );
+      });
+      return { date: activity.date, accuracy: periodAccuracy(dayReviews) ?? 0 };
+    });
+
     const totalTimeSpentMinutes = Math.round(
       ((totalCorrect + totalWrong) * 5) / 60,
     );
@@ -243,13 +300,31 @@ export class ReviewService {
     return {
       streak,
       weeklyActivity,
+      totalWords: await this.prisma.word.count({ where: { ownerId: userId } }),
       totalReviewed,
       masteredCount,
       learningCount,
       newCount,
+      masteryBreakdown: {
+        mastered: masteredCount,
+        learning: learningCount,
+        new: newCount,
+      },
       typesBreakdown: Array.from(typesMap.values()),
       averageEaseFactor,
       accuracy,
+      accuracyChange:
+        currentAccuracy !== null && previousAccuracy !== null
+          ? currentAccuracy - previousAccuracy
+          : null,
+      previousAccuracy,
+      accuracyByDay,
+      nextMilestone,
+      monthlyGoalDays,
+      monthlyStudiedDays: weeklyActivity.filter(
+        (activity) => activity.count > 0,
+      ).length,
+      peerlessEligible: accuracy >= 95 && masteredCount >= 20,
       totalTimeSpentMinutes,
       weakestWords,
       totalSessions: Math.ceil((totalCorrect + totalWrong) / 7),

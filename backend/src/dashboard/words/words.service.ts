@@ -85,11 +85,7 @@ export class DashboardWordsService {
     };
   }
 
-  async resetWordSrs(
-    wordId: number,
-    actorId?: number,
-    actorEmail?: string,
-  ) {
+  async resetWordSrs(wordId: number, actorId?: number, actorEmail?: string) {
     const word = await this.prisma.word.findUnique({
       where: { id: wordId },
       select: { id: true, word: true },
@@ -154,8 +150,7 @@ export class DashboardWordsService {
 
     return Array.from(
       new Set(types.map(({ type }) => type.trim()).filter(Boolean)),
-    )
-      .sort((first, second) => first.localeCompare(second));
+    ).sort((first, second) => first.localeCompare(second));
   }
 
   async importWords(ownerId: number, dto: ImportWordsDto) {

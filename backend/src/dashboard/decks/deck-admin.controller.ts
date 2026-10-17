@@ -5,6 +5,8 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Patch,
+  Delete,
   Query,
   Request,
   UseGuards,
@@ -18,6 +20,7 @@ import { DeckService } from '../../client/deck/deck.service';
 import { CreateDeckDto } from './dto/create-deck.dto';
 import { DeckQueryDto } from '../../client/deck/dto/deck-query.dto';
 import { ImportDeckDto } from '../../client/deck/dto/import-deck.dto';
+import { UpdateDeckDto } from './dto/update-deck.dto';
 
 @ApiTags('Dashboard Decks')
 @Controller('decks')
@@ -36,8 +39,28 @@ export class DeckAdminController {
     return this.deckService.create(body, request.user.userId);
   }
 
+  @Patch(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Update a curated vocabulary deck' })
+  update(@Param('id', ParseIntPipe) id: number, @Body() body: UpdateDeckDto) {
+    return this.deckService.update(id, body);
+  }
+
+  @Delete(':id')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Delete a curated vocabulary deck' })
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.deckService.remove(id);
+  }
+
   @Get('curated')
-  @ApiOperation({ summary: 'List curated vocabulary decks (backward compatibility & admin)' })
+  @ApiOperation({
+    summary: 'List curated vocabulary decks (backward compatibility & admin)',
+  })
   listCurated(@Query() query: DeckQueryDto) {
     return this.deckService.listCurated(query.category, query.search);
   }
@@ -57,7 +80,10 @@ export class DeckAdminController {
     @Body() body: ImportDeckDto,
     @Request() request: { user: { userId: number } },
   ) {
-    return this.deckService.importToLibrary(id, request.user.userId, body.words);
+    return this.deckService.importToLibrary(
+      id,
+      request.user.userId,
+      body.words,
+    );
   }
 }
-

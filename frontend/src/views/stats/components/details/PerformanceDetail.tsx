@@ -12,6 +12,8 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
   const accuracy = stats.accuracy || 0;
   const ease = stats.averageEaseFactor || 0;
   const totalSessions = stats.totalSessions || 0; 
+  const accuracyChange = stats.accuracyChange;
+  const nextMilestone = stats.nextMilestone || 100;
   
   let feedback = t('stats.performance_feedback_keep_going');
   if (accuracy > 90) feedback = t('stats.performance_feedback_great');
@@ -35,16 +37,20 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
             <div className="gauge-info">
                 <div className="accuracy-label-row">
                    <h4>{t('stats.accuracy_score')}</h4>
-                   {totalSessions > 0 && <span className="comparison-badge pos">+0% {t('stats.vs_last_week')}</span>}
+                   {accuracyChange !== null && accuracyChange !== undefined && (
+                     <span className={`comparison-badge ${accuracyChange >= 0 ? 'pos' : 'neg'}`}>
+                       {accuracyChange >= 0 ? '+' : ''}{accuracyChange}% {t('stats.vs_last_week')}
+                     </span>
+                   )}
                 </div>
                <p>{t('stats.accuracy_desc')}</p>
                
                <div className="accuracy-trend-mini">
-                  {stats.weeklyActivity.map((d, i: number) => (
-                     <div key={i} className="trend-bar-wrapper">
+                  {(stats.accuracyByDay || stats.weeklyActivity.map((day) => ({ date: day.date, accuracy: day.count > 0 ? accuracy : 0 }))).map((day) => (
+                     <div key={day.date} className="trend-bar-wrapper">
                         <div 
                            className="trend-bar" 
-                           style={{ height: `${(d.count > 0 ? accuracy - (i % 3) : 0)}%` }}
+                           style={{ height: `${Math.max(0, Math.min(100, day.accuracy))}%` }}
                         ></div>
                      </div>
                   ))}
@@ -57,7 +63,7 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
                <div className="quote-icon">✨</div>
                <p>{feedback}</p>
                <div className="next-goal">
-                  <span>{t('stats.next_milestone')}: <strong>95%</strong></span>
+                  <span>{t('stats.next_milestone')}: <strong>{nextMilestone}%</strong></span>
                </div>
             </div>
          </Card>
@@ -78,8 +84,8 @@ const PerformanceDetail: React.FC<PerformanceDetailProps> = ({ stats }) => {
                   <span>{t('stats.easy')}</span>
                </div>
                <div className="meter-track">
-                  <div className="meter-fill" style={{ width: `${(ease / 5) * 100}%` }}></div>
-                  <div className="meter-pointer" style={{ left: `${(ease / 5) * 100}%` }}></div>
+                  <div className="meter-fill" style={{ width: `${Math.min(100, Math.max(0, (ease / 5) * 100))}%` }}></div>
+                  <div className="meter-pointer" style={{ left: `${Math.min(100, Math.max(0, (ease / 5) * 100))}%` }}></div>
                </div>
             </div>
          </Card>

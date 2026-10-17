@@ -16,7 +16,7 @@ export function useWords() {
   const [searchParams, setSearchParams] = useSearchParams();
   const ownerIdParam = searchParams.get('ownerId') ? Number(searchParams.get('ownerId')) : undefined;
 
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => searchParams.get('search') || '');
   const [page, setPage] = useState(1);
   const [filter, setFilter] = useState('all');
 

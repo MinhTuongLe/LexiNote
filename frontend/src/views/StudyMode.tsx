@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useSound } from '../hooks/useSound';
 import { speakText } from '../utils/speech';
 import './StudyMode.css';
+import { createQuizChoices } from './studyModeUtils';
 
 interface StudyModeProps {
   onComplete: () => void;
@@ -58,14 +59,18 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
     }
   }, [currentIndex, word, autoSpeak, isFinished, studyMode]);
 
-  // Reset interactive states on index change
-  useEffect(() => {
+  const resetInteractiveState = useCallback(() => {
     setSelectedOption(null);
     setIsQuizAnswered(false);
     setWritingInput('');
     setWritingFeedback('idle');
     setIsFlipped(false);
-  }, [currentIndex, studyMode]);
+  }, []);
+
+  const handleModeChange = useCallback((mode: StudyModeType) => {
+    resetInteractiveState();
+    setStudyMode(mode);
+  }, [resetInteractiveState]);
 
   // Generate 4 randomized choices for Quiz and Listening modes
   const quizChoices = useMemo(() => {
@@ -86,11 +91,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
       'Thích nghi nhanh chóng'
     ];
     
-    const pool = Array.from(new Set([...otherMeanings, ...fallbackFillers]));
-    const shuffledPool = pool.sort(() => 0.5 - Math.random());
-    const distractors = shuffledPool.slice(0, 3);
-    
-    return [correct, ...distractors].sort(() => 0.5 - Math.random());
+    return createQuizChoices(correct, otherMeanings, fallbackFillers, word.id);
   }, [word, dueReviews]);
 
   const handleRate = useCallback(async (quality: 1 | 3 | 5) => {
@@ -113,7 +114,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
       await updateSRS({ reviewId: currentReview.id, quality }).unwrap();
       
       if (currentIndex < dueReviews.length - 1) {
-        setIsFlipped(false);
+        resetInteractiveState();
         setTimeout(() => setCurrentIndex(prev => prev + 1), 350);
       } else {
         setIsFinished(true);
@@ -122,7 +123,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
       console.error(err);
       showAlert(t('common.error'), t('study.update_progress_error'), 'error');
     }
-  }, [word, currentReview, playSound, updateSRS, currentIndex, dueReviews.length, showAlert, t]);
+  }, [word, currentReview, playSound, updateSRS, currentIndex, dueReviews.length, showAlert, t, resetInteractiveState]);
 
   const handleQuizSelect = (choice: string) => {
     if (isQuizAnswered || !word) return;
@@ -233,25 +234,25 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
       <div className="study-mode-selector">
         <button 
           className={`mode-btn ${studyMode === 'flashcard' ? 'active' : ''}`}
-          onClick={() => setStudyMode('flashcard')}
+          onClick={() => handleModeChange('flashcard')}
         >
           🎴 Thẻ Flashcard
         </button>
         <button 
           className={`mode-btn ${studyMode === 'quiz' ? 'active' : ''}`}
-          onClick={() => setStudyMode('quiz')}
+          onClick={() => handleModeChange('quiz')}
         >
           🎯 Trắc nghiệm
         </button>
         <button 
           className={`mode-btn ${studyMode === 'writing' ? 'active' : ''}`}
-          onClick={() => setStudyMode('writing')}
+          onClick={() => handleModeChange('writing')}
         >
           ✍️ Gõ từ
         </button>
         <button 
           className={`mode-btn ${studyMode === 'listening' ? 'active' : ''}`}
-          onClick={() => setStudyMode('listening')}
+          onClick={() => handleModeChange('listening')}
         >
           🎧 Luyện nghe
         </button>

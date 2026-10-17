@@ -113,7 +113,7 @@ export class AuditService {
     };
   }
 
-  async exportAuditLogs(search?: string, action?: string) {
+  async exportAuditLogs(search?: string, action?: string, targetType?: string) {
     const where: Prisma.AuditLogWhereInput = {};
     if (search) {
       where.OR = [
@@ -123,6 +123,7 @@ export class AuditService {
       ];
     }
     if (action && action !== 'ALL') where.action = action;
+    if (targetType && targetType !== 'ALL') where.targetType = targetType;
 
     const logs = await this.prisma.auditLog.findMany({
       where,
@@ -141,6 +142,20 @@ export class AuditService {
       createdAt: log.createdAt
         ? new Date(Number(log.createdAt)).toISOString()
         : null,
+    }));
+  }
+
+  async exportArchiveLogs() {
+    const archives = await this.prisma.archive.findMany({
+      orderBy: { id: 'desc' },
+    });
+
+    return archives.map((archive) => ({
+      id: archive.id,
+      fromModel: archive.fromModel,
+      originalRecordId: archive.originalRecordId,
+      originalRecord: archive.originalRecord,
+      createdAt: archive.createdAt ? archive.createdAt.toString() : null,
     }));
   }
 

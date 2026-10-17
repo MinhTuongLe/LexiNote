@@ -41,6 +41,10 @@ export class DeckController {
     @Body() body: ImportDeckDto,
     @Request() request: { user: { userId: number } },
   ) {
-    return this.deckService.importToLibrary(id, request.user.userId, body.words);
+    return this.deckService.importToLibrary(
+      id,
+      request.user.userId,
+      body.words,
+    );
   }
 }

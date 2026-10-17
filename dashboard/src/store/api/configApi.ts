@@ -8,6 +8,8 @@ export interface SystemConfig {
     isRegistrationOpen: boolean;
     rateLimit: number;
     corsEnabled: boolean;
+    autoBackup: boolean;
+    debugMode: boolean;
   };
   environment?: {
     platform?: string;
@@ -18,6 +20,11 @@ export interface SystemConfig {
     cors?: string[];
     rateLimit?: number;
     [key: string]: unknown;
+  };
+  database?: {
+    status: string;
+    activeConnections: number;
+    sizeMb: number;
   };
   [key: string]: unknown;
 }

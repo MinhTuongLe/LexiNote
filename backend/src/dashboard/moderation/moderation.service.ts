@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ModerationStatus, Prisma } from '@prisma/client';
 import { MailService } from '../../common/mail/mail.service';
 import { PrismaService } from '../../prisma/prisma.service';

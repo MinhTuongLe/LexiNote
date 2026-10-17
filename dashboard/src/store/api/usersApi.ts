@@ -178,6 +178,9 @@ export const usersApi = dashboardApi.injectEndpoints({
         params,
       }),
     }),
+    exportUsers: builder.query<string, { search?: string; isActive?: boolean } | void>({
+      query: (params) => ({ url: '/management/users/export', params: params || undefined, responseHandler: 'text' }),
+    }),
   }),
 });
 
@@ -199,4 +202,5 @@ export const {
   useResetUserSrsMutation,
   useGetMailPreviewQuery,
   useLazyGetMailPreviewQuery,
+  useLazyExportUsersQuery,
 } = usersApi;

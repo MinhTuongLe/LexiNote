@@ -147,7 +147,7 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack, detail }) => {
           />
         </div>
 
-        <AchievementsSection stats={stats} mounted={mounted} />
+        <AchievementsSection mounted={mounted} />
         <LeaderboardSection mounted={mounted} />
       </div>
     </div>

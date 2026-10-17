@@ -36,7 +36,7 @@ export interface DashboardUserItem {
 }
 
 export function useUsers() {
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => new URLSearchParams(window.location.search).get('search') || '');
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
 

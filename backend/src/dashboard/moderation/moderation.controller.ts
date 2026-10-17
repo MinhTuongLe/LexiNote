@@ -46,10 +46,7 @@ export class ModerationController {
 
   @Post(':id/reject')
   @ApiOperation({ summary: 'Reject a moderated word' })
-  reject(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() body: RejectWordDto,
-  ) {
+  reject(@Param('id', ParseIntPipe) id: number, @Body() body: RejectWordDto) {
     return this.moderationService.reject(id, body.reason);
   }
 

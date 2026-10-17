@@ -28,7 +28,8 @@ import WordRelationModal from './WordRelationModal';
 import WordImportModal from './WordImportModal';
 import TransferOwnershipModal from './TransferOwnershipModal';
 import type { Word } from '@/store/api/wordsApi';
-import { exportToCSV } from '@/utils/export';
+import { useLazyExportWordsQuery } from '@/store/api/wordsApi';
+import { downloadTextFile } from '@/utils/export';
 
 const WordLibraryPage: React.FC = () => {
   const {
@@ -55,6 +56,7 @@ const WordLibraryPage: React.FC = () => {
   } = useWords();
 
   const { toast } = useToast();
+  const [exportWords] = useLazyExportWordsQuery();
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRelationModalOpen, setIsRelationModalOpen] = useState(false);
@@ -189,21 +191,14 @@ const WordLibraryPage: React.FC = () => {
     }
   };
 
-  const handleExportWords = () => {
-    const exportData = words.map((w: Word) => ({
-      ID: w.id,
-      Word: w.word,
-      Meaning: w.meaningVi,
-      Type: w.type,
-      Phonetic: w.phonetic || 'N/A',
-      AudioUrl: w.audioUrl || 'N/A',
-      Example: w.example || 'N/A',
-      OwnerID: w.ownerId,
-      OwnerName: w.owner?.fullName || 'N/A',
-      CreatedAt: w.createdAt
-    }));
-    exportToCSV(exportData, 'lexinote_word_library');
-    toast.success('Export Successful', `Exported ${exportData.length} words to CSV.`);
+  const handleExportWords = async () => {
+    try {
+      const csv = await exportWords({ search, type: type === 'all' ? undefined : type, ownerId }).unwrap();
+      downloadTextFile(csv, 'lexinote_word_library');
+      toast.success('Export Successful', 'Downloaded the filtered word library CSV.');
+    } catch {
+      toast.error('Export Failed', 'Could not download the word library.');
+    }
   };
 
   return (
