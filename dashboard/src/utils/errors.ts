@@ -1,5 +1,6 @@
 const errorTranslations: Record<string, Record<string, string>> = {
   vi: {
+    'error.auth.invalid_credentials': 'Email hoặc mật khẩu không chính xác! ❌',
     'error.auth.not_admin_access': 'Bạn không có quyền truy cập vào bảng quản trị! 🚫',
     'error.auth.email_not_found': 'Email không tồn tại trong hệ thống! 📧',
     'error.auth.wrong_password': 'Mật khẩu không chính xác! ❌',
@@ -14,6 +15,7 @@ const errorTranslations: Record<string, Record<string, string>> = {
     'error.word.not_found': 'Không tìm thấy từ vựng trong kho dữ liệu!',
   },
   en: {
+    'error.auth.invalid_credentials': 'Invalid email or password! ❌',
     'error.auth.not_admin_access': 'Access denied. Administrator privileges required! 🚫',
     'error.auth.email_not_found': 'Email does not exist! 📧',
     'error.auth.wrong_password': 'Incorrect password! ❌',

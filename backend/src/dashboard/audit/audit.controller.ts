@@ -18,6 +18,10 @@ import { Role } from '@prisma/client';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { toCsv } from '../../common/export/csv.util';
 import { ExportAuditQueryDto } from './dto/export-audit-query.dto';
+import {
+  AuditListQueryDto,
+  ArchiveListQueryDto,
+} from './dto/audit-list-query.dto';
 
 @ApiTags('Dashboard Audit')
 @ApiBearerAuth()
@@ -76,32 +80,20 @@ export class AuditController {
 
   @Get('logs')
   @ApiOperation({ summary: 'Get system audit trail logs' })
-  async getAuditLogs(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('action') action?: string,
-    @Query('targetType') targetType?: string,
-  ) {
+  async getAuditLogs(@Query() query: AuditListQueryDto) {
     return this.auditService.getAuditLogs(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-      search,
-      action,
-      targetType,
+      query.page,
+      query.limit,
+      query.search,
+      query.action,
+      query.targetType,
     );
   }
 
   @Get('archives')
   @ApiOperation({ summary: 'Get archived database records' })
-  async getArchiveLogs(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    return this.auditService.getArchiveLogs(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 20,
-    );
+  async getArchiveLogs(@Query() query: ArchiveListQueryDto) {
+    return this.auditService.getArchiveLogs(query.page, query.limit);
   }
 
   @Post('archives/:id/restore')

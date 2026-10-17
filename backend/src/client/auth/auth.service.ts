@@ -29,12 +29,12 @@ export class AuthService {
       email.toLowerCase().trim(),
     );
     if (!user) {
-      throw new UnauthorizedException('error.auth.email_not_found');
+      throw new UnauthorizedException('error.auth.invalid_credentials');
     }
 
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('error.auth.wrong_password');
+      throw new UnauthorizedException('error.auth.invalid_credentials');
     }
 
     if (user.status !== 'active') {
@@ -137,10 +137,6 @@ export class AuthService {
       emailVerificationExpires: verificationExpires,
     });
 
-    console.info(
-      `👤 New user registered: ${newUser.email} (Verification code: ${verificationCode}).`,
-    );
-
     // Send verification email via MailService
     await this.mailService.sendAccountVerificationCode(
       newUser.email,
@@ -241,7 +237,7 @@ export class AuthService {
     if (user.isEmailVerified)
       throw new BadRequestException('error.auth.already_verified');
 
-    const masterCode = this.configService.get('MASTER_VERIFY_CODE');
+    const masterCode = this.getDevelopmentMasterCode();
     const isMasterCode = masterCode && token === masterCode;
 
     if (!isMasterCode) {
@@ -324,13 +320,6 @@ export class AuthService {
       resetPasswordExpires: BigInt(resetExpires),
     });
 
-    const masterCode = this.configService.get('MASTER_VERIFY_CODE');
-    if (masterCode) {
-      console.info(
-        `🔑 [MASTER_CODE] Forgot password requested for ${user.email}. Use MASTER_VERIFY_CODE or emailed code to reset.`,
-      );
-    }
-
     await this.mailService.sendForgotPasswordCode(
       user.email,
       user.fullName,
@@ -372,7 +361,7 @@ export class AuthService {
       throw new BadRequestException('error.auth.reset_expired');
     }
 
-    const masterCode = this.configService.get('MASTER_VERIFY_CODE');
+    const masterCode = this.getDevelopmentMasterCode();
     const isMasterCode = masterCode && resetToken === masterCode;
 
     if (!isMasterCode) {
@@ -489,7 +478,9 @@ export class AuthService {
       try {
         const decoded: any = this.jwtService.decode(currentToken);
         if (decoded?.sid) {
-          await this.prisma.refreshToken.delete({ where: { id: decoded.sid } });
+          await this.prisma.refreshToken.deleteMany({
+            where: { id: decoded.sid, userId },
+          });
         }
       } catch {
         // Just clear all if decode fails
@@ -507,6 +498,13 @@ export class AuthService {
       { id: userId, sid: sessionId, type: 'refresh' },
       { expiresIn: '7d' },
     );
+  }
+
+  private getDevelopmentMasterCode(): string | undefined {
+    const environment =
+      this.configService.get<string>('NODE_ENV') || 'production';
+    if (environment === 'production') return undefined;
+    return this.configService.get<string>('MASTER_VERIFY_CODE');
   }
 
   private sanitizeUser(user: any) {

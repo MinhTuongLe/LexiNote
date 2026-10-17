@@ -22,6 +22,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { toCsv } from '../../common/export/csv.util';
 import { ExportUsersQueryDto } from './dto/export-users-query.dto';
 import { BanUserDto } from './dto/ban-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { UserListQueryDto } from './dto/user-list-query.dto';
 
 @ApiTags('Dashboard Management')
 @ApiBearerAuth()
@@ -33,17 +37,12 @@ export class ManagementController {
 
   @Get('users')
   @ApiOperation({ summary: 'Get all users with pagination and search' })
-  async getUsers(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-    @Query('search') search?: string,
-    @Query('isActive') isActive?: string,
-  ) {
+  async getUsers(@Query() query: UserListQueryDto) {
     return this.managementService.getAllUsers(
-      page ? parseInt(page) : 1,
-      limit ? parseInt(limit) : 10,
-      search,
-      isActive !== undefined ? isActive === 'true' : undefined,
+      query.page,
+      query.limit,
+      query.search,
+      query.isActive,
     );
   }
 
@@ -80,15 +79,7 @@ export class ManagementController {
 
   @Post('users')
   @ApiOperation({ summary: 'Create new user' })
-  async createUser(
-    @Body()
-    body: {
-      fullName: string;
-      email: string;
-      password?: string;
-      role?: Role;
-    },
-  ) {
+  async createUser(@Body() body: CreateUserDto) {
     return this.managementService.createUser(body);
   }
 
@@ -119,8 +110,7 @@ export class ManagementController {
 
   @Post('users/:id/reset-password')
   @ApiOperation({
-    summary:
-      'Reset user password to default (123456) and revoke active sessions',
+    summary: 'Generate a temporary user password and revoke active sessions',
   })
   async resetPassword(@Param('id', ParseIntPipe) id: number) {
     return this.managementService.resetPassword(id);
@@ -144,13 +134,7 @@ export class ManagementController {
   @ApiOperation({ summary: 'Update user data' })
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
-    @Body()
-    body: {
-      fullName?: string;
-      email?: string;
-      role?: Role;
-      isActive?: boolean;
-    },
+    @Body() body: UpdateUserDto,
   ) {
     return this.managementService.update(id, body);
   }
@@ -195,7 +179,7 @@ export class ManagementController {
   @ApiOperation({ summary: 'Update user role (ADMIN or MEMBER)' })
   async updateUserRole(
     @Param('id', ParseIntPipe) id: number,
-    @Body() body: { role: Role },
+    @Body() body: UpdateUserRoleDto,
   ) {
     return this.managementService.updateUserRole(id, body.role);
   }

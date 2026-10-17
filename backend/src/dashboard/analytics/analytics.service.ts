@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsRange } from './dto/analytics-query.dto';
 import { formatPercentageChange } from './analytics.utils';
-import { buildWordClusters } from './cluster.utils';
+import { buildWordClustersFromCounts } from './cluster.utils';
 
 @Injectable()
 export class AnalyticsService {
@@ -113,33 +113,52 @@ export class AnalyticsService {
   ) {
     const window = this.resolveDateWindow(range, startDate, endDate);
     const [newWords, reviews, newUsers] = await Promise.all([
-      this.prisma.word.findMany({
-        where: {
-          createdAt: { gte: window.startMs, lt: window.endMs },
-        },
-        select: { createdAt: true },
-      }),
-      this.prisma.review.findMany({
-        where: {
-          lastReviewed: { gte: window.startMs, lt: window.endMs },
-        },
-        select: {
-          lastReviewed: true,
-          correctCount: true,
-          wrongCount: true,
-          word: { select: { ownerId: true } },
-        },
-      }),
-      this.prisma.user.findMany({
-        where: { createdAt: { gte: window.startMs, lt: window.endMs } },
-        select: { createdAt: true },
-      }),
+      this.prisma.$queryRaw<Array<{ day: string; count: number }>>`
+        SELECT
+          to_char(
+            to_timestamp("createdAt"::double precision / 1000) AT TIME ZONE 'UTC',
+            'YYYY-MM-DD'
+          ) AS day,
+          COUNT(*)::int AS count
+        FROM "word"
+        WHERE "createdAt" >= ${window.startMs}
+          AND "createdAt" < ${window.endMs}
+        GROUP BY 1
+      `,
+      this.prisma.$queryRaw<
+        Array<{ day: string; active_users: number; reviews_count: number }>
+      >`
+        SELECT
+          to_char(
+            to_timestamp(r."last_reviewed"::double precision / 1000) AT TIME ZONE 'UTC',
+            'YYYY-MM-DD'
+          ) AS day,
+          COUNT(DISTINCT w."owner")::int AS active_users,
+          COALESCE(SUM(r."correct_count" + r."wrong_count"), 0)::int AS reviews_count
+        FROM "review" r
+        INNER JOIN "word" w ON w.id = r."word"
+        WHERE r."last_reviewed" >= ${window.startMs}
+          AND r."last_reviewed" < ${window.endMs}
+        GROUP BY 1
+      `,
+      this.prisma.$queryRaw<Array<{ day: string; count: number }>>`
+        SELECT
+          to_char(
+            to_timestamp("createdAt"::double precision / 1000) AT TIME ZONE 'UTC',
+            'YYYY-MM-DD'
+          ) AS day,
+          COUNT(*)::int AS count
+        FROM "user"
+        WHERE "createdAt" >= ${window.startMs}
+          AND "createdAt" < ${window.endMs}
+        GROUP BY 1
+      `,
     ]);
 
     const points = new Map<
       string,
       {
-        activeUsers: Set<number>;
+        activeUsers: number;
         newUsers: number;
         newWords: number;
         reviewsCount: number;
@@ -147,7 +166,7 @@ export class AnalyticsService {
     >();
     for (const date of window.dates) {
       points.set(this.toDateKey(date), {
-        activeUsers: new Set<number>(),
+        activeUsers: 0,
         newUsers: 0,
         newWords: 0,
         reviewsCount: 0,
@@ -155,27 +174,20 @@ export class AnalyticsService {
     }
 
     for (const word of newWords) {
-      const point = points.get(
-        this.toDateKey(new Date(Number(word.createdAt))),
-      );
-      if (point) point.newWords += 1;
+      const point = points.get(word.day);
+      if (point) point.newWords += word.count;
     }
 
     for (const user of newUsers) {
-      const point = points.get(
-        this.toDateKey(new Date(Number(user.createdAt))),
-      );
-      if (point) point.newUsers += 1;
+      const point = points.get(user.day);
+      if (point) point.newUsers += user.count;
     }
 
     for (const review of reviews) {
-      if (review.lastReviewed === null) continue;
-      const point = points.get(
-        this.toDateKey(new Date(Number(review.lastReviewed))),
-      );
+      const point = points.get(review.day);
       if (!point) continue;
-      point.activeUsers.add(review.word.ownerId);
-      point.reviewsCount += review.correctCount + review.wrongCount;
+      point.activeUsers = review.active_users;
+      point.reviewsCount = review.reviews_count;
     }
 
     return window.dates.map((date) => {
@@ -187,7 +199,7 @@ export class AnalyticsService {
         name: key.slice(5).replace('-', '/'),
         words: newWordsCount,
         newWords: newWordsCount,
-        activeUsers: point?.activeUsers.size || 0,
+        activeUsers: point?.activeUsers || 0,
         newUsers: point?.newUsers || 0,
         reviewsCount: point?.reviewsCount || 0,
       };
@@ -221,8 +233,16 @@ export class AnalyticsService {
   }
 
   async getWordClusters() {
-    const words = await this.prisma.word.findMany({ select: { type: true } });
-    return buildWordClusters(words);
+    const groupedWords = await this.prisma.word.groupBy({
+      by: ['type'],
+      _count: { _all: true },
+    });
+    return buildWordClustersFromCounts(
+      groupedWords.map(({ type, _count }) => ({
+        type,
+        count: _count._all,
+      })),
+    );
   }
 
   private toMb(bytes: number) {
@@ -257,6 +277,9 @@ export class AnalyticsService {
       end = this.addDays(this.parseDate(endDate, 'endDate'), 1);
       if (end <= start) {
         throw new BadRequestException('endDate must be on or after startDate');
+      }
+      if (end.getTime() - start.getTime() > 366 * 24 * 60 * 60 * 1000) {
+        throw new BadRequestException('Analytics range cannot exceed 366 days');
       }
     } else {
       const days = { '7d': 7, '30d': 30, '90d': 90, '1y': 365 }[range];

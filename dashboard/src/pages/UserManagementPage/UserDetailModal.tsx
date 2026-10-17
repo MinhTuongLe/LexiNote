@@ -141,7 +141,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
       await resetPassword(userId).unwrap();
       toast.success(
         'Đã Reset Mật Khẩu!',
-        'Mật khẩu mặc định của người dùng đã đặt về 123456. Tất cả phiên làm việc đã bị hủy.'
+        'Mật khẩu tạm thời đã được gửi qua email. Tất cả phiên làm việc đã bị hủy.'
       );
       refetch();
       if (activeTab === 'sessions') refetchSessions();
@@ -241,7 +241,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                   {user.isEmailVerified ? 'Verified' : 'Unverified'}
                 </Button>
 
-                <Tooltip content="Set default password to 123456 & force logout" side="top">
+                <Tooltip content="Generate a temporary password and force logout" side="top">
                   <Button
                     size="xs"
                     variant="outline"
@@ -250,7 +250,7 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
                     disabled={isResettingPassword}
                   >
                     <Key size={12} />
-                    Reset Password (123456)
+                    Reset Password
                   </Button>
                 </Tooltip>
 
@@ -491,8 +491,8 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({
         onClose={() => setIsResetConfirmOpen(false)}
         onConfirm={handleConfirmResetPassword}
         title="Reset Mật Khẩu Người Dùng"
-        description={`Bạn có chắc chắn muốn reset mật khẩu của ${user?.fullName || 'người dùng này'} về mật khẩu mặc định (123456)? Tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
-        confirmText="Reset Về 123456"
+        description={`Bạn có chắc chắn muốn tạo mật khẩu tạm thời mới cho ${user?.fullName || 'người dùng này'}? Mật khẩu sẽ được gửi qua email và tất cả phiên đăng nhập hiện tại sẽ bị hủy.`}
+        confirmText="Tạo mật khẩu tạm thời"
         variant="warning"
         isLoading={isResettingPassword}
       />

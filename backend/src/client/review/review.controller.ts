@@ -10,6 +10,9 @@ import {
 import { ReviewService } from './review.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { UpdateReviewDto } from './dto/update-review.dto';
+import { WordIdsDto } from './dto/word-ids.dto';
+import { StudyStatsQueryDto } from './dto/study-stats-query.dto';
 
 @ApiTags('Reviews')
 @Controller('reviews') // Under /api prefix -> /api/reviews
@@ -26,7 +29,7 @@ export class ReviewController {
 
   @Post('update')
   @ApiOperation({ summary: 'Update SRS after session' })
-  async updateSRS(@Request() req: any, @Body() body: any) {
+  async updateSRS(@Request() req: any, @Body() body: UpdateReviewDto) {
     return this.reviewService.updateSRS(
       req.user.userId,
       body.reviewId,
@@ -36,25 +39,23 @@ export class ReviewController {
 
   @Post('game-session')
   @ApiOperation({ summary: 'Record study activity from minigames' })
-  async recordGameSession(@Request() req: any, @Body() body: any) {
+  async recordGameSession(@Request() req: any, @Body() body: WordIdsDto) {
     return this.reviewService.recordGameSession(req.user.userId, body.wordIds);
   }
 
   @Post('reset')
   @ApiOperation({ summary: 'Reset progress for multiple words' })
-  async resetBulk(@Request() req: any, @Body() body: any) {
+  async resetBulk(@Request() req: any, @Body() body: WordIdsDto) {
     return this.reviewService.resetBulk(req.user.userId, body.wordIds);
   }
 
   @Get('stats')
   @ApiOperation({ summary: 'Get study statistics and streak' })
-  async getStats(
-    @Request() req: any,
-    @Query('year') year?: string,
-    @Query('month') month?: string,
-  ) {
-    const y = year ? parseInt(year, 10) : undefined;
-    const m = month ? parseInt(month, 10) : undefined;
-    return this.reviewService.getStudyStats(req.user.userId, y, m);
+  async getStats(@Request() req: any, @Query() query: StudyStatsQueryDto) {
+    return this.reviewService.getStudyStats(
+      req.user.userId,
+      query.year,
+      query.month,
+    );
   }
 }

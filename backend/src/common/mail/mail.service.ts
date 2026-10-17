@@ -75,7 +75,7 @@ export class MailService {
         socketTimeout: 8000,
         dnsTimeout: 8000,
         tls: {
-          rejectUnauthorized: false,
+          rejectUnauthorized: true,
         },
       };
       this.transporter = nodemailer.createTransport(transportOptions);
@@ -94,7 +94,7 @@ export class MailService {
           socketTimeout: 8000,
           dnsTimeout: 8000,
           tls: {
-            rejectUnauthorized: false,
+            rejectUnauthorized: true,
           },
         };
         this.fallbackSslTransporter =
@@ -247,22 +247,22 @@ export class MailService {
           }
         }
 
-        this.logFallback(to, subject, html);
+        this.logFallback(to, subject);
         return false;
       }
     }
 
     // 3. Fallback to Console Log
-    this.logFallback(to, subject, html);
+    this.logFallback(to, subject);
     return true;
   }
 
-  private logFallback(to: string, subject: string, html: string) {
+  private logFallback(to: string, subject: string) {
     this.logger.log(
       `---------------- EMAIL CONSOLE FALLBACK ----------------\n` +
         `To: ${to}\n` +
         `Subject: ${subject}\n` +
-        `Content: ${html.replace(/<[^>]*>?/gm, ' ').slice(0, 300)}...\n` +
+        `Content: [omitted to avoid logging credentials or verification codes]\n` +
         `-------------------------------------------------------`,
     );
   }
@@ -407,7 +407,7 @@ export class MailService {
   getTemplatePreview(
     type: string,
     fullName = 'Nguyễn Văn A',
-    sampleCodeOrPass = '123456',
+    sampleCodeOrPass = '000000',
   ) {
     switch (type) {
       case 'verification':

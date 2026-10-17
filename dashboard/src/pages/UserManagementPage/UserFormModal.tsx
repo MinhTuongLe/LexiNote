@@ -109,7 +109,7 @@ export const UserFormModal: React.FC<UserFormModalProps> = ({
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Password <span className="text-muted-foreground font-normal">(Default: 123456)</span>
+                  Password <span className="text-muted-foreground font-normal">(Optional; a temporary password is generated if empty)</span>
                 </label>
                 <Input
                   type="password"

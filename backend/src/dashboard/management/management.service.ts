@@ -8,6 +8,21 @@ import { AuditService } from '../audit/audit.service';
 import { MailService } from '../../common/mail/mail.service';
 import { Prisma, Role } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
+import * as crypto from 'crypto';
+
+const SAFE_USER_SELECT = {
+  id: true,
+  email: true,
+  fullName: true,
+  avatar: true,
+  role: true,
+  isActive: true,
+  isEmailVerified: true,
+  status: true,
+  banReason: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.UserSelect;
 
 @Injectable()
 export class ManagementService {
@@ -355,6 +370,7 @@ export class ManagementService {
     const updated = await this.prisma.user.update({
       where: { id },
       data,
+      select: SAFE_USER_SELECT,
     });
     await this.auditService.logAction({
       action: 'USER_UPDATE',
@@ -371,7 +387,8 @@ export class ManagementService {
     password?: string;
     role?: Role;
   }) {
-    const rawPassword = data.password || '123456';
+    const rawPassword =
+      data.password || crypto.randomBytes(18).toString('base64url');
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
@@ -384,6 +401,7 @@ export class ManagementService {
         isActive: true,
         isEmailVerified: true,
       },
+      select: SAFE_USER_SELECT,
     });
 
     await this.auditService.logAction({
@@ -409,9 +427,9 @@ export class ManagementService {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
 
-    const defaultPassword = '123456';
+    const temporaryPassword = crypto.randomBytes(18).toString('base64url');
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(defaultPassword, salt);
+    const hashedPassword = await bcrypt.hash(temporaryPassword, salt);
 
     // Update password
     await this.prisma.user.update({
@@ -430,7 +448,7 @@ export class ManagementService {
       targetId: String(id),
       details: {
         email: user.email,
-        defaultPasswordSet: true,
+        temporaryPasswordSent: true,
         revokedSessionsCount: revoked.count,
       },
     });
@@ -439,13 +457,12 @@ export class ManagementService {
     await this.mailService.sendAdminPasswordResetNotification(
       user.email,
       user.fullName,
-      defaultPassword,
+      temporaryPassword,
     );
 
     return {
       message:
-        'Password reset successfully to default (123456). Active sessions revoked.',
-      defaultPassword,
+        'Temporary password generated and sent to the user. Active sessions revoked.',
       revokedSessionsCount: revoked.count,
     };
   }
@@ -567,6 +584,7 @@ export class ManagementService {
     const updated = await this.prisma.user.update({
       where: { id },
       data: { isActive: !user.isActive },
+      select: SAFE_USER_SELECT,
     });
 
     await this.auditService.logAction({
@@ -597,6 +615,7 @@ export class ManagementService {
     const updated = await this.prisma.user.update({
       where: { id },
       data: { isEmailVerified: !user.isEmailVerified },
+      select: SAFE_USER_SELECT,
     });
 
     await this.auditService.logAction({
@@ -618,7 +637,20 @@ export class ManagementService {
     if (user) {
       await this.prisma.archive.create({
         data: {
-          originalRecord: user as unknown as Prisma.InputJsonValue,
+          fromModel: 'User',
+          originalRecord: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            avatar: user.avatar,
+            role: user.role,
+            isActive: user.isActive,
+            isEmailVerified: user.isEmailVerified,
+            status: user.status,
+            banReason: user.banReason,
+            createdAt: user.createdAt.toString(),
+            updatedAt: user.updatedAt.toString(),
+          } as Prisma.InputJsonValue,
           originalRecordId: { id },
         },
       });
@@ -626,6 +658,7 @@ export class ManagementService {
 
     const deleted = await this.prisma.user.delete({
       where: { id },
+      select: SAFE_USER_SELECT,
     });
 
     await this.auditService.logAction({
@@ -652,6 +685,7 @@ export class ManagementService {
     const updated = await this.prisma.user.update({
       where: { id },
       data: { role },
+      select: SAFE_USER_SELECT,
     });
 
     await this.auditService.logAction({

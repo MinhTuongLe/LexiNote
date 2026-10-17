@@ -11,7 +11,10 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   const email = 'admin@gmail.com';
-  const password = '123456';
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!password || password.length < 32) {
+    throw new Error('SEED_ADMIN_PASSWORD must be configured with at least 32 characters');
+  }
   const fullName = 'System Administrator';
 
   const salt = await bcrypt.genSalt(10);

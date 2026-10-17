@@ -48,12 +48,25 @@ async function bootstrap() {
   });
 
   const runtimeConfig = await app.get(DashboardConfigService).getSystemConfig();
-  const allowedOrigins =
-    runtimeConfig.security.corsEnabled && process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim())
-      : runtimeConfig.security.corsEnabled
-        ? true
-        : false;
+  const configuredOrigins = (process.env.ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const isProduction = (process.env.NODE_ENV || 'production') === 'production';
+  if (
+    isProduction &&
+    runtimeConfig.security.corsEnabled &&
+    configuredOrigins.length === 0
+  ) {
+    throw new Error(
+      'ALLOWED_ORIGINS must be configured when CORS is enabled in production',
+    );
+  }
+  const allowedOrigins = runtimeConfig.security.corsEnabled
+    ? configuredOrigins.length > 0
+      ? configuredOrigins
+      : true
+    : false;
 
   app.enableCors({
     origin: allowedOrigins,

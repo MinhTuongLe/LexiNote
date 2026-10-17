@@ -6,7 +6,7 @@ export class VerifyEmailDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: '123456' })
+  @ApiProperty({ example: '000000' })
   @IsString()
   @Length(6, 6)
   token: string;

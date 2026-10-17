@@ -79,34 +79,43 @@ export class DeckService {
         )
       : deck.words;
 
+    const requestedWords = words.map((deckWord: any) => deckWord.word);
+    const existingWords = await this.prisma.word.findMany({
+      where: { ownerId: userId, word: { in: requestedWords } },
+      select: { word: true },
+    });
+    const existingWordSet = new Set(existingWords.map(({ word }) => word));
+    const wordsToImport = words.filter(
+      (deckWord: any) => !existingWordSet.has(deckWord.word),
+    );
+
     const result = await this.prisma.$transaction(async (tx) => {
-      let importedCount = 0;
-      let skippedCount = 0;
-      for (const deckWord of words) {
-        const existing = await tx.word.findUnique({
-          where: { word_ownerId: { word: deckWord.word, ownerId: userId } },
-        });
-        if (existing) {
-          skippedCount += 1;
-          continue;
-        }
-        const created = await tx.word.create({
-          data: {
-            word: deckWord.word,
-            meaningVi: deckWord.meaningVi,
-            type: deckWord.type,
-            phonetic: deckWord.phonetic,
-            example: deckWord.example,
-            audioUrl: deckWord.audioUrl,
-            ownerId: userId,
-          },
-        });
-        await tx.review.create({
-          data: { wordId: created.id, nextReview: BigInt(Date.now()) },
-        });
-        importedCount += 1;
+      if (wordsToImport.length === 0) {
+        return { importedCount: 0, skippedCount: words.length };
       }
-      return { importedCount, skippedCount };
+
+      const created = await (tx as any).word.createManyAndReturn({
+        data: wordsToImport.map((deckWord: any) => ({
+          word: deckWord.word,
+          meaningVi: deckWord.meaningVi,
+          type: deckWord.type,
+          phonetic: deckWord.phonetic,
+          example: deckWord.example,
+          audioUrl: deckWord.audioUrl,
+          ownerId: userId,
+        })),
+        select: { id: true },
+      });
+      await tx.review.createMany({
+        data: created.map(({ id }: { id: number }) => ({
+          wordId: id,
+          nextReview: BigInt(Date.now()),
+        })),
+      });
+      return {
+        importedCount: created.length,
+        skippedCount: words.length - created.length,
+      };
     });
 
     return {

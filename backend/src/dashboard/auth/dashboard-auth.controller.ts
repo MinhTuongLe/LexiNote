@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../../client/auth/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 
 import { LoginDto } from '../../client/auth/dto/login.dto';
 
@@ -22,10 +23,9 @@ export class DashboardAuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiOperation({ summary: 'Admin login for dashboard' })
   async login(@Body() loginDto: LoginDto, @Req() req: Record<string, unknown>) {
-    console.log('>>> [DashboardAuthController] Login payload:', loginDto);
-
     const user = (await this.authService.validateUser(
       loginDto.email,
       loginDto.password,
