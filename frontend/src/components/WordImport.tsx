@@ -4,6 +4,7 @@ import Button from './Button';
 import { Upload, AlertCircle, FileText, ClipboardPaste } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import type { ImportedWord } from '../types';
+import { normalizeWordType } from '../utils/wordTypeUtils';
 import './WordImport.css';
 
 interface WordImportProps {
@@ -13,7 +14,6 @@ interface WordImportProps {
 }
 
 const normalizeData = (jsonData: Record<string, unknown>[]): ImportedWord[] => {
-  const validTypes = ['noun', 'verb', 'adj', 'adv', 'phrasal_verb', 'idiom', 'phrase', 'noun_phrase', 'other'];
   return jsonData.map(item => {
     const entry: ImportedWord = { word: '', meaningVi: '', type: 'other' };
     const getVal = (keys: string[]) => {
@@ -24,11 +24,35 @@ const normalizeData = (jsonData: Record<string, unknown>[]): ImportedWord[] => {
     entry.word = getVal(['word', 'text', 'english']);
     entry.meaningVi = getVal(['meaningvi', 'vietnamese', 'nghia', 'definitionvi']);
     entry.example = getVal(['example', 'sentence', 'vidu']);
+    entry.phonetic = getVal(['phonetic', 'pronunciation']);
+    entry.audioUrl = getVal(['audiourl', 'audio', 'audio_url']);
     const rawType = getVal(['type', 'loaitu', 'category']).toLowerCase();
     const firstType = rawType.split(/[/,]/)[0].trim();
-    entry.type = validTypes.includes(firstType) ? firstType : 'other';
+    entry.type = normalizeWordType(firstType);
     return entry;
   }).filter(entry => entry.word && entry.meaningVi);
+};
+
+const parseDelimitedLine = (line: string, separator: string): string[] => {
+  const values: string[] = [];
+  let current = '';
+  let quoted = false;
+  for (let index = 0; index < line.length; index += 1) {
+    const character = line[index];
+    if (character === '"' && line[index + 1] === '"' && quoted) {
+      current += '"';
+      index += 1;
+    } else if (character === '"') {
+      quoted = !quoted;
+    } else if (character === separator && !quoted) {
+      values.push(current.trim());
+      current = '';
+    } else {
+      current += character;
+    }
+  }
+  values.push(current.trim());
+  return values;
 };
 
 const parsePastedText = (text: string): ImportedWord[] => {
@@ -36,12 +60,12 @@ const parsePastedText = (text: string): ImportedWord[] => {
   if (lines.length === 0) return [];
 
   const separator = text.includes('\t') ? '\t' : ',';
-  const firstLineCols = lines[0].split(separator).map(header => header.trim().toLowerCase());
+  const firstLineCols = parseDelimitedLine(lines[0], separator).map(header => header.trim().toLowerCase());
   const isHeaderRow = firstLineCols.some(header => ['word', 'text', 'english'].includes(header.replace(/[^a-z]/g, '')));
   const headers = isHeaderRow ? firstLineCols : ['word', 'meaningvi', 'type', 'example'];
   const dataLines = isHeaderRow ? lines.slice(1) : lines;
   const jsonData = dataLines.map(line => {
-    const values = line.split(separator).map(value => value.trim());
+    const values = parseDelimitedLine(line, separator);
     const entry: Record<string, unknown> = {};
     headers.forEach((header, index) => { entry[header] = values[index] || ''; });
     return entry;
@@ -94,18 +118,23 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
 
   const parseFile = (file: File, isExcel: boolean) => {
     const reader = new FileReader();
+    reader.onerror = () => setError('Could not read this file. Please try another CSV or Excel file.');
     reader.onload = (e) => {
-      const data = e.target?.result;
-      let jsonData: Record<string, unknown>[] = [];
+      try {
+        const data = e.target?.result;
+        let jsonData: Record<string, unknown>[] = [];
 
-      if (isExcel) {
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
-        setFilePreview(normalizeData(jsonData));
-      } else {
-        if (typeof data === 'string') setFilePreview(parsePastedText(data));
+        if (isExcel) {
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
+          setFilePreview(normalizeData(jsonData));
+        } else if (typeof data === 'string') {
+          setFilePreview(parsePastedText(data));
+        }
+      } catch {
+        setError('This file could not be parsed. Check its format and try again.');
       }
     };
 
@@ -125,12 +154,14 @@ const WordImport: React.FC<WordImportProps> = ({ onImport, onCancel, isLoading }
     <div className="word-import">
       <div className="import-tabs">
         <button 
+          type="button"
           className={`import-tab ${activeTab === 'upload' ? 'active' : ''}`}
           onClick={() => { setActiveTab('upload'); setFilePreview([]); setError(''); }}
         >
           <Upload size={18} /> {t('words.tab_upload')}
         </button>
         <button 
+          type="button"
           className={`import-tab ${activeTab === 'paste' ? 'active' : ''}`}
           onClick={() => { setActiveTab('paste'); setFilePreview([]); setError(''); }}
         >

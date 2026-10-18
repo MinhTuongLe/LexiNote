@@ -16,8 +16,16 @@ export interface CustomWordType {
   label: string;
 }
 
+export interface UserProfile {
+  bio?: string;
+  phone?: string;
+  location?: string;
+  timezone?: string;
+}
+
 export interface UserSettings {
   preferences?: {
+    darkTheme?: boolean;
     soundEnabled?: boolean;
     flashcardFront?: 'en' | 'vi';
     hasSeenGuide?: boolean;
@@ -26,6 +34,16 @@ export interface UserSettings {
     system?: string[];
     custom?: CustomWordType[];
   };
+  audio?: {
+    autoSpeak?: boolean;
+    voiceLang?: string;
+    rate?: number;
+    pitch?: number;
+  };
+  learning?: {
+    monthlyGoalDays?: number;
+  };
+  profile?: UserProfile;
   soundEnabled?: boolean;
   flashcardFront?: 'en' | 'vi';
   hasSeenGuide?: boolean;
@@ -36,6 +54,8 @@ export interface ImportedWord {
   meaningVi: string;
   example?: string;
   type: string;
+  phonetic?: string;
+  audioUrl?: string;
 }
 
 export interface SettingsData {
@@ -47,6 +67,8 @@ export interface SettingsData {
   learning?: {
     monthlyGoalDays: number;
   };
+  audio?: NonNullable<UserSettings['audio']>;
+  profile?: UserProfile;
 }
 
 export interface WordRelation {
@@ -74,6 +96,8 @@ export interface CreateWordDTO {
   type: string;
   synonyms?: string[];
   antonyms?: string[];
+  phonetic?: string;
+  audioUrl?: string;
 }
 
 export interface PaginatedResponse<T> {

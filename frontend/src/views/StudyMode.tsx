@@ -11,7 +11,7 @@ import {
   VolumeX, 
   Send,
 } from 'lucide-react';
-import { useUpdateSRSMutation, useGetDueReviewsQuery } from '../store/apiSlice';
+import { useUpdateSRSMutation, useGetDueReviewsQuery, useGetSettingsQuery } from '../store/apiSlice';
 import { useCuteDialog } from '../context/useCuteDialog';
 import { useTranslation } from 'react-i18next';
 import { useSound } from '../hooks/useSound';
@@ -26,15 +26,19 @@ interface StudyModeProps {
 type StudyModeType = 'flashcard' | 'quiz' | 'writing' | 'listening';
 
 const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
-  const { data: dueReviews = [], isLoading } = useGetDueReviewsQuery();
+  const { data: dueReviews = [], isLoading, isError, refetch } = useGetDueReviewsQuery();
+  const { data: settingsData } = useGetSettingsQuery();
   const { playSound } = useSound();
   
   const [studyMode, setStudyMode] = useState<StudyModeType>('flashcard');
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [autoSpeakOverride, setAutoSpeakOverride] = useState<boolean | null>(null);
   const [results, setResults] = useState<{ word: string, rating: string, color: string }[]>([]);
   const [isFinished, setIsFinished] = useState(false);
+  const autoSpeak = autoSpeakOverride ?? settingsData?.audio?.autoSpeak ?? true;
+  const flashcardFront = settingsData?.preferences?.flashcardFront ?? 'en';
+  const audioSettings = settingsData?.audio;
 
   // Quiz Mode states
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -55,9 +59,9 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
   // Auto speak when new card is shown
   useEffect(() => {
     if (word && autoSpeak && !isFinished) {
-      speakText(word.word);
+      speakText(word.word, audioSettings?.voiceLang, audioSettings?.rate, audioSettings?.pitch);
     }
-  }, [currentIndex, word, autoSpeak, isFinished, studyMode]);
+  }, [currentIndex, word, autoSpeak, isFinished, studyMode, audioSettings]);
 
   const resetInteractiveState = useCallback(() => {
     setSelectedOption(null);
@@ -188,6 +192,16 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="study-complete cute-card" role="alert">
+        <h2>{t('common.error')}</h2>
+        <p>{t('study.load_error', 'Could not load today\'s study cards.')}</p>
+        <Button variant="outline" onClick={() => refetch()}>{t('common.retry', 'Retry')}</Button>
+      </div>
+    );
+  }
+
   if (dueReviews.length === 0) {
     return (
       <div className="study-complete cute-card">
@@ -200,9 +214,11 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
 
   if (!word) return <div>{t('common.loading')}</div>;
 
+  const frontIsEnglish = flashcardFront === 'en';
+
   const handleSpeakWord = (e: React.MouseEvent) => {
     e.stopPropagation();
-    speakText(word.word);
+    speakText(word.word, audioSettings?.voiceLang, audioSettings?.rate, audioSettings?.pitch);
   };
 
   return (
@@ -219,7 +235,7 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
 
         <button 
           className="audio-toggle-btn"
-          onClick={() => setAutoSpeak(!autoSpeak)}
+          onClick={() => setAutoSpeakOverride(!autoSpeak)}
           title={autoSpeak ? "Tự động phát âm: BẬT" : "Tự động phát âm: TẮT"}
         >
           {autoSpeak ? <Volume2 size={18} className="text-primary" /> : <VolumeX size={18} className="text-muted" />}
@@ -282,9 +298,13 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
                     </button>
                   </div>
 
-                  <h1 className="flashcard-word">{word.word}</h1>
-                  {word.phonetic && <span className="flashcard-phonetic">{word.phonetic}</span>}
-                  {word.type && <span className="flashcard-type-tag">{word.type}</span>}
+                  {frontIsEnglish ? (
+                    <>
+                      <h1 className="flashcard-word">{word.word}</h1>
+                      {word.phonetic && <span className="flashcard-phonetic">{word.phonetic}</span>}
+                      {word.type && <span className="flashcard-type-tag">{word.type}</span>}
+                    </>
+                  ) : <h1 className="flashcard-word">{word.meaningVi}</h1>}
                   <div className="tap-hint">{t('study.tap_to_flip')}</div>
                 </Card>
               </div>
@@ -304,8 +324,13 @@ const StudyMode: React.FC<StudyModeProps> = ({ onComplete }) => {
                   </div>
 
                   <div className="back-content">
-                    <h1 className="back-word-title">{word.word}</h1>
-                    <h2 className="back-vi">{word.meaningVi}</h2>
+                    {frontIsEnglish ? <>
+                      <h1 className="back-word-title">{word.word}</h1>
+                      <h2 className="back-vi">{word.meaningVi}</h2>
+                    </> : <>
+                      <h1 className="back-word-title">{word.meaningVi}</h1>
+                      <h2 className="back-vi">{word.word}</h2>
+                    </>}
                     {word.example && (
                       <div className="back-example">
                         <strong>{t('words.example_label')}:</strong>

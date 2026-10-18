@@ -1,10 +1,15 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolkit/query';
-import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery, AiExtractedWord, VocabularyDeck, VocabularyDeckSummary } from '../types';
+import type { Word, CreateWordDTO, Review, PaginatedResponse, DashboardStats, StudyStats, SettingsData, UserSettings, ImportedWord, LeaderboardEntry, GameType, LeaderboardQuery, AiExtractedWord, VocabularyDeck, VocabularyDeckSummary, UserProfile, CustomWordType } from '../types';
 import { logout, updateTokens, updateUser } from './authSlice';
 import type { User } from './authSlice';
 import type { RootState } from './index';
 import i18n from '../i18n';
+
+type UpdateSettingsPayload = Partial<Omit<UserSettings, 'wordTypes'>> & {
+  wordTypes?: UserSettings['wordTypes'] | CustomWordType[];
+  [key: string]: unknown;
+};
 
 // Base query with auth header
 const rawBaseQuery = fetchBaseQuery({
@@ -79,10 +84,8 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       result.error.status === 'TIMEOUT_ERROR' || 
       (typeof result.error.status === 'number' && result.error.status >= 500)
     ) {
-      // Force logout and throw global system error event
-      api.dispatch(logout());
       window.dispatchEvent(new CustomEvent('system-error', { 
-        detail: 'Máy chủ phản hồi lỗi hoặc mất kết nối mạng. Bạn đã bị đăng xuất để đảm bảo an toàn!' 
+        detail: 'Máy chủ phản hồi lỗi hoặc mất kết nối mạng. Vui lòng kiểm tra và thử lại sau!' 
       }));
     }
   }
@@ -129,7 +132,7 @@ export const apiSlice = createApi({
         body,
       }),
     }),
-    updateProfile: builder.mutation<{ user: User; message: string }, { fullName?: string; avatar?: string }>({
+    updateProfile: builder.mutation<{ user: User; message: string }, { fullName?: string; avatar?: string; profile?: UserProfile }>({
       query: (data) => ({
         url: '/auth/profile',
         method: 'PATCH',
@@ -195,10 +198,16 @@ export const apiSlice = createApi({
 
     // Words
     getWords: builder.query<PaginatedResponse<Word>, { page?: number; limit?: number | 'all'; search?: string; type?: string; status?: string } | void>({
-      query: (params) => ({
-        url: '/words',
-        params: params || {},
-      }),
+      query: (params) => {
+        const queryParams = params ? { ...params } : {};
+        if (queryParams.limit === 'all') {
+          queryParams.limit = 100;
+        }
+        return {
+          url: '/words',
+          params: queryParams,
+        };
+      },
       providesTags: ['Words'],
     }),
     createWord: builder.mutation<Word, CreateWordDTO>({
@@ -285,7 +294,7 @@ export const apiSlice = createApi({
       }),
       invalidatesTags: ['Reviews', 'Words'],
     }),
-    updateSettings: builder.mutation<{ settings: UserSettings; message: string }, Partial<UserSettings> & Record<string, unknown>>({
+    updateSettings: builder.mutation<{ settings: UserSettings; message: string }, UpdateSettingsPayload>({
       query: (settings) => ({
         url: '/settings',
         method: 'PATCH',

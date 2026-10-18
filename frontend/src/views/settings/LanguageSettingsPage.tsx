@@ -24,6 +24,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
 
   const soundEnabled = settingsData?.preferences?.soundEnabled ?? true;
   const flashcardFront = settingsData?.preferences?.flashcardFront ?? 'en';
+  const autoSpeak = settingsData?.audio?.autoSpeak ?? true;
   const customWordTypes = settingsData?.wordTypes?.custom ?? [];
   const [newTypeName, setNewTypeName] = useState('');
   const [newTypeLabel, setNewTypeLabel] = useState('');
@@ -31,6 +32,14 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
   const handleSaveSetting = async (key: string, value: string | boolean) => {
     try {
       await updateSettings({ [key]: value }).unwrap();
+    } catch (error: unknown) {
+      showAlert(t('common.error'), getApiErrorMessage(error, 'Failed to update settings'), 'error');
+    }
+  };
+
+  const handleAutoSpeakChange = async (enabled: boolean) => {
+    try {
+      await updateSettings({ audio: { autoSpeak: enabled } }).unwrap();
     } catch (error: unknown) {
       showAlert(t('common.error'), getApiErrorMessage(error, 'Failed to update settings'), 'error');
     }
@@ -56,7 +65,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
 
     const updatedTypes = [...customWordTypes, { value, label: newTypeLabel }];
     try {
-      await updateSettings({ wordTypes: { custom: updatedTypes } }).unwrap();
+      await updateSettings({ wordTypes: updatedTypes }).unwrap();
       const addedLabel = newTypeLabel;
       setNewTypeName('');
       setNewTypeLabel('');
@@ -73,7 +82,7 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
       async () => {
         const updatedTypes = customWordTypes.filter(t => t.value !== value);
         try {
-          await updateSettings({ wordTypes: { custom: updatedTypes } }).unwrap();
+          await updateSettings({ wordTypes: updatedTypes }).unwrap();
           showAlert(t('settings.deleted_title'), t('settings.type_deleted'), 'success');
     } catch {
           showAlert(t('common.error'), 'Failed to delete word type', 'error');
@@ -122,6 +131,21 @@ const LanguageSettingsPage: React.FC<LanguageSettingsPageProps> = ({ onBack }) =
                     onChange={(e) => {
                       handleSaveSetting('soundEnabled', e.target.checked);
                     }} 
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span>{t('profile.auto_speak', 'Auto pronunciation')}</span>
+                  <p>{t('profile.auto_speak_desc', 'Speak each word when a study card opens.')}</p>
+                </div>
+                <label className="cute-switch">
+                  <input
+                    type="checkbox"
+                    checked={autoSpeak}
+                    onChange={(event) => { void handleAutoSpeakChange(event.target.checked); }}
                   />
                   <span className="slider"></span>
                 </label>

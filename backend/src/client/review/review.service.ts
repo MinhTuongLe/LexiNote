@@ -197,7 +197,15 @@ export class ReviewService {
     const typesMap = new Map<string, any>();
 
     reviews.forEach((r: any) => {
-      const type = r.word.type || 'other';
+      const rawType = (r.word.type || 'other').toLowerCase().trim();
+      const aliasMap: Record<string, string> = {
+        adjective: 'adj',
+        adverb: 'adv',
+        'noun phrase': 'noun_phrase',
+        'verb phrase': 'verb_phrase',
+        'phrasal verb': 'phrasal_verb',
+      };
+      const type = aliasMap[rawType.replace(/-/g, '_')] || aliasMap[rawType] || rawType.replace(/-/g, '_');
       if (!typesMap.has(type)) {
         typesMap.set(type, {
           type,
@@ -433,16 +441,21 @@ export class ReviewService {
       select: { lastReviewed: true },
     });
 
+    const formatLocalDate = (d: Date): string => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
     const countsMap = new Map<string, number>();
     reviewsInRange.forEach((r: any) => {
-      const dateStr = new Date(Number(r.lastReviewed))
-        .toISOString()
-        .split('T')[0];
+      const dateStr = formatLocalDate(new Date(Number(r.lastReviewed)));
       countsMap.set(dateStr, (countsMap.get(dateStr) || 0) + 1);
     });
 
     return activityDays.map((d: Date) => {
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatLocalDate(d);
       return {
         date: dateStr,
         count: countsMap.get(dateStr) || 0,

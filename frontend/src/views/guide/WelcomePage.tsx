@@ -14,7 +14,7 @@ const WelcomePage: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('welcome');
   const { user } = useSelector((state: RootState) => state.auth);
-  const { closeDialog } = useCuteDialog();
+  const { closeDialog, showAlert } = useCuteDialog();
   const [updateSettings] = useUpdateSettingsMutation();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isFinishing, setIsFinishing] = useState(false);
@@ -24,25 +24,20 @@ const WelcomePage: React.FC = () => {
     closeDialog();
   }, [closeDialog]);
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (isFinishing) return;
     setIsFinishing(true);
-    
-    // Save to local storage for immediate persistence
-    markGuideAsSeenLocal(user);
-    
-    // Fire update API in the background without blocking navigation
-    const rawSettings = user?.settings || {};
-    const hasSeenRemotely = rawSettings.preferences?.hasSeenGuide === true || rawSettings.hasSeenGuide === true;
 
-    if (!hasSeenRemotely) {
-      updateSettings({ hasSeenGuide: true })
-        .unwrap()
-        .catch(e => console.error('Failed to update guide status:', e));
+    try {
+      const rawSettings = user?.settings || {};
+      const hasSeenRemotely = rawSettings.preferences?.hasSeenGuide === true || rawSettings.hasSeenGuide === true;
+      if (!hasSeenRemotely) await updateSettings({ hasSeenGuide: true }).unwrap();
+      markGuideAsSeenLocal(user);
+      navigate('/dashboard', { replace: true });
+    } catch {
+      setIsFinishing(false);
+      showAlert(t('error_title', 'Could not save your setup'), t('error_desc', 'Please try again.'), 'error');
     }
-    
-    // Immediately redirect to dashboard
-    navigate('/dashboard', { replace: true });
   };
 
   const handleNext = () => {
@@ -118,9 +113,12 @@ const WelcomePage: React.FC = () => {
           <div className="welcome-footer animate-fade-in-up delay-3">
             <div className="welcome-dots">
               {slides.map((_, index) => (
-                <span 
+                <button
+                  type="button"
                   key={index} 
                   className={`dot ${index === currentSlide ? 'active' : ''}`}
+                  aria-label={`${t('slide')} ${index + 1}`}
+                  aria-current={index === currentSlide ? 'step' : undefined}
                   onClick={() => !isFinishing && setCurrentSlide(index)}
                 />
               ))}

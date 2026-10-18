@@ -82,9 +82,20 @@
   gap: 20px;
 }
 
+.profile-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field-help {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
   gap: 8px;
   margin-top: 8px;
   max-height: 250px;
@@ -100,8 +111,10 @@
 .avatar-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
 
 .avatar-option {
-  width: 48px;
-  height: 48px;
+  width: 100%;
+  min-width: 0;
+  aspect-ratio: 1;
+  height: auto;
   border: 3px solid var(--border);
   border-radius: var(--radius-sm);
   background: white;
@@ -150,8 +163,9 @@
 
 /* Responsive */
 @media (max-width: 480px) {
+  .profile-form-grid { grid-template-columns: 1fr; }
   .avatar-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
   }
 
   .profile-card {

@@ -3,6 +3,7 @@ import { Layers, Search, BookOpen, ArrowRight } from 'lucide-react';
 import Card from '../../components/Card';
 import CuteSelect from '../../components/CuteSelect';
 import { useGetCuratedDecksQuery } from '../../store/apiSlice';
+import Button from '../../components/Button';
 import DeckDetailModal from './DeckDetailModal';
 import './DecksPage.css';
 
@@ -20,7 +21,7 @@ const DecksPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [activeDeckId, setActiveDeckId] = useState<number | null>(null);
 
-  const { data: decksRes, isLoading } = useGetCuratedDecksQuery(
+  const { data: decksRes, isLoading, isError, refetch } = useGetCuratedDecksQuery(
     selectedCategory !== 'ALL' ? { category: selectedCategory, search } : { search }
   );
 
@@ -62,6 +63,11 @@ const DecksPage: React.FC = () => {
         <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--text-muted)' }}>
           Đang tải danh sách bộ từ vựng...
         </div>
+      ) : isError ? (
+        <Card className="empty-state-card" role="alert" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
+          <h3>{'Không thể tải bộ từ vựng'}</h3>
+          <Button variant="outline" onClick={() => refetch()}>Thử lại</Button>
+        </Card>
       ) : decks.length === 0 ? (
         <Card className="empty-state-card" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
           <Layers size={48} style={{ color: 'var(--text-muted)', margin: '0 auto 1rem auto' }} />
@@ -73,7 +79,19 @@ const DecksPage: React.FC = () => {
       ) : (
         <div className="decks-grid">
           {decks.map(deck => (
-            <div key={deck.id} className="deck-card" onClick={() => setActiveDeckId(deck.id)}>
+            <div
+              key={deck.id}
+              className="deck-card"
+              onClick={() => setActiveDeckId(deck.id)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setActiveDeckId(deck.id);
+                }
+              }}
+              role="button"
+              tabIndex={0}
+            >
               <div className="deck-cover-wrapper">
                 {deck.coverImage ? (
                   <img src={deck.coverImage} alt={deck.title} className="deck-cover-img" />

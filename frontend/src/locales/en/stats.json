@@ -20,6 +20,8 @@
   "words": "words",
   "days": "days",
   "no_data": "No study data yet. Start studying to see your stats! 🚀",
+  "no_activity_yet": "No activity yet",
+  "weekly_empty_hint": "No study activity recorded this week yet. Start reviewing words to fill up the chart! 🚀",
   "reviewed_label": "Reviewed",
   "weekdays_short": {
     "Mon": "Mon",

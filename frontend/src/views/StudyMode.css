@@ -10,6 +10,8 @@
   gap: 18px;
   padding: 0 12px 32px;
   box-sizing: border-box;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }
 
 @media (max-width: 500px) {
@@ -27,13 +29,19 @@
 }
 
 .progress-bar {
-  flex: 1;
+  flex: 1 0 auto;
+  min-width: max-content;
   height: 12px;
   background: white;
   border: 2px solid var(--border);
   border-radius: 10px;
   position: relative;
   overflow: visible;
+}
+
+@media (max-width: 500px) {
+  .mode-btn { padding-inline: 10px; font-size: 0.78rem; }
+  .study-mode-selector { justify-content: flex-start; }
 }
 
 .progress-fill {
@@ -164,11 +172,23 @@
 .front-face {
   z-index: 2;
   transform: rotateY(0deg);
+  pointer-events: auto;
 }
 
 .back-face {
   transform: rotateY(180deg);
   z-index: 1;
+  pointer-events: none;
+}
+
+.flashcard-container.flipped .front-face {
+  z-index: 1;
+  pointer-events: none;
+}
+
+.flashcard-container.flipped .back-face {
+  z-index: 2;
+  pointer-events: auto;
 }
 
 .flashcard-card {

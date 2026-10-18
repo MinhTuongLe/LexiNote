@@ -13,6 +13,7 @@ const Button: React.FC<ButtonProps> = ({
   variant = 'primary', 
   size = 'md', 
   isLoading,
+  disabled = false,
   children, 
   className = '', 
   ...props 
@@ -23,6 +24,8 @@ const Button: React.FC<ButtonProps> = ({
       whileTap={{ scale: 0.95, translateY: 2 }}
       className={`btn btn-${variant} btn-${size} ${className}`}
       {...props}
+      disabled={disabled || Boolean(isLoading)}
+      aria-busy={isLoading || undefined}
     >
       {isLoading ? <span className="btn-spinner" style={{ marginRight: 6 }} /> : null}
       {children}

@@ -26,7 +26,7 @@ type GameItem = {
 };
 
 const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
-  const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 'all' });
+  const { data: wordsData, isLoading } = useGetWordsQuery({ limit: 100 });
   const words = wordsData?.data ?? EMPTY_WORDS;
   const { t } = useTranslation();
   const { playSound } = useSound();
@@ -38,6 +38,17 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
   const [matchedIds, setMatchedIds] = useState<Set<number>>(new Set());
   const [errorIds, setErrorIds] = useState<[string, string] | null>(null);
   const [gameCompleted, setGameCompleted] = useState(false);
+  const [recordingError, setRecordingError] = useState(false);
+  const [lastSessionPayload, setLastSessionPayload] = useState<ReturnType<typeof createMatchGameSessionPayload> | null>(null);
+
+  const saveGameSession = useCallback(async (payload: ReturnType<typeof createMatchGameSessionPayload>) => {
+    try {
+      await recordGameSessionFull(payload).unwrap();
+      setRecordingError(false);
+    } catch {
+      setRecordingError(true);
+    }
+  }, [recordGameSessionFull]);
 
   const initGame = useCallback(() => {
     if (words.length < 5) return;
@@ -60,6 +71,8 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
     setSelectedId(null);
     setErrorIds(null);
     setGameCompleted(false);
+    setRecordingError(false);
+    setLastSessionPayload(null);
     gameStartedAtRef.current = Date.now();
   }, [words]);
 
@@ -106,9 +119,9 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
             
             // Record one canonical game session for stats, streak and leaderboard.
             const wordIds = Array.from(next);
-            void recordGameSessionFull(
-              createMatchGameSessionPayload(wordIds, gameStartedAtRef.current ?? Date.now(), Date.now()),
-            ).unwrap().catch(() => undefined);
+            const payload = createMatchGameSessionPayload(wordIds, gameStartedAtRef.current ?? Date.now(), Date.now());
+            setLastSessionPayload(payload);
+            void saveGameSession(payload);
             
             setTimeout(() => setGameCompleted(true), 500);
           }
@@ -192,6 +205,14 @@ const MatchGame: React.FC<MatchGameProps> = ({ onBack }) => {
         <Card className="game-over-card animate-pop">
           <h2>{t('games.game_win_title')}</h2>
           <p>{t('games.game_win_desc')}</p>
+          {recordingError && (
+            <p role="alert" className="session-recording-error">
+              Không thể lưu kết quả trận chơi. Vui lòng thử lại.
+              {lastSessionPayload && (
+                <button type="button" onClick={() => void saveGameSession(lastSessionPayload)}>Thử lại</button>
+              )}
+            </p>
+          )}
           <Button variant="primary" onClick={initGame} className="play-again-btn">
             <RefreshCw size={18} /> {t('games.play_again')}
           </Button>

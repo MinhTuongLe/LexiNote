@@ -7,6 +7,10 @@ export interface User {
   fullName: string;
   avatar: string;
   settings?: UserSettings;
+  isEmailVerified?: boolean;
+  role?: string;
+  isActive?: boolean;
+  createdAt?: number;
 }
 
 interface AuthState {

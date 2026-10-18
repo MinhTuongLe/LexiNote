@@ -121,7 +121,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onBack }) => {
           <div className="settings-divider"></div>
 
           {/* Language & Study Link */}
-          <div className="settings-group clickable-group" onClick={() => navigate('/settings/language')}>
+          <div
+            className="settings-group clickable-group"
+            onClick={() => navigate('/settings/language')}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigate('/settings/language');
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
             <div className="settings-header">
               <Languages className="settings-icon" size={20} />
               <h4>{t('settings.language_study_title') || 'Language & Study'}</h4>

@@ -39,6 +39,21 @@ export class ImportedWordDto {
   @IsString()
   @MaxLength(50)
   type?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  phonetic?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  audioUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(2000)
+  contextVi?: string;
 }
 
 export class BulkImportWordsDto {

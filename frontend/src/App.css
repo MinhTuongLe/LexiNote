@@ -79,6 +79,41 @@
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.stat-card.yellow,
+.stat-card.green,
+.stat-card.pink,
+.stat-card.purple,
+.stat-card.blue {
+  color: #1e293b;
+}
+
+.stat-card.yellow .stat-info h3,
+.stat-card.green .stat-info h3,
+.stat-card.pink .stat-info h3,
+.stat-card.purple .stat-info h3,
+.stat-card.blue .stat-info h3 {
+  color: #0f172a;
+}
+
+.stat-card.yellow .stat-info p,
+.stat-card.green .stat-info p,
+.stat-card.pink .stat-info p,
+.stat-card.purple .stat-info p,
+.stat-card.blue .stat-info p {
+  color: #334155;
+  font-weight: 600;
+}
+
+.stat-card.yellow .stat-icon,
+.stat-card.green .stat-icon,
+.stat-card.pink .stat-icon,
+.stat-card.purple .stat-icon,
+.stat-card.blue .stat-icon {
+  color: #0f172a;
+  border-color: #0f172a;
+  background: rgba(255, 255, 255, 0.55);
+}
+
 .stat-card:hover {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 8px 8px 0px var(--border);
@@ -108,7 +143,7 @@
   flex-direction: column;
   gap: 20px;
   padding: 24px !important;
-  color: white;
+  color: #0f172a !important;
   position: relative;
   margin-top: 10px;
   background: linear-gradient(135deg, #FF8BA7 0%, #FFC371 100%) !important; /* Vibrant Gradient */
@@ -164,6 +199,11 @@
   gap: 4px;
 }
 
+.streak-info p {
+  color: #334155;
+  font-weight: 700;
+}
+
 .streak-count {
   display: flex;
   align-items: baseline;
@@ -174,7 +214,8 @@
   font-size: 3rem;
   font-weight: 900;
   line-height: 1;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+  color: #0f172a;
+  text-shadow: none;
 }
 
 .streak-count .label {
@@ -182,6 +223,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: #1e293b;
 }
 
 /* Tracker Styles */
@@ -497,17 +539,16 @@
 .metric-value {
   font-size: 1.4rem;
   font-weight: 900;
-  color: white;
+  color: #0f172a;
   margin: 0;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
 .stat-card.blue {
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+  background: linear-gradient(135deg, #a0c4ff 0%, #c4ddff 100%) !important;
 }
 
 .stat-card.blue .stat-icon {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: white;
-  color: white;
+  background: rgba(255, 255, 255, 0.55);
+  border-color: #0f172a;
+  color: #0f172a;
 }

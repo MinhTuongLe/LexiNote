@@ -28,6 +28,10 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font: inherit;
 }
 
 .logo-img {
@@ -163,6 +167,9 @@
   border-radius: var(--radius-md);
   border: 2px solid transparent;
   transition: all 0.2s;
+  background: transparent;
+  color: inherit;
+  font: inherit;
 }
 
 .user-avatar-group.clickable {

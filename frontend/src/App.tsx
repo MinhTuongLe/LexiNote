@@ -30,7 +30,7 @@ import { useCuteDialog } from './context/useCuteDialog';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { updateUser, setInitialized, logout } from './store/authSlice';
-import { checkHasSeenGuide } from './utils/authUtils';
+import { checkHasSeenGuide, markGuideAsSeenLocal } from './utils/authUtils';
 
 import Login from './views/auth/Login';
 import Register from './views/auth/Register';
@@ -92,21 +92,25 @@ function App() {
   }, []);
 
   // RTK Query hooks - Top level (required by React)
-  const { data: stats, isLoading: statsLoading } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
+  const { data: stats, isLoading: statsLoading, isError: statsError, refetch: refetchStats } = useGetDashboardStatsQuery(undefined, { skip: !isAuthenticated });
   const [createWord] = useCreateWordMutation();
   const [importWords, { isLoading: isImporting }] = useImportWordsMutation();
 
   // Redirect new users to full-screen guide
   useEffect(() => {
     if (isAuthenticated && isInitialized && user) {
-      const hasSeen = checkHasSeenGuide(user);
+      const hasSeen = checkHasSeenGuide(user, stats?.totalWords);
       
       if (!hasSeen && location.pathname !== '/welcome') {
-        closeDialog();
-        navigate('/welcome', { replace: true });
+        if (location.pathname === '/dashboard' || location.pathname === '/') {
+          closeDialog();
+          navigate('/welcome', { replace: true });
+        } else {
+          markGuideAsSeenLocal(user);
+        }
       }
     }
-  }, [isAuthenticated, isInitialized, user, navigate, location.pathname, closeDialog]);
+  }, [isAuthenticated, isInitialized, user, navigate, location.pathname, closeDialog, stats?.totalWords]);
 
   // Reset entirely UI state on Logout so the next person gets a clean slate 
   useEffect(() => {
@@ -208,6 +212,13 @@ function App() {
                 </Button>
               </div>
             </header>
+
+            {statsError && (
+              <Card className="empty-card" role="alert">
+                <p>{t('dashboard.stats_load_error', 'Could not load dashboard statistics.')}</p>
+                <Button variant="outline" onClick={() => refetchStats()}>{t('common.retry', 'Retry')}</Button>
+              </Card>
+            )}
 
               <Card className="streak-hero-card clickable" onClick={() => navigate('/stats')}>
                 <div className="streak-main">

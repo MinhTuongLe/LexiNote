@@ -4,6 +4,7 @@ import { useGetStudyStatsQuery } from '../../store/apiSlice';
 import BackButton from '../../components/BackButton';
 import Card from '../../components/Card';
 import { TrendingUp } from 'lucide-react';
+import Button from '../../components/Button';
 import { useNavigate } from 'react-router-dom';
 import './StatsPage.css';
 
@@ -34,7 +35,7 @@ interface StatsPageProps {
 const StatsPage: React.FC<StatsPageProps> = ({ onBack, detail }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { data: stats, isLoading } = useGetStudyStatsQuery();
+  const { data: stats, isLoading, isError, refetch } = useGetStudyStatsQuery();
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
@@ -47,6 +48,19 @@ const StatsPage: React.FC<StatsPageProps> = ({ onBack, detail }) => {
 
   if (isLoading) {
     return <StatsSkeleton />;
+  }
+
+  if (isError) {
+    return (
+      <div className="stats-page empty">
+        <Card className="empty-stats-card" role="alert">
+          <TrendingUp size={48} />
+          <h2>{t('common.error')}</h2>
+          <p>{t('stats.load_error', 'Could not load your study statistics.')}</p>
+          <Button variant="outline" onClick={() => refetch()}>{t('common.retry', 'Retry')}</Button>
+        </Card>
+      </div>
+    );
   }
 
   if (!stats) {
