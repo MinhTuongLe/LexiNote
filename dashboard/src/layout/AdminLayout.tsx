@@ -32,7 +32,19 @@ const AdminLayout: React.FC = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [quickSearch, setQuickSearch] = React.useState('');
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
   const { isDark, toggleTheme } = useTheme();
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
 
   const handleLogout = () => {
@@ -114,6 +126,7 @@ const AdminLayout: React.FC = () => {
               </Link>
               <button 
                 onClick={() => setIsMobileMenuOpen(false)} 
+                aria-label="Close navigation menu"
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <X size={18} />
@@ -158,7 +171,7 @@ const AdminLayout: React.FC = () => {
                 onClick={handleLogout}
                 className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-destructive hover:bg-destructive/10 transition-colors text-xs font-semibold"
               >
-                <LogOut size={16} /> Đăng xuất
+                <LogOut size={16} /> Sign out
               </button>
             </div>
           </div>
@@ -242,6 +255,7 @@ const AdminLayout: React.FC = () => {
           <div className="flex items-center gap-4 flex-1">
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open mobile navigation menu"
               className="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
             >
               <Menu size={18} />
@@ -264,7 +278,9 @@ const AdminLayout: React.FC = () => {
             <div className="relative max-w-sm w-full hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={15} />
               <Input 
+                ref={searchInputRef}
                 type="text" 
+                aria-label="Quick search words, users, configs"
                 placeholder="Search words, users, configs..." 
                 value={quickSearch}
                 onChange={(event) => setQuickSearch(event.target.value)}
@@ -282,6 +298,7 @@ const AdminLayout: React.FC = () => {
             <Tooltip content={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"} side="bottom">
               <button
                 onClick={toggleTheme}
+                aria-label={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
                 className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
               >
                 {isDark ? <Sun size={17} className="text-amber-400" /> : <Moon size={17} />}
@@ -292,6 +309,7 @@ const AdminLayout: React.FC = () => {
             <Tooltip content="System Settings" side="bottom">
               <button 
                 onClick={() => navigate('/dashboard/settings')}
+                aria-label="System Settings"
                 className="w-9 h-9 flex items-center justify-center rounded-lg border border-border/60 hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
               >
                 <Settings size={17} />
@@ -303,6 +321,7 @@ const AdminLayout: React.FC = () => {
             {/* Profile Pill */}
             <button 
               onClick={() => navigate('/dashboard/profile')}
+              aria-label="Account Profile"
               className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-lg hover:bg-muted/60 transition-colors"
             >
               <div className="w-7 h-7 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-semibold text-xs">

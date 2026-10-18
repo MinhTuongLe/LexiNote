@@ -61,12 +61,33 @@ const DeckManagementPage: React.FC = () => {
         <Card className="border-border/60 bg-card shadow-xs">
           <CardContent className="p-6 space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Input placeholder="Deck title" value={title} onChange={(event) => setTitle(event.target.value)} />
-              <Input placeholder="Category" value={category} onChange={(event) => setCategory(event.target.value)} />
-              <Input placeholder="Level" value={level} onChange={(event) => setLevel(event.target.value)} />
-              <Input placeholder="Description" value={description} onChange={(event) => setDescription(event.target.value)} />
+              <Input 
+                aria-label="Deck title" 
+                placeholder="Deck title" 
+                value={title} 
+                onChange={(event) => setTitle(event.target.value)} 
+              />
+              <Input 
+                aria-label="Deck category" 
+                placeholder="Category (e.g. GENERAL, TOEIC)" 
+                value={category} 
+                onChange={(event) => setCategory(event.target.value)} 
+              />
+              <Input 
+                aria-label="Proficiency level" 
+                placeholder="Level (e.g. Beginner, Intermediate)" 
+                value={level} 
+                onChange={(event) => setLevel(event.target.value)} 
+              />
+              <Input 
+                aria-label="Deck description" 
+                placeholder="Description" 
+                value={description} 
+                onChange={(event) => setDescription(event.target.value)} 
+              />
             </div>
             <Textarea
+              aria-label="Curated words input"
               value={rawWords}
               onChange={(event) => setRawWords(event.target.value)}
               placeholder="One word per line: english | Vietnamese meaning | type"
@@ -80,7 +101,24 @@ const DeckManagementPage: React.FC = () => {
         </Card>
       )}
 
-      {isLoading ? <p className="text-sm text-muted-foreground">Loading curated decks...</p> : (
+      {isLoading ? (
+        <p className="text-sm text-muted-foreground">Loading curated decks...</p>
+      ) : (data?.data || []).length === 0 ? (
+        <Card className="border-border/60 bg-card/60 border-dashed">
+          <CardContent className="p-12 text-center flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-3">
+              <BookOpen size={20} />
+            </div>
+            <h3 className="text-sm font-semibold text-foreground">No Curated Decks Yet</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1 mb-4">
+              Create structured vocabulary decks with curated words to help learners build their vocabulary.
+            </p>
+            <Button size="sm" onClick={() => setIsCreatingOpen(true)}>
+              <Plus size={14} className="mr-1.5" /> Create First Deck
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {(data?.data || []).map((deck) => (
             <Card key={deck.id} className="border-border/60 bg-card shadow-xs">

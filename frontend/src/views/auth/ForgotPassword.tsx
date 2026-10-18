@@ -149,7 +149,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                     required
                     minLength={6}
                   />
-                  <button type="button" className="password-toggle-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn" 
+                    aria-label={showNewPassword ? 'Hide new password' : 'Show new password'}
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                  >
                     {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
@@ -166,7 +171,12 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onBack }) => {
                     required
                     minLength={6}
                   />
-                  <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                  <button 
+                    type="button" 
+                    className="password-toggle-btn" 
+                    aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>

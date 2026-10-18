@@ -95,14 +95,19 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)}>
+              <button 
+                type="button" 
+                className="password-toggle-btn" 
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                onClick={() => setShowPassword(!showPassword)}
+              >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
           </div>
 
           <div className="auth-options" style={{ justifyContent: 'flex-end' }}>
-            <span className="forgot-password-link" onClick={onForgot}>{t('auth.forgot_password')}</span>
+            <button type="button" className="forgot-password-link" onClick={onForgot}>{t('auth.forgot_password')}</button>
           </div>
           
           <Button 
@@ -116,7 +121,7 @@ const Login: React.FC<LoginProps> = ({ onSwitch, onForgot }) => {
         </form>
         
         <div className="auth-footer">
-          {t('auth.no_account')} <span onClick={onSwitch}>{t('auth.register_now')}!</span>
+          {t('auth.no_account')} <button type="button" className="auth-inline-link" onClick={onSwitch}>{t('auth.register_now')}!</button>
         </div>
       </Card>
     </div>

@@ -52,7 +52,7 @@ const Library: React.FC = () => {
   const limit = 20;
 
   // RTK Query
-  const { data: wordsData, isLoading, isFetching } = useGetWordsQuery({ page, limit, search, type: filterType, status: filterStatus });
+  const { data: wordsData, isLoading, isFetching, isError, refetch } = useGetWordsQuery({ page, limit, search, type: filterType, status: filterStatus });
   const [triggerGetWords] = useLazyGetWordsQuery();
   const meta = wordsData?.meta;
 
@@ -361,6 +361,12 @@ const Library: React.FC = () => {
             </div>
           ))}
         </div>
+      ) : isError ? (
+        <div className="empty-state error-state" role="alert">
+          <h3>{t('common.error')}</h3>
+          <p>{t('library.load_error', 'Could not load your vocabulary. Please try again.')}</p>
+          <Button variant="outline" onClick={() => refetch()}>{t('common.retry', 'Retry')}</Button>
+        </div>
       ) : loadedWords.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🏜️</div>
@@ -372,33 +378,43 @@ const Library: React.FC = () => {
           {loadedWords.map((word) => (
             <div key={word.id} className={`word-card-wrapper ${selectedIds.includes(word.id) ? 'selected' : ''}`}>
               <Card className="word-card-full">
-                <div className="select-overlay" onClick={(e) => { e.stopPropagation(); toggleSelect(word.id); }}>
-                  {selectedIds.includes(word.id) ? <CheckSquare size={24} className="check-icon" /> : <Square size={24} className="check-icon" />}
-                </div>
-                <div className="word-card-header">
-                  <div>
-                    <div className="word-main">
-                      <h3>{word.word}</h3>
-                      <span className="type-badge">{getTypeLabel(word.type)}</span>
-                      {(() => {
-                        const badge = getSRSBadge(word);
-                        return <span className={badge.className}>{badge.label}</span>;
-                      })()}
-                    </div>
-                  </div>
+                <div className="word-card-top-bar">
+                  <button 
+                    type="button" 
+                    className="select-card-btn" 
+                    aria-label={`Select ${word.word}`} 
+                    onClick={(e) => { e.stopPropagation(); toggleSelect(word.id); }}
+                  >
+                    {selectedIds.includes(word.id) ? (
+                      <CheckSquare size={22} className="check-icon active" />
+                    ) : (
+                      <Square size={22} className="check-icon" />
+                    )}
+                  </button>
                   <div className="word-card-actions">
-                    <button onClick={(e) => { e.stopPropagation(); speakText(word.word); }} className="icon-btn audio text-primary hover:scale-110" title="Listen to pronunciation">
-                      <Volume2 size={18} />
+                    <button type="button" aria-label={`Pronounce ${word.word}`} onClick={(e) => { e.stopPropagation(); speakText(word.word); }} className="icon-btn audio text-primary hover:scale-110" title="Listen to pronunciation">
+                      <Volume2 size={16} />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); setEditingWord(word); }} className="icon-btn edit" title="Edit this word">
-                      <Pencil size={18} />
+                    <button type="button" aria-label={`Edit ${word.word}`} onClick={(e) => { e.stopPropagation(); setEditingWord(word); }} className="icon-btn edit" title="Edit this word">
+                      <Pencil size={16} />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleReset([word.id]); }} className="icon-btn reset" title="Reset this word">
-                      <RotateCcw size={18} />
+                    <button type="button" aria-label={`Reset ${word.word}`} onClick={(e) => { e.stopPropagation(); handleReset([word.id]); }} className="icon-btn reset" title="Reset this word">
+                      <RotateCcw size={16} />
                     </button>
-                    <button onClick={(e) => { e.stopPropagation(); handleDelete(word.id); }} className="icon-btn delete">
-                      <Trash2 size={18} />
+                    <button type="button" aria-label={`Delete ${word.word}`} onClick={(e) => { e.stopPropagation(); handleDelete(word.id); }} className="icon-btn delete">
+                      <Trash2 size={16} />
                     </button>
+                  </div>
+                </div>
+
+                <div className="word-main-info">
+                  <h3 className="word-heading">{word.word}</h3>
+                  <div className="word-badges-row">
+                    <span className="type-badge">{getTypeLabel(word.type)}</span>
+                    {(() => {
+                      const badge = getSRSBadge(word);
+                      return <span className={badge.className}>{badge.label}</span>;
+                    })()}
                   </div>
                 </div>
                 

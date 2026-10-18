@@ -208,7 +208,7 @@ const WordLibraryPage: React.FC = () => {
         title="Word Library"
         description="Audit and curate linguistic vocabulary repository & relations."
         action={
-          <div className="flex items-center gap-2">
+          <>
             <Button 
               variant="outline" 
               size="sm" 
@@ -224,7 +224,7 @@ const WordLibraryPage: React.FC = () => {
             >
               <Plus size={16} className="mr-1.5" /> Batch Word Import
             </Button>
-          </div>
+          </>
         }
       />
 
@@ -390,6 +390,7 @@ const WordLibraryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Transfer word ownership"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleTransferTrigger(word);
@@ -404,6 +405,7 @@ const WordLibraryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Manage word relations"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRelationTrigger(word);
@@ -418,6 +420,7 @@ const WordLibraryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Edit definition and phonetics"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleEditTrigger(word);
@@ -432,6 +435,7 @@ const WordLibraryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Reset SRS progress"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleResetSrsTrigger(word);
@@ -446,6 +450,7 @@ const WordLibraryPage: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            aria-label="Delete word"
                             className="h-7 w-7 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                             onClick={(e) => {
                               e.stopPropagation();

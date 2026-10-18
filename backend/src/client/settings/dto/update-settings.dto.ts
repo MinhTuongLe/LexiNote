@@ -73,7 +73,7 @@ export class UpdateSettingsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  wordTypes?: any[];
+  wordTypes?: any[] | { custom?: any[] };
 
   @ApiPropertyOptional({ type: AudioSettingsDto })
   @IsOptional()

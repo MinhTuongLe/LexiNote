@@ -20,6 +20,8 @@
   "words": "từ",
   "days": "ngày",
   "no_data": "Chưa có dữ liệu học tập. Hãy bắt đầu học để xem thống kê nhé! 🚀",
+  "no_activity_yet": "Chưa có lượt học",
+  "weekly_empty_hint": "Chưa có hoạt động ôn tập tuần này. Hãy bắt đầu ôn từ vựng để lấp đầy biểu đồ nhé! 🚀",
   "reviewed_label": "Đã học",
   "weekdays_short": {
     "Mon": "T2",

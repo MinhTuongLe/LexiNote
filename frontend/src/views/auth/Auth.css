@@ -91,7 +91,7 @@
 }
 
 .auth-footer span {
-  color: var(--primary);
+  color: #C23356;
   cursor: pointer;
   text-decoration: underline;
   transition: color 0.2s;
@@ -101,7 +101,7 @@
 }
 
 .auth-footer span:hover {
-  color: var(--primary-dark);
+  color: #9F2141;
 }
 
 /* Code input */
@@ -122,14 +122,29 @@
 
 .forgot-password-link {
   font-size: 0.9rem;
-  color: var(--primary);
+  color: #C23356;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   transition: all 0.2s;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
 }
 
-.forgot-password-link:hover {
-  color: var(--primary-dark);
+.auth-inline-link {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #C23356;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.forgot-password-link:hover,
+.auth-inline-link:hover {
+  color: #9F2141;
   text-decoration: underline;
 }
 

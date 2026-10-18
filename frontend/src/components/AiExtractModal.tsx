@@ -182,12 +182,22 @@ const AiExtractModal: React.FC<AiExtractModalProps> = ({ isOpen, onClose }) => {
                     key={idx}
                     className={`ai-extract-word-item ${isSelected ? 'selected' : ''}`}
                     onClick={() => toggleSelectWord(item.word)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleSelectWord(item.word);
+                      }
+                    }}
+                    role="checkbox"
+                    aria-checked={isSelected}
+                    tabIndex={0}
                   >
                     <input
                       type="checkbox"
                       className="ai-extract-checkbox"
                       checked={isSelected}
-                      onChange={() => {}}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={() => toggleSelectWord(item.word)}
                     />
                     <div className="ai-extract-word-body">
                       <div className="ai-extract-word-row1">

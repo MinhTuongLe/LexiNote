@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import './ProfilePage.css';
 import type { RootState } from '../../store';
 import { getApiErrorMessage } from '../../utils/errorUtils';
+import type { UserProfile } from '../../types';
 
 const AVATAR_OPTIONS = ['🐰', '🐱', '🐶', '🦊', '🐼', '🐨', '🐸', '🦄', '🐻', '🐧', '🦁', '🐯', '🐮', '🐷', '🐵', '🦋', '🌸', '🌟', '⭐', '🔥', '💎', '🎯', '🎨', '🎭'];
 
@@ -30,6 +31,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
 
   // Profile edit
   const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profile, setProfile] = useState<UserProfile>(user?.settings?.profile || {});
   const [fullName, setFullName] = useState(user?.fullName || '');
   const [selectedAvatar, setSelectedAvatar] = useState(user?.avatar || '🐰');
   const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation();
@@ -44,12 +46,21 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changePassword, { isLoading: isChangingPassword }] = useChangePasswordMutation();
 
-
   const handleSaveProfile = async () => {
+    if (fullName.trim().length < 2) {
+      showAlert(t('common.error'), t('profile.display_name_required', 'Please enter a display name.'), 'error');
+      return;
+    }
     try {
       const result = await updateProfile({
-        fullName,
+        fullName: fullName.trim(),
         avatar: selectedAvatar,
+        profile: {
+          bio: profile.bio?.trim() || '',
+          phone: profile.phone?.trim() || '',
+          location: profile.location?.trim() || '',
+          timezone: profile.timezone?.trim() || '',
+        },
       }).unwrap();
       dispatch(updateUser(result.user));
       setIsEditingProfile(false);
@@ -116,6 +127,33 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
             </div>
 
             <div className="form-group">
+              <label><Mail size={16} /> {t('profile.email', 'Email')}</label>
+              <input type="email" value={user?.email || ''} readOnly aria-readonly="true" />
+              <small className="field-help">{t('profile.email_readonly', 'Email is managed by your account security settings.')}</small>
+            </div>
+
+            <div className="profile-form-grid">
+              <div className="form-group">
+                <label>{t('profile.phone', 'Phone')}</label>
+                <input type="tel" value={profile.phone || ''} onChange={(event) => setProfile({ ...profile, phone: event.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>{t('profile.location', 'Location')}</label>
+                <input type="text" value={profile.location || ''} onChange={(event) => setProfile({ ...profile, location: event.target.value })} />
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>{t('profile.timezone', 'Timezone')}</label>
+              <input type="text" value={profile.timezone || ''} onChange={(event) => setProfile({ ...profile, timezone: event.target.value })} placeholder="Asia/Ho_Chi_Minh" />
+            </div>
+
+            <div className="form-group">
+              <label>{t('profile.bio', 'Bio')}</label>
+              <textarea value={profile.bio || ''} onChange={(event) => setProfile({ ...profile, bio: event.target.value })} maxLength={500} rows={3} />
+            </div>
+
+            <div className="form-group">
               <label>{t('profile.choose_avatar')}</label>
               <div className="avatar-grid">
                 {AVATAR_OPTIONS.map((emoji) => (
@@ -138,6 +176,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
               <Button variant="outline" onClick={() => {
                 setIsEditingProfile(false);
                 setFullName(user?.fullName || '');
+                setProfile(user?.settings?.profile || {});
                 setSelectedAvatar(user?.avatar || '🐰');
               }}>
                 {t('common.cancel')}
@@ -215,7 +254,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 required
               />
-              <button type="button" className="password-toggle-btn" onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
+              <button type="button" className="password-toggle-btn" aria-label={showCurrentPassword ? 'Hide current password' : 'Show current password'} onClick={() => setShowCurrentPassword(!showCurrentPassword)}>
                 {showCurrentPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
@@ -231,7 +270,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
                 required
                 minLength={6}
               />
-              <button type="button" className="password-toggle-btn" onClick={() => setShowNewPassword(!showNewPassword)}>
+              <button type="button" className="password-toggle-btn" aria-label={showNewPassword ? 'Hide new password' : 'Show new password'} onClick={() => setShowNewPassword(!showNewPassword)}>
                 {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
@@ -247,7 +286,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ onBack }) => {
                 required
                 minLength={6}
               />
-              <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+              <button type="button" className="password-toggle-btn" aria-label={showConfirmPassword ? 'Hide password confirmation' : 'Show password confirmation'} onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                 {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>

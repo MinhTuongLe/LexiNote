@@ -453,11 +453,30 @@ export class AuthService {
   }
 
   async updateProfile(userId: number, data: any) {
-    const { fullName, avatar } = data;
+    const { fullName, avatar, profile } = data;
     const updateData: any = {};
 
-    if (fullName !== undefined) updateData.fullName = fullName.trim();
+    if (fullName !== undefined) {
+      const normalizedFullName = fullName.trim();
+      if (normalizedFullName.length < 2) throw new BadRequestException('error.auth.invalid_full_name');
+      updateData.fullName = normalizedFullName;
+    }
     if (avatar !== undefined) updateData.avatar = avatar;
+
+    if (profile !== undefined) {
+      const currentUser = await this.userService.findOneById(userId);
+      if (!currentUser) throw new NotFoundException('error.auth.user_not_found');
+      const currentSettings = currentUser.settings && typeof currentUser.settings === 'object'
+        ? currentUser.settings as Record<string, unknown>
+        : {};
+      const currentProfile = currentSettings.profile && typeof currentSettings.profile === 'object'
+        ? currentSettings.profile as Record<string, unknown>
+        : {};
+      updateData.settings = {
+        ...currentSettings,
+        profile: { ...currentProfile, ...profile },
+      };
+    }
 
     if (Object.keys(updateData).length === 0) {
       throw new BadRequestException('error.auth.nothing_to_update');
@@ -516,6 +535,7 @@ export class AuthService {
       isEmailVerified: user.isEmailVerified,
       role: user.role,
       isActive: user.isActive,
+      createdAt: user.createdAt ? Number(user.createdAt) : undefined,
       settings: user.settings,
     };
   }

@@ -131,9 +131,9 @@ const VerifyEmail: React.FC = () => {
               {countdown > 0 ? t('auth.resend_timer', { count: countdown }) : t('auth.resend_code')}
             </Button>
           )}
-          <span onClick={() => navigate('/login')} style={{ cursor: 'pointer', marginTop: 12 }}>
+          <button type="button" className="auth-inline-link" onClick={() => navigate('/login')} style={{ marginTop: 12 }}>
             <ArrowLeft size={14} /> {t('auth.back_to_login')}
-          </span>
+          </button>
         </div>
       </Card>
     </div>

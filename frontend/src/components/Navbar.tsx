@@ -81,10 +81,10 @@ const Navbar: React.FC = () => {
     <>
       <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
         <div className="navbar-content">
-          <div className="navbar-logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
+          <button type="button" className="navbar-logo" onClick={() => navigate('/dashboard')} aria-label="Go to dashboard">
             <img src="/logo.png" alt="LexiNote Logo" className="logo-img" />
             <span>LexiNote</span>
-          </div>
+          </button>
           
           {isAuthenticated && (
             <div className="navbar-links desktop-only">
@@ -95,13 +95,16 @@ const Navbar: React.FC = () => {
           <div className="navbar-actions">
             {isAuthenticated && (
                <div className="user-profile" ref={dropdownRef}>
-                <div 
+                <button
+                  type="button"
                   className="user-avatar-group clickable" 
                   onClick={() => setShowDropdown(!showDropdown)}
+                  aria-expanded={showDropdown}
+                  aria-haspopup="menu"
                 >
                   <span className="user-name" style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.fullName}</span>
                   <div className="user-avatar">{user?.avatar || '🐰'}</div>
-                </div>
+                </button>
                 
                 {showDropdown && (
                   <div className="profile-dropdown">

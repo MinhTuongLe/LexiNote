@@ -76,7 +76,12 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
-              <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)}>
+              <button 
+                type="button" 
+                className="password-toggle-btn" 
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                onClick={() => setShowPassword(!showPassword)}
+              >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
@@ -93,7 +98,7 @@ const Register: React.FC<RegisterProps> = ({ onSwitch }) => {
         </form>
         
         <div className="auth-footer">
-          {t('auth.already_has_account')} <span onClick={onSwitch}>{t('common.login')}!</span>
+          {t('auth.already_has_account')} <button type="button" className="auth-inline-link" onClick={onSwitch}>{t('common.login')}!</button>
         </div>
       </Card>
     </div>

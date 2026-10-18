@@ -433,6 +433,7 @@ const UserManagementPage: React.FC = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              aria-label="Inspect user details"
                               onClick={() => {
                                 setInspectUserId(user.id);
                                 setIsDetailModalOpen(true);
@@ -447,6 +448,7 @@ const UserManagementPage: React.FC = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              aria-label="Reset user password"
                               onClick={() => setResetConfirmUser(user)}
                               className="h-7 w-7 text-amber-500 hover:text-amber-600 hover:bg-amber-500/10"
                             >
@@ -458,6 +460,7 @@ const UserManagementPage: React.FC = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              aria-label="Edit user profile"
                               onClick={() => {
                                 setSelectedUser(user);
                                 setIsEditModalOpen(true);
@@ -473,6 +476,7 @@ const UserManagementPage: React.FC = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
+                                aria-label="Restore banned user account"
                                 onClick={() => setUnbanConfirmUser(user)}
                                 className="h-7 w-7 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10"
                               >
@@ -484,6 +488,7 @@ const UserManagementPage: React.FC = () => {
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
+                                aria-label="Ban user account"
                                 onClick={() => setBanConfirmUser(user)}
                                 className="h-7 w-7 text-rose-500 hover:text-rose-600 hover:bg-rose-500/10"
                               >
@@ -496,6 +501,7 @@ const UserManagementPage: React.FC = () => {
                             <Button 
                               variant="ghost" 
                               size="icon" 
+                              aria-label="Delete user account"
                               onClick={() => {
                                 setSelectedUser(user);
                                 setIsDeleteModalOpen(true);

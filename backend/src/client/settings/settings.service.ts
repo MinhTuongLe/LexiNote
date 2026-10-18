@@ -17,6 +17,13 @@ export class SettingsService {
     const currentSettings =
       user.settings && typeof user.settings === 'object' ? user.settings : {};
 
+    const storedWordTypes = currentSettings.wordTypes;
+    const customWordTypes = Array.isArray(storedWordTypes)
+      ? storedWordTypes
+      : storedWordTypes && typeof storedWordTypes === 'object' && Array.isArray(storedWordTypes.custom)
+        ? storedWordTypes.custom
+        : [];
+
     return {
       preferences: {
         darkTheme: currentSettings.darkTheme ?? false,
@@ -26,7 +33,7 @@ export class SettingsService {
       },
       wordTypes: {
         system: VALID_WORD_TYPES,
-        custom: currentSettings.wordTypes || [],
+        custom: customWordTypes,
       },
       audio: {
         autoSpeak: currentSettings.audio?.autoSpeak ?? true,
@@ -37,6 +44,9 @@ export class SettingsService {
       learning: {
         monthlyGoalDays: currentSettings.learning?.monthlyGoalDays ?? 20,
       },
+      profile: currentSettings.profile && typeof currentSettings.profile === 'object'
+        ? currentSettings.profile
+        : {},
     };
   }
 
@@ -50,9 +60,15 @@ export class SettingsService {
 
     const currentSettings =
       user.settings && typeof user.settings === 'object' ? user.settings : {};
+    const normalizedSettings = { ...settings };
+    if (settings.wordTypes && !Array.isArray(settings.wordTypes)) {
+      normalizedSettings.wordTypes = Array.isArray(settings.wordTypes.custom)
+        ? settings.wordTypes.custom
+        : [];
+    }
     const newSettings = {
       ...currentSettings,
-      ...settings,
+      ...normalizedSettings,
       ...(settings.audio
         ? {
             audio: {
@@ -88,7 +104,12 @@ export class SettingsService {
       select: { settings: true } as any,
     })) as any;
     const settings = user?.settings;
-    const customTypes = settings?.wordTypes?.map((t: any) => t.value) || [];
+    const storedWordTypes = settings?.wordTypes;
+    const customTypes = Array.isArray(storedWordTypes)
+      ? storedWordTypes.map((type: any) => type.value)
+      : storedWordTypes && typeof storedWordTypes === 'object' && Array.isArray(storedWordTypes.custom)
+        ? storedWordTypes.custom.map((type: any) => type.value)
+        : [];
     return [...VALID_WORD_TYPES, ...customTypes];
   }
 

@@ -258,6 +258,17 @@
   border: 2px solid var(--border);
 }
 
+.deck-word-row.selected { background: var(--background); }
+
+.deck-word-select {
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+}
+
 .deck-word-title {
   font-size: 0.95rem;
   font-weight: 800;

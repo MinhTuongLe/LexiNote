@@ -45,9 +45,9 @@ const OverviewPage: React.FC = () => {
     try {
       setResettingWordId(id);
       await resetWordSrs(id).unwrap();
-      toast.success('SRS Progress Reset', `Reset tiến độ SRS của từ "${word}" thành công!`);
+      toast.success('SRS Progress Reset', `SRS learning progress for "${word}" has been reset.`);
     } catch {
-      toast.error('Reset Failed', `Không thể reset tiến độ từ "${word}".`);
+      toast.error('Reset Failed', `Could not reset learning progress for "${word}".`);
     } finally {
       setResettingWordId(null);
     }
@@ -181,7 +181,7 @@ const OverviewPage: React.FC = () => {
             <ChartSkeleton />
           </div>
         ) : (
-          <Card className="lg:col-span-8 border-border/60 bg-card shadow-xs">
+          <Card className="lg:col-span-8 border-border/60 bg-card shadow-xs min-w-0">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-6">
                 <div>
@@ -239,8 +239,8 @@ const OverviewPage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="h-[320px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[320px] w-full min-w-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={320}>
                   <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <defs>
                       <linearGradient id="colorWords" x1="0" y1="0" x2="0" y2="1">

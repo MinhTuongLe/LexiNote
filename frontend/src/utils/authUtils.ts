@@ -4,7 +4,7 @@ import type { User } from '../store/authSlice';
  * Check if the user has already seen the onboarding guide.
  * Evaluates both local storage cache and database user settings.
  */
-export const checkHasSeenGuide = (user: User | null): boolean => {
+export const checkHasSeenGuide = (user: User | null, totalWords?: number): boolean => {
   if (!user) return false;
 
   const userIdKey = user.id || user.email || 'unknown';
@@ -13,6 +13,12 @@ export const checkHasSeenGuide = (user: User | null): boolean => {
 
   const rawSettings = user.settings || {};
   const remotelySeen = rawSettings.preferences?.hasSeenGuide === true || rawSettings.hasSeenGuide === true;
+
+  const hasExistingWords = typeof totalWords === 'number' && totalWords > 0;
+  if (remotelySeen || hasExistingWords) {
+    markGuideAsSeenLocal(user);
+    return true;
+  }
 
   return Boolean(locallySeen || remotelySeen);
 };

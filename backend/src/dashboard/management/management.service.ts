@@ -88,10 +88,16 @@ export class ManagementService {
     };
   }
 
-  async exportUsers(isActive?: boolean, role?: Role) {
+  async exportUsers(isActive?: boolean, role?: Role, search?: string) {
     const where: Prisma.UserWhereInput = {};
     if (isActive !== undefined) where.isActive = isActive;
     if (role) where.role = role;
+    if (search) {
+      where.OR = [
+        { fullName: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
+    }
 
     const users = await this.prisma.user.findMany({
       where,
@@ -207,9 +213,9 @@ export class ManagementService {
       w.reviews.forEach((r) => {
         totalCorrect += r.correctCount;
         totalWrong += r.wrongCount;
-        totalEase += r.easeFactor;
         if (r.correctCount + r.wrongCount > 0) {
           reviewedCount += 1;
+          totalEase += r.easeFactor;
         }
       });
     });
@@ -652,6 +658,7 @@ export class ManagementService {
             updatedAt: user.updatedAt.toString(),
           } as Prisma.InputJsonValue,
           originalRecordId: { id },
+          createdAt: BigInt(Date.now()),
         },
       });
     }

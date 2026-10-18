@@ -1,4 +1,5 @@
-import { IsIn, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsIn, IsInt, IsOptional, IsString } from 'class-validator';
 
 export class ExportWordsQueryDto {
   @IsOptional()
@@ -12,4 +13,13 @@ export class ExportWordsQueryDto {
   @IsOptional()
   @IsString()
   type?: string;
+
+  @IsOptional()
+  @Transform((params) =>
+    params.value !== undefined && params.value !== null && params.value !== ''
+      ? Number(params.value)
+      : undefined,
+  )
+  @IsInt()
+  ownerId?: number;
 }

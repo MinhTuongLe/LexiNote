@@ -102,10 +102,21 @@ export class WordService {
 
   private inferWordType(word: string) {
     if (/(tion|ment|ness|ity|ance|ence)$/.test(word)) return 'noun';
-    if (/(ly)$/.test(word)) return 'adverb';
+    if (/(ly)$/.test(word)) return 'adv';
     if (/(ed|ing)$/.test(word)) return 'verb';
-    if (/(ful|ous|ive|able|al)$/.test(word)) return 'adjective';
+    if (/(ful|ous|ive|able|al)$/.test(word)) return 'adj';
     return 'other';
+  }
+
+  private normalizeWordTypeAlias(type: string) {
+    const aliases: Record<string, string> = {
+      adjective: 'adj',
+      adverb: 'adv',
+      'verb phrase': 'verb_phrase',
+      'noun phrase': 'noun_phrase',
+      'phrasal verb': 'phrasal_verb',
+    };
+    return aliases[type.replace(/-/g, '_')] || type;
   }
 
   private findSentence(text: string, word: string) {
@@ -122,7 +133,7 @@ export class WordService {
   }
 
   async create(userId: number, data: any) {
-    const { word, meaningVi, example, type, synonyms, antonyms } = data;
+    const { word, meaningVi, example, type, phonetic, audioUrl, synonyms, antonyms } = data;
 
     // Normalize type
     const validTypes = await this.getValidTypes(userId);
@@ -130,6 +141,7 @@ export class WordService {
     if (normalizedType.includes('/') || normalizedType.includes(',')) {
       normalizedType = normalizedType.split(/[/,]/)[0].trim();
     }
+    normalizedType = this.normalizeWordTypeAlias(normalizedType);
     if (!validTypes.includes(normalizedType)) normalizedType = 'other';
 
     return this.prisma.$transaction(async (tx) => {
@@ -139,6 +151,8 @@ export class WordService {
           word,
           meaningVi,
           example,
+          phonetic,
+          audioUrl,
           type: normalizedType,
           ownerId: userId,
         },
@@ -311,7 +325,7 @@ export class WordService {
   }
 
   async update(userId: number, id: number, data: any) {
-    const { word, meaningVi, example, type } = data;
+    const { word, meaningVi, example, type, phonetic, audioUrl } = data;
 
     // Normalize type if provided
     let normalizedType = type;
@@ -321,6 +335,7 @@ export class WordService {
       if (normalizedType.includes('/') || normalizedType.includes(',')) {
         normalizedType = normalizedType.split(/[/,]/)[0].trim();
       }
+      normalizedType = this.normalizeWordTypeAlias(normalizedType);
       if (!validTypes.includes(normalizedType)) normalizedType = 'other';
     }
 
@@ -330,6 +345,8 @@ export class WordService {
     if (word !== undefined) updateData.word = word;
     if (meaningVi !== undefined) updateData.meaningVi = meaningVi;
     if (example !== undefined) updateData.example = example;
+    if (phonetic !== undefined) updateData.phonetic = phonetic;
+    if (audioUrl !== undefined) updateData.audioUrl = audioUrl;
     if (normalizedType !== undefined) updateData.type = normalizedType;
 
     return this.prisma.$transaction(async (tx) => {
@@ -436,6 +453,8 @@ export class WordService {
       meaningVi: string;
       example?: string;
       type?: string;
+      phonetic?: string;
+      audioUrl?: string;
     }>,
   ) {
     const validTypes = await this.getValidTypes(userId);
@@ -465,17 +484,20 @@ export class WordService {
     const nextReview = BigInt(Date.now());
     const importedWords = await this.prisma.$transaction(async (tx) => {
       const created = await tx.word.createManyAndReturn({
-        data: pendingWords.map(({ word, meaningVi, example, type }) => {
+        data: pendingWords.map(({ word, meaningVi, example, type, phonetic, audioUrl }) => {
           let normalizedType = (type || 'other').toLowerCase().trim();
           if (normalizedType.includes('/') || normalizedType.includes(',')) {
             normalizedType = normalizedType.split(/[/,]/)[0].trim();
           }
+          normalizedType = this.normalizeWordTypeAlias(normalizedType);
           if (!validTypes.includes(normalizedType)) normalizedType = 'other';
 
           return {
             word,
             meaningVi,
             example: example || '',
+            phonetic: phonetic || null,
+            audioUrl: audioUrl || null,
             type: normalizedType,
             ownerId: userId,
           };
