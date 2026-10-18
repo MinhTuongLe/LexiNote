@@ -47,6 +47,18 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
     }
   }
 
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    if (isOpen) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
   // Declarative data fetching via RTK Query (No useEffect setState needed)
   const { data: previewData, isLoading } = useGetMailPreviewQuery(
     {
@@ -75,8 +87,14 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-background border border-border w-full max-w-[1240px] h-[92vh] max-h-[940px] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-md p-3 sm:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-background border border-border w-full max-w-[1240px] h-[92vh] max-h-[940px] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-muted/30">
@@ -95,6 +113,7 @@ export const EmailPreviewModal: React.FC<EmailPreviewModalProps> = ({
           </div>
           <button
             onClick={onClose}
+            aria-label="Close Email Preview"
             className="p-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted/80 transition-colors"
           >
             <X className="w-5 h-5" />

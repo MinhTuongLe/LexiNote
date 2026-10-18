@@ -99,11 +99,11 @@ const ProfilePage: React.FC = () => {
                 </Button>
               ) : (
                 <div className="space-y-3 text-left">
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     Full name
                     <Input value={fullName} onChange={(event) => setFullName(event.target.value)} className="mt-1" />
                   </label>
-                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                     Email
                     <Input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1" />
                   </label>

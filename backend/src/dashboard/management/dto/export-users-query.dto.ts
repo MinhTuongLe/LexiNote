@@ -1,8 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsIn, IsOptional } from 'class-validator';
+import { IsBoolean, IsEnum, IsIn, IsOptional, IsString } from 'class-validator';
 import { Role } from '@prisma/client';
 
 export class ExportUsersQueryDto {
+  @IsOptional()
+  @IsString()
+  search?: string;
+
   @IsOptional()
   @Transform((params) => {
     const value: unknown = params.value;

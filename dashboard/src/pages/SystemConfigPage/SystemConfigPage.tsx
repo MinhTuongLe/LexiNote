@@ -218,8 +218,12 @@ const SystemConfigPage: React.FC = () => {
                   </div>
                 </div>
                 <button 
+                  type="button"
+                  role="switch"
+                  aria-checked={corsEnabled}
+                  aria-label="Toggle Whitelisted CORS Enforcement"
                   onClick={() => setCorsEnabled(!corsEnabled)}
-                  className={`w-11 h-6 rounded-full relative p-0.5 transition-colors ${corsEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+                  className={`w-11 h-6 rounded-full relative p-0.5 transition-colors cursor-pointer ${corsEnabled ? 'bg-primary' : 'bg-muted-foreground/30'}`}
                 >
                   <div className={`w-5 h-5 bg-white rounded-full shadow-xs transition-transform ${corsEnabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
                 </button>
@@ -270,8 +274,12 @@ const SystemConfigPage: React.FC = () => {
                     <p className="text-[11px] text-muted-foreground">Every 00:00 UTC</p>
                   </div>
                   <button 
+                    type="button"
+                    role="switch"
+                    aria-checked={autoBackup}
+                    aria-label="Toggle Automated Daily Backup"
                     onClick={() => setAutoBackup(!autoBackup)}
-                    className={`w-9 h-5 rounded-full relative p-0.5 transition-colors ${autoBackup ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
+                    className={`w-9 h-5 rounded-full relative p-0.5 transition-colors cursor-pointer ${autoBackup ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-xs transition-transform ${autoBackup ? 'translate-x-4' : 'translate-x-0'}`}></div>
                   </button>
@@ -282,8 +290,12 @@ const SystemConfigPage: React.FC = () => {
                     <p className="text-[11px] text-muted-foreground">Detailed runtime logs</p>
                   </div>
                   <button 
+                    type="button"
+                    role="switch"
+                    aria-checked={debugMode}
+                    aria-label="Toggle Debug Verbosity"
                     onClick={() => setDebugMode(!debugMode)}
-                    className={`w-9 h-5 rounded-full relative p-0.5 transition-colors ${debugMode ? 'bg-rose-500' : 'bg-muted-foreground/30'}`}
+                    className={`w-9 h-5 rounded-full relative p-0.5 transition-colors cursor-pointer ${debugMode ? 'bg-rose-500' : 'bg-muted-foreground/30'}`}
                   >
                     <div className={`w-4 h-4 bg-white rounded-full shadow-xs transition-transform ${debugMode ? 'translate-x-4' : 'translate-x-0'}`}></div>
                   </button>

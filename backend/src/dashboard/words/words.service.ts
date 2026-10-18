@@ -8,6 +8,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { ModerationFlagReason, ModerationStatus, Prisma } from '@prisma/client';
 import { ImportWordsDto } from './dto/import-words.dto';
+import { normalizeWordType } from '../analytics/cluster.utils';
 
 @Injectable()
 export class DashboardWordsService {
@@ -171,7 +172,7 @@ export class DashboardWordsService {
     });
 
     return Array.from(
-      new Set(types.map(({ type }) => type.trim()).filter(Boolean)),
+      new Set(types.map(({ type }) => normalizeWordType(type)).filter(Boolean)),
     ).sort((first, second) => first.localeCompare(second));
   }
 
@@ -233,7 +234,7 @@ export class DashboardWordsService {
     };
   }
 
-  async exportWords(search?: string, type?: string) {
+  async exportWords(search?: string, type?: string, ownerId?: number) {
     const where: Prisma.WordWhereInput = {};
     if (search) {
       where.OR = [
@@ -242,6 +243,7 @@ export class DashboardWordsService {
       ];
     }
     if (type) where.type = type;
+    if (ownerId) where.ownerId = ownerId;
 
     const words = await this.prisma.word.findMany({
       where,
@@ -295,6 +297,7 @@ export class DashboardWordsService {
           fromModel: 'Word',
           originalRecord: word as unknown as Prisma.InputJsonValue,
           originalRecordId: { id },
+          createdAt: BigInt(Date.now()),
         },
       });
     }

@@ -205,7 +205,10 @@ export class ReviewService {
         'verb phrase': 'verb_phrase',
         'phrasal verb': 'phrasal_verb',
       };
-      const type = aliasMap[rawType.replace(/-/g, '_')] || aliasMap[rawType] || rawType.replace(/-/g, '_');
+      const type =
+        aliasMap[rawType.replace(/-/g, '_')] ||
+        aliasMap[rawType] ||
+        rawType.replace(/-/g, '_');
       if (!typesMap.has(type)) {
         typesMap.set(type, {
           type,

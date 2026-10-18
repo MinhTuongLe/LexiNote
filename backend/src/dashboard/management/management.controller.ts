@@ -55,6 +55,7 @@ export class ManagementController {
     const users = await this.managementService.exportUsers(
       query.isActive,
       query.role,
+      query.search,
     );
     response.header('Content-Type', 'text/csv; charset=utf-8');
     response.header(

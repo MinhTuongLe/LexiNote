@@ -49,7 +49,11 @@ export class DashboardWordsController {
     @Query() query: ExportWordsQueryDto,
     @Res({ passthrough: true }) response: FastifyReply,
   ) {
-    const words = await this.wordsService.exportWords(query.search, query.type);
+    const words = await this.wordsService.exportWords(
+      query.search,
+      query.type,
+      query.ownerId,
+    );
     if (query.format === 'json') return words;
 
     response.header('Content-Type', 'text/csv; charset=utf-8');
